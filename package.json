@@ -1,0 +1,45 @@
+{
+  "name": "roman-budhathoki",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portfolio and booking website for Roman Budhathoki, violinist.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "npm run build -w @roman/shared && concurrently -k -n shared,server,client -c gray,blue,magenta \"npm run dev -w @roman/shared\" \"npm run dev -w @roman/server\" \"npm run dev -w @roman/client\"",
+    "build": "npm run build -w @roman/shared && npm run build -w @roman/server && npm run build -w @roman/client",
+    "typecheck": "npm run build -w @roman/shared && tsc -p tsconfig.json --noEmit && npm run typecheck --workspaces",
+    "lint": "npm run build -w @roman/shared && eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run build -w @roman/shared && npm run test --workspaces",
+    "check:no-js": "tsx scripts/check-no-js.ts",
+    "check": "npm run check:no-js && npm run typecheck && npm run lint && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/eslint-plugin-jsx-a11y": "^6.10.1",
+    "@types/node": "^22.20.5",
+    "concurrently": "^10.0.5",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.7",
+    "globals": "^17.13.0",
+    "jiti": "^2.7.0",
+    "prettier": "^3.9.9",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
+  }
+}

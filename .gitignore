@@ -1,0 +1,27 @@
+# Dependencies and build output
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+
+# Environment (only the examples are committed)
+.env
+.env.*
+!.env.example
+
+# Hosting CLIs
+.vercel/
+
+# Source material: personal data and raw media live outside git.
+# Media is uploaded to Cloudinary by the seed script (plan ASM-7).
+*.docx
+images/
+*.mp3
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+*.log
