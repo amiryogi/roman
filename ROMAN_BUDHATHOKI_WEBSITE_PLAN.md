@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phase 1 (project setup) complete on 2026-10-02. Next: Phase 2 (shared contracts and backend foundation).
+**Status:** Phases 1–2 complete on 2026-10-02. Next: Phase 3 (authentication and admin foundation).
 **Plan date:** 2026-10-02
 
 ---
@@ -71,6 +71,11 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 | 2026-10-02 | **API routing:** the Vercel project **rewrites `/api/:path*` to the Render service** (`https://<service>.onrender.com/api/:path*`). The browser only ever talks to the site's own origin. | The refresh cookie is first-party, with no `api.` subdomain needed (satisfies §11). `VITE_API_BASE_URL=/api` in production. In development, the Vite dev server proxies `/api` to `localhost:4000`. CORS stays as defence in depth. `TRUST_PROXY` must count both the Vercel and Render proxy hops; verify the client IP in Phase 12. |
 | 2026-10-02 | **Hero image:** use `images/roman violin.jpg`. | Its baked-in "ROMAN VIOLIN" wordmark means it is delivered with `c_limit` (never cropped), and positioned so the wordmark stays visible on all breakpoints. The HTML `<h1>` stays for SEO and accessibility, and is visually de-emphasised next to the image wordmark rather than duplicating it. |
 | 2026-10-02 | **Runtime:** Node.js 22 LTS (matches the local toolchain, v22.19; supported by Render). | Replaces "Node 24" in §3 and §24. `engines.node >= 22.12`. |
+
+**Implementation notes (Phase 2):**
+- §10.5's "typed route helper" was dropped as unnecessary. Handlers call `sharedSchema.parse(...)` directly, and Express 5 forwards the error, which gives the same typing with less code.
+- Mongoose 9 with `sanitizeFilter` requires `mongoose.trusted()` around intentional query operators.
+- Malformed JSON returns 400 `BAD_REQUEST`, a code added to the §10.1 list.
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 

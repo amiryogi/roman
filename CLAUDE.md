@@ -25,6 +25,17 @@ working on a phase. Owner decisions are in §0.4 and override defaults elsewhere
 - Production: Vercel serves `client/` and rewrites `/api/*` to the Render service. In development, Vite proxies `/api`
   to `localhost:4000`, so client code always calls relative `/api` URLs.
 
+## Server conventions
+
+- Route handlers parse input with the shared Zod schemas directly (`schema.parse(req.body)`). Express 5 forwards the
+  thrown `ZodError` to the error handler, which answers 422. Never cast `req.body`.
+- Respond with `sendData()` / `sendNoContent()` from `lib/respond.ts`, passing mapper output (`toXDto`). Never send
+  documents directly.
+- `sanitizeFilter` is on. Query operators written in code must be wrapped, e.g.
+  `{ startsAt: mongoose.trusted({ $gte: now }) }`. Unwrapped operators are neutralised and the query fails.
+- Mongoose drops empty subdocuments on save, so optional nested objects may be absent in lean documents.
+- Tests use `useTestDb()` (in-memory MongoDB with real indexes) and the factories in `server/test/`.
+
 ## Commands
 
 | Command          | Purpose                                         |
