@@ -1,3 +1,125 @@
 @import 'tailwindcss';
 
-/* Design tokens (plan §7.2) are added in Phase 5. */
+/*
+ * Design tokens: "The Concert Programme" (plan §7).
+ * Contrast is checked by src/styles/tokens.test.ts. Verified pairs (WCAG 2.2):
+ *   ink on ivory 15.4:1 · ink-muted on ivory 6.5:1 · varnish-deep on ivory 6.0:1
+ *   ivory on ebony 17.2:1 · mist on ebony 9.1:1 · varnish on ebony 5.6:1 · ebony on varnish 5.6:1
+ * Varnish on ivory is only 3.1:1: large text and decoration only, never body text.
+ */
+@theme {
+  --color-ebony: #0f0d0b;
+  --color-ebony-raised: #1a1714;
+  --color-ivory: #f6f1e7;
+  --color-rosin: #e9dfcc;
+  --color-varnish: #c07a35;
+  --color-varnish-deep: #8a4b1c;
+  --color-ink: #1e1a16;
+  --color-ink-muted: #5e554b;
+  --color-mist: #b9b0a3;
+
+  /* Display: Cormorant Garamond, only at >= 28px (thin strokes). Text and UI: Inter. */
+  --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, serif;
+  --font-sans:
+    'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Near-square corners: programme print, not app cards. */
+  --radius-sm: 2px;
+
+  --animate-rise: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+/* Surfaces set the colours and the focus-ring colour of everything inside them (plan §18). */
+@utility surface-dark {
+  background-color: var(--color-ebony);
+  color: var(--color-ivory);
+  --focus-ring: var(--color-varnish);
+  --muted: var(--color-mist);
+  --accent: var(--color-varnish);
+  --on-accent: var(--color-ebony);
+}
+
+@utility surface-dark-raised {
+  background-color: var(--color-ebony-raised);
+  color: var(--color-ivory);
+  --focus-ring: var(--color-varnish);
+  --muted: var(--color-mist);
+  --accent: var(--color-varnish);
+  --on-accent: var(--color-ebony);
+}
+
+@utility surface-light {
+  background-color: var(--color-ivory);
+  color: var(--color-ink);
+  --focus-ring: var(--color-varnish-deep);
+  --muted: var(--color-ink-muted);
+  --accent: var(--color-varnish-deep);
+  --on-accent: var(--color-ivory);
+}
+
+/* Small letter-spaced capitals, e.g. section labels "I. — Biography". */
+@utility label-caps {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-ebony);
+    color: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* A visible ring on every surface, never `outline: none` without a replacement. */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring, currentColor);
+    outline-offset: 3px;
+  }
+
+  /* Headings and <main> receive focus after navigation (plan §12.1); they are not controls. */
+  :where(h1, main)[tabindex='-1']:focus {
+    outline: none;
+  }
+
+  /* No page scrolling behind an open modal (the mobile menu). */
+  html:has(dialog[open]:modal) {
+    overflow: hidden;
+  }
+
+  ::selection {
+    background-color: var(--color-varnish);
+    color: var(--color-ebony);
+  }
+}
+
+/* Sections fade up as they enter the viewport, but only for people who don't mind motion. */
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal='hidden'] {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  [data-reveal='shown'] {
+    animation: var(--animate-rise);
+  }
+}

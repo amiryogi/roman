@@ -1,15 +1,25 @@
-import { Link } from 'react-router';
+import { Seo } from '@/components/seo/Seo';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Container } from '@/components/ui/Container';
 
-// Phase 5 restyles this with the site's design system.
+/** Branded 404 inside the public layout (plan §6). */
 export function NotFoundPage() {
   return (
-    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4 text-center">
-      <title>Page not found · Roman Budhathoki</title>
-      <h1 className="text-3xl font-semibold">Page not found</h1>
-      <p className="text-stone-600">The page you were looking for doesn’t exist.</p>
-      <Link to="/" className="underline underline-offset-4">
-        Go to the home page
-      </Link>
-    </main>
+    <div className="surface-dark">
+      <Seo title="Page not found" path="/404" noindex />
+      <Container className="py-24 sm:py-32">
+        <p className="label-caps text-varnish">404</p>
+        <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
+          Page not found
+        </h1>
+        <p className="mt-6 max-w-xl text-lg text-mist">This page doesn’t exist, or it has moved.</p>
+        <div className="mt-10 flex flex-wrap gap-3">
+          <ButtonLink to="/">Home</ButtonLink>
+          <ButtonLink to="/music" variant="outline">
+            Listen to the music
+          </ButtonLink>
+        </div>
+      </Container>
+    </div>
   );
 }

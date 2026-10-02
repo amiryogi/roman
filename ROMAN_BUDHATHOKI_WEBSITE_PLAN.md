@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–4 complete on 2026-10-02. Next: Phase 5 (design system and public website shell).
+**Status:** Phases 1–5 complete on 2026-10-02, pending the owner's review of the visual direction (Phase 5 checkpoint). Next: Phase 6 (music and audio system).
 **Plan date:** 2026-10-02
 
 ---
@@ -98,6 +98,19 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - The Admin API returns `duration` and `original_filename` only with `media_metadata: true`, so verification requests it (found by `npm run test:cloudinary`).
 - §0.2's dimensions are partly swapped: `roman violin.jpg` is 2048×1215 (landscape), `roman2.PNG` is 3840×2160 and `roman4.JPG` is 1541×2048 (portrait).
 - `npm run check:client-secrets` fails if client code or the client build mentions server secrets (§21.1). It is part of `npm run check` and runs again in CI after the build.
+
+**Implementation notes (Phase 5):**
+- Tokens follow §7.2, plus `ink-muted` (`#5E554B`, 6.5:1 on ivory) for secondary text on paper and `ebony-raised` (`#1A1714`) for the footer. `src/styles/tokens.test.ts` reads the colours from `index.css` and fails if any text pair drops below 4.5:1 or a focus/large-text pair below 3:1.
+- Surfaces (`surface-dark`, `surface-dark-raised`, `surface-light`) set CSS variables (`--accent`, `--on-accent`, `--muted`, `--focus-ring`). Buttons, labels and focus rings take their colours from the surface, so a section can switch between stage and paper without breaking contrast.
+- The hero places the HTML `<h1>` below the photograph, so the baked-in wordmark is never covered or cropped. Tall screens letterbox the image (`object-contain`, max 85svh).
+- About shows Biography, Musical journey (training and performance, oldest first), Teaching, Achievements, Musical philosophy, and Skills and affiliations. Empty sections are left out and the movement numbers follow the visible order. Experience in the `other` category is not shown (ASM-6).
+- The full desktop navigation appears from 1280 px. Seven links plus Book don't fit at 1024 px, so below that the full-screen menu (a native modal `<dialog>`) is used.
+- Music, Videos, Gallery, Performances and Contact are `noindex` placeholder pages until Phases 6–8, so the navigation can be reviewed. `GET /api/home` returns empty featured lists until those phases.
+- `index.html` carries head tags marked `data-prerender`, which `main.tsx` removes before React renders each page's own tags. Phase 10's `postbuild-seo.ts` must mark its injected tags the same way.
+- Error responses are always `Cache-Control: no-store`, including on public routes.
+- `VITE_CLOUDINARY_CLOUD_NAME` is required in production builds: the app refuses to start without it.
+- Font preloading is deferred to Phase 10, because it needs the hashed font file names from the build.
+- Preliminary Lighthouse (mobile, production build via `vite preview`): Home 91 performance / 100 accessibility / 100 best practices / 100 SEO, About 95/100/100/100, CLS 0. Initial JS is 147 KB gzipped (budget 160 KB), mostly React, React Router and Zod. Home LCP is 3.3 s; Phase 10's hero preload targets it.
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 

@@ -59,7 +59,8 @@ npm run dev
 ## Media (Cloudinary)
 
 - Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in `server/.env`, and
-  `VITE_CLOUDINARY_CLOUD_NAME` in `client/.env`. The key and secret stay on the server: never give them a `VITE_` prefix.
+  `VITE_CLOUDINARY_CLOUD_NAME` in `client/.env` (required for production builds; the app won't start without it). The key and
+  secret stay on the server: never give them a `VITE_` prefix.
 - Each environment uses its own root folder (`CLOUDINARY_ROOT_FOLDER`, e.g. `roman-budhathoki/development`).
 - Uploads go from the browser straight to Cloudinary with a short-lived signature from
   `POST /api/admin/uploads/signature`; the server then verifies each upload before storing it.

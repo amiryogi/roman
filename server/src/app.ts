@@ -3,7 +3,7 @@ import express, { Router, type Express } from 'express';
 import helmet from 'helmet';
 
 import type { Logger } from './config/logger.js';
-import { noStore } from './middleware/cacheControl.js';
+import { noStore, publicCache } from './middleware/cacheControl.js';
 import { createErrorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 import { createGlobalRateLimiter } from './middleware/rateLimit.js';
@@ -13,6 +13,8 @@ import { requireJsonBody } from './middleware/requireJsonBody.js';
 import type { AuthConfig } from './modules/auth/config.js';
 import { createAuthRouter } from './modules/auth/routes.js';
 import { createHealthRouter } from './modules/health/routes.js';
+import { createHomeRouter } from './modules/home/routes.js';
+import { createProfileRouter } from './modules/profile/routes.js';
 import { createUploadsRouter } from './modules/uploads/routes.js';
 import type { MediaService } from './services/media/MediaService.js';
 
@@ -55,6 +57,10 @@ export function createApp(options: AppOptions): Express {
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
   app.use('/api/auth', noStore, createAuthRouter(options.auth));
+
+  // Public content (plan §10.2): short cache plus Express's weak ETag.
+  app.use('/api/profile', publicCache, createProfileRouter());
+  app.use('/api/home', publicCache, createHomeRouter());
 
   // Everything under /api/admin requires a valid access token. Authentication is enforced here,
   // at the mount point, so a resource router added later cannot forget it.

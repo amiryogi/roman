@@ -119,6 +119,8 @@ export function createErrorHandler(logger: Logger): ErrorRequestHandler {
         requestId,
       },
     };
+    // Errors are never cached, even on routes that set a public Cache-Control.
+    res.setHeader('Cache-Control', 'no-store');
     res.status(mapped.status).json(body);
   };
 }

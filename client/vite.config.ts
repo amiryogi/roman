@@ -25,6 +25,8 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
-    css: false,
+    env: { VITE_CLOUDINARY_CLOUD_NAME: 'test-cloud', VITE_SITE_URL: 'https://example.test' },
+    // Stylesheets are skipped in tests, except raw imports (the token contrast test reads index.css).
+    css: { include: [/\.css\?raw$/] },
   },
 });
