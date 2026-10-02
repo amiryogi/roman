@@ -68,5 +68,11 @@ export default defineConfig([
     languageOptions: { globals: globals.node },
   },
 
+  {
+    // Tests assert on mocked methods, e.g. expect(api.destroy).toHaveBeenCalled().
+    files: ['**/*.test.{ts,tsx}'],
+    rules: { '@typescript-eslint/unbound-method': 'off' },
+  },
+
   prettier,
 ]);

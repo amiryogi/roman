@@ -24,4 +24,8 @@ export class AppError extends Error {
   static validation(message: string, details?: ApiErrorDetail[]): AppError {
     return new AppError(422, 'VALIDATION_ERROR', message, details);
   }
+
+  static mediaInvalid(message: string): AppError {
+    return new AppError(422, 'MEDIA_INVALID', message);
+  }
 }

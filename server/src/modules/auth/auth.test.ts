@@ -296,6 +296,8 @@ describe('auth', () => {
     const paths = [
       '/api/admin',
       '/api/admin/tracks',
+      '/api/admin/uploads/signature',
+      '/api/admin/uploads/verify',
       '/api/admin/anything/64b7f0c2a1b2c3d4e5f60718',
     ];
 

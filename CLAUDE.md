@@ -35,6 +35,10 @@ working on a phase. Owner decisions are in §0.4 and override defaults elsewhere
   `{ startsAt: mongoose.trusted({ $gte: now }) }`. Unwrapped operators are neutralised and the query fails.
 - Mongoose drops empty subdocuments on save, so optional nested objects may be absent in lean documents.
 - Tests use `useTestDb()` (in-memory MongoDB with real indexes) and the factories in `server/test/`.
+- Media: turn a client `mediaRef` into a stored asset with `verifyUpload(media, kind, ref, logger)`
+  (`services/media/verify.ts`). After the DB write succeeds, delete replaced or removed assets with `destroyQuietly`.
+  Add any new media field to `services/media/references.ts`, or `cleanup:media` treats its assets as orphans
+  (a test enforces this). Tests use `createTestMedia()` (fake driver) and `media.simulateUpload(kind)`.
 - Admin routers mount under the `/api/admin` router in `app.ts`, which already applies `requireAuth`. Use
   `currentAdmin(req)` in handlers. Add new admin paths to the 401 sweep test in `modules/auth/auth.test.ts`.
 

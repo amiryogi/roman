@@ -26,6 +26,13 @@ const adminRoutes: RouteObject = {
           }),
         },
         {
+          // Temporary (Phase 4): see MediaTestPage.
+          path: 'media-test',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/media-test/MediaTestPage')).MediaTestPage,
+          }),
+        },
+        {
           path: 'account',
           lazy: async () => ({
             Component: (await import('@/features/admin/account/AccountPage')).AccountPage,

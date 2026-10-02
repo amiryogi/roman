@@ -4,6 +4,7 @@ import { createApp } from './app.js';
 import { configureMongoose, connectDb, disconnectDb } from './config/db.js';
 import { EnvError, loadEnv, type Env } from './config/env.js';
 import { createLogger } from './config/logger.js';
+import { createMediaService } from './services/media/index.js';
 
 function readEnv(): Env {
   try {
@@ -42,10 +43,14 @@ const app = createApp({
   version: env.version,
   logger,
   auth: env.auth,
+  media: createMediaService(env.media),
 });
 
 const server = app.listen(env.port, () => {
-  logger.info({ port: env.port, env: env.nodeEnv, version: env.version }, 'API listening');
+  logger.info(
+    { port: env.port, env: env.nodeEnv, version: env.version, media: env.media.driver },
+    'API listening',
+  );
 });
 
 function shutdown(signal: NodeJS.Signals): void {

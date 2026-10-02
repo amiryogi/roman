@@ -22,8 +22,12 @@
     "test": "npm run build -w @roman/shared && npm run test --workspaces",
     "check:no-js": "tsx scripts/check-no-js.ts",
     "check:lockfile": "tsx scripts/check-lockfile.ts",
+    "check:client-secrets": "tsx scripts/check-client-secrets.ts",
     "seed:admin": "npm run build -w @roman/shared && npm run seed:admin -w @roman/server --",
-    "check": "npm run check:no-js && npm run check:lockfile && npm run typecheck && npm run lint && npm run format:check && npm test"
+    "seed:content": "npm run build -w @roman/shared && npm run seed:content -w @roman/server --",
+    "cleanup:media": "npm run build -w @roman/shared && npm run cleanup:media -w @roman/server --",
+    "test:cloudinary": "npm run build -w @roman/shared && npm run test:cloudinary -w @roman/server",
+    "check": "npm run check:no-js && npm run check:lockfile && npm run check:client-secrets && npm run typecheck && npm run lint && npm run format:check && npm test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–3 complete on 2026-10-02. Next: Phase 4 (Cloudinary media infrastructure).
+**Status:** Phases 1–4 complete on 2026-10-02. Next: Phase 5 (design system and public website shell).
 **Plan date:** 2026-10-02
 
 ---
@@ -71,6 +71,7 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 | 2026-10-02 | **API routing:** the Vercel project **rewrites `/api/:path*` to the Render service** (`https://<service>.onrender.com/api/:path*`). The browser only ever talks to the site's own origin. | The refresh cookie is first-party, with no `api.` subdomain needed (satisfies §11). `VITE_API_BASE_URL=/api` in production. In development, the Vite dev server proxies `/api` to `localhost:4000`. CORS stays as defence in depth. `TRUST_PROXY` must count both the Vercel and Render proxy hops; verify the client IP in Phase 12. |
 | 2026-10-02 | **Hero image:** use `images/roman violin.jpg`. | Its baked-in "ROMAN VIOLIN" wordmark means it is delivered with `c_limit` (never cropped), and positioned so the wordmark stays visible on all breakpoints. The HTML `<h1>` stays for SEO and accessibility, and is visually de-emphasised next to the image wordmark rather than duplicating it. |
 | 2026-10-02 | **Runtime:** Node.js 22 LTS (matches the local toolchain, v22.19; supported by Render). | Replaces "Node 24" in §3 and §24. `engines.node >= 22.12`. |
+| 2026-10-02 | **Media originals are private:** every asset is uploaded with Cloudinary delivery type `private` (`MEDIA_DELIVERY_TYPE` in `shared`). | Originals, which can carry camera and GPS metadata, need a signed URL (401 otherwise). Transformed versions, the only URLs the site builds, stay public and have metadata stripped. Delivery URLs use `/<resource>/private/<transformation>/…`. Verification rejects assets of any other type. |
 
 **Implementation notes (Phase 2):**
 - §10.5's "typed route helper" was dropped as unnecessary. Handlers call `sharedSchema.parse(...)` directly, and Express 5 forwards the error, which gives the same typing with less code.
@@ -83,6 +84,20 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - After a password change, the server rejects older access tokens with `TOKEN_EXPIRED`, and the client silently refreshes using the surviving session.
 - Env uses `ACCESS_TOKEN_TTL_SECONDS` (default 900) instead of `ACCESS_TOKEN_TTL=15m`.
 - `npm run check:lockfile` guards against npm/cli#4828, where `npm install <pkg>` drops the native Rolldown and Tailwind bindings from the lockfile and breaks builds on Linux CI and Windows.
+
+**Implementation notes (Phase 4):**
+- Cloudinary details confirmed against the docs and SDK 2.11: folder mode comes from `GET /config?settings=true` (`settings.folder_mode`). Dynamic accounts get `asset_folder` + `use_asset_folder_as_public_id_prefix`, fixed ones get `folder`. Audio streams as `/video/upload/ac_mp3,br_160k/v<ver>/<id>.mp3`. Signatures are SHA-1, signature v2.
+- Public IDs are random (no `use_filename`), which deviates from §9.1. File names often contain spaces, non-ASCII or private details (e.g. client names), and they would leak into public URLs. The original name is stored as `originalFilename` when Cloudinary reports it.
+- The video eager rendition and the client's default video URL share one transformation (`c_limit,w_1280,q_auto,vc_auto` + `.mp4`, constants in `shared`), so the eager derivative is actually used. `f_auto:video` from §9.4 would never match an eager derivative.
+- Added `POST /api/admin/uploads/verify`. The uploader verifies straight after uploading, so problems show before the form is saved. Entity saves (Phases 6+) verify again.
+- Verification destroys an invalid asset only if it sits in the folder for its kind. Assets elsewhere are rejected but never deleted, because they may belong to other content.
+- Each profile image slot gets its own asset, even when the same photo is used twice, so replacing one slot can't delete another slot's image.
+- Cloudinary SDK errors include the request's basic-auth credentials. They are reduced to message + HTTP status before they can reach a log.
+- Chunked uploads (> 100 MB) are not implemented. The default caps are ≤ 100 MB, which Cloudinary accepts in one request.
+- `seed:content` also strips Exif (including GPS) from JPEGs before uploading, as defence in depth: `roman3.jpg` contains GPS coordinates. Uploaded originals are private anyway (see §0.4).
+- The Admin API returns `duration` and `original_filename` only with `media_metadata: true`, so verification requests it (found by `npm run test:cloudinary`).
+- §0.2's dimensions are partly swapped: `roman violin.jpg` is 2048×1215 (landscape), `roman2.PNG` is 3840×2160 and `roman4.JPG` is 1541×2048 (portrait).
+- `npm run check:client-secrets` fails if client code or the client build mentions server secrets (§21.1). It is part of `npm run check` and runs again in CI after the build.
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 
@@ -1633,7 +1648,7 @@ Phase 9 becomes the dashboard, profile editor, inquiries inbox and admin polish.
 - **ASM-6:** These CV items are kept in the profile data but **not shown publicly** by default because they don't support the musician brand: Intern Journalist (2012) and Red Cross first aid. ABRSM Grade 4 is shown exactly as written in the CV unless the owner decides otherwise.
 - **ASM-7:** The raw source files (CV, images, MP3) stay out of git. Cloudinary becomes the media source of truth after seeding. The CV contains personal contact details.
 - **ASM-8:** The provided MP3's title, credits and rights are unknown. It is seeded as a **draft** track until the owner supplies them.
-- **ASM-9:** The 5 provided photos are assumed to be owned by Roman or licensed for web use, **except `violin.png`, which is not used publicly until its licence is confirmed**. Photographer credits are blank until supplied.
+- **ASM-9:** The 5 provided photos are assumed to be owned by Roman or licensed for web use. The owner confirmed on 2026-10-02 that `violin.png` is licensed. Photographer credits are blank until supplied.
 - **ASM-10:** The images with baked-in wordmarks (`roman violin.jpg`, `roman2.PNG`) are used uncropped (`c_limit`) or replaced by clean originals if available. The live wordmark is rendered as HTML text.
 - **ASM-11:** Cloudinary starts on the Free plan, so the default caps are a 100 MB video and a 10–20 MB image. Larger files should go to YouTube.
 - **ASM-12:** ~~Hosting providers are not chosen yet.~~ Resolved in §0.4: Vercel + Render + Atlas + Cloudinary, with the API proxied through a Vercel rewrite.
@@ -1651,7 +1666,7 @@ These need the owner's input. Everything else has a default recorded above.
 5. **Public contact details.** May the phone number from the CV be shown publicly (and as a WhatsApp link, which is common for Nepal bookings), or only the email? *Phase 5. Default: email only.*
 6. **Photos.**
    - Can you provide **versions of `roman violin.jpg` and `roman2.PNG` without the baked-in "ROMAN" text**, so they can be cropped responsively for the hero?
-   - Is **`violin.png`** your own photo or licensed for use?
+   - ~~Is **`violin.png`** your own photo or licensed for use?~~ Resolved 2026-10-02: licensed.
    - Who are the **photographers** to credit?
 7. **The MP3.** What is the track's **title**, composer/arranger, and any collaborators? Are you cleared to publish it (for example, if it's a cover or film/session recording owned by someone else)?
 8. **Social and streaming links.** Provide the URLs for YouTube, Instagram, Facebook, TikTok, Spotify or other profiles to display. Is there existing YouTube performance footage to feature?

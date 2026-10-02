@@ -19,9 +19,12 @@ jobs:
       - run: npm ci
       - run: npm run check:no-js
       - run: npm run check:lockfile
+      - run: npm run check:client-secrets
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
       - run: npm test
       - run: npm run build
+      # Again after the build: the bundle itself must not contain secrets.
+      - run: npm run check:client-secrets
       - run: npm audit --audit-level=high

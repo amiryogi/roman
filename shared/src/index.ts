@@ -12,4 +12,5 @@ export * from './schemas/home.js';
 export * from './schemas/inquiry.js';
 export * from './schemas/profile.js';
 export * from './schemas/track.js';
+export * from './schemas/upload.js';
 export * from './schemas/video.js';

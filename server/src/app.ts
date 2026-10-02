@@ -13,6 +13,8 @@ import { requireJsonBody } from './middleware/requireJsonBody.js';
 import type { AuthConfig } from './modules/auth/config.js';
 import { createAuthRouter } from './modules/auth/routes.js';
 import { createHealthRouter } from './modules/health/routes.js';
+import { createUploadsRouter } from './modules/uploads/routes.js';
+import type { MediaService } from './services/media/MediaService.js';
 
 export interface AppOptions {
   clientOrigins: readonly string[];
@@ -21,6 +23,7 @@ export interface AppOptions {
   version: string;
   logger: Logger;
   auth: AuthConfig;
+  media: MediaService;
 }
 
 export const JSON_BODY_LIMIT = '100kb';
@@ -56,7 +59,7 @@ export function createApp(options: AppOptions): Express {
   // Everything under /api/admin requires a valid access token. Authentication is enforced here,
   // at the mount point, so a resource router added later cannot forget it.
   const admin = Router();
-  // Admin resource routers are mounted here in later phases.
+  admin.use('/uploads', createUploadsRouter(options.media, options.logger));
   app.use('/api/admin', noStore, createRequireAuth(options.auth), admin);
 
   app.use(notFound);

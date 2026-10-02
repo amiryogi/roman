@@ -29,17 +29,20 @@ npm run dev
 
 ## Scripts (run from the repository root)
 
-| Script                            | Description                                                                   |
-| --------------------------------- | ----------------------------------------------------------------------------- |
-| `npm run dev`                     | Builds `shared`, then runs shared (watch), API and client together            |
-| `npm run build`                   | Production build of shared, server (`server/dist`) and client (`client/dist`) |
-| `npm run typecheck`               | Strict TypeScript checks for every workspace                                  |
-| `npm run lint`                    | ESLint (type-aware, `any` and type assertions forbidden)                      |
-| `npm run format` / `format:check` | Prettier                                                                      |
-| `npm test`                        | Vitest in shared, server and client                                           |
-| `npm run check:no-js`             | Fails if any JavaScript file exists (TypeScript-only project)                 |
-| `npm run check`                   | The full gate: no-js + lockfile + typecheck + lint + format + tests           |
-| `npm run seed:admin -- --email …` | Creates the single admin (password from `ADMIN_SEED_PASSWORD` or a prompt)    |
+| Script                            | Description                                                                             |
+| --------------------------------- | --------------------------------------------------------------------------------------- |
+| `npm run dev`                     | Builds `shared`, then runs shared (watch), API and client together                      |
+| `npm run build`                   | Production build of shared, server (`server/dist`) and client (`client/dist`)           |
+| `npm run typecheck`               | Strict TypeScript checks for every workspace                                            |
+| `npm run lint`                    | ESLint (type-aware, `any` and type assertions forbidden)                                |
+| `npm run format` / `format:check` | Prettier                                                                                |
+| `npm test`                        | Vitest in shared, server and client                                                     |
+| `npm run check:no-js`             | Fails if any JavaScript file exists (TypeScript-only project)                           |
+| `npm run check`                   | The full gate: no-js + lockfile + client-secrets + typecheck + lint + format + tests    |
+| `npm run seed:admin -- --email …` | Creates the single admin (password from `ADMIN_SEED_PASSWORD` or a prompt)              |
+| `npm run seed:content`            | Uploads the source photos and MP3 to Cloudinary and creates the initial (draft) content |
+| `npm run cleanup:media`           | Lists Cloudinary assets no content uses (`-- --apply` deletes them)                     |
+| `npm run test:cloudinary`         | Opt-in smoke test against the real Cloudinary account (development folder only)         |
 
 ## Notes
 
@@ -49,5 +52,16 @@ npm run dev
   and `package-lock.json`, then run `npm install` again.
 - Admin sign-in is at `/admin/login`. Create the account first:
   `npm run seed:admin -- --email you@example.com --name "Your Name"`. Add `--reset` to set a new password.
-- Source material (`images/`, the MP3 and the CV) is intentionally not committed. Media is uploaded to Cloudinary by
-  the seed script (Phase 4).
+- Source material (`images/`, the MP3 and the CV) is intentionally not committed. `npm run seed:content` uploads it to
+  Cloudinary (removing Exif/GPS data from JPEGs first) and creates the profile from the CV, gallery images as drafts and
+  a draft track. It is safe to re-run and never overwrites an edited profile.
+
+## Media (Cloudinary)
+
+- Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in `server/.env`, and
+  `VITE_CLOUDINARY_CLOUD_NAME` in `client/.env`. The key and secret stay on the server: never give them a `VITE_` prefix.
+- Each environment uses its own root folder (`CLOUDINARY_ROOT_FOLDER`, e.g. `roman-budhathoki/development`).
+- Uploads go from the browser straight to Cloudinary with a short-lived signature from
+  `POST /api/admin/uploads/signature`; the server then verifies each upload before storing it.
+- Tests use `MEDIA_DRIVER=fake` and never contact Cloudinary. Run `npm run test:cloudinary` before a release.
+- `/admin/media-test` is a temporary page for trying uploads until the content editors exist (Phases 6–7).
