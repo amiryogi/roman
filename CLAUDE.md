@@ -35,6 +35,20 @@ working on a phase. Owner decisions are in §0.4 and override defaults elsewhere
   `{ startsAt: mongoose.trusted({ $gte: now }) }`. Unwrapped operators are neutralised and the query fails.
 - Mongoose drops empty subdocuments on save, so optional nested objects may be absent in lean documents.
 - Tests use `useTestDb()` (in-memory MongoDB with real indexes) and the factories in `server/test/`.
+- Admin routers mount under the `/api/admin` router in `app.ts`, which already applies `requireAuth`. Use
+  `currentAdmin(req)` in handlers. Add new admin paths to the 401 sweep test in `modules/auth/auth.test.ts`.
+
+## Dependencies
+
+- After any `npm install <pkg>` or `npm uninstall <pkg>`, run `npm run check:lockfile`. If it fails (npm/cli#4828),
+  delete `node_modules` and `package-lock.json`, then run `npm install`.
+
+## Client conventions
+
+- Call the API through `apiRequest(path, sharedDtoSchema, options)` / `apiRequestNoContent` in `client/src/lib/api/`.
+  Responses are validated against the shared schema. Use `{ auth: true }` for admin endpoints; expired tokens are
+  refreshed and retried automatically.
+- Show errors with `getErrorMessage(error)`. Forms use React Hook Form with `zodResolver(sharedSchema)`.
 
 ## Commands
 

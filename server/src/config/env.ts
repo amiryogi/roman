@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Variables are added phase by phase (plan §21.2): auth secrets in Phase 3, Cloudinary in Phase 4.
+// Variables are added phase by phase (plan §21.2): Cloudinary arrives in Phase 4.
 const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -13,6 +13,17 @@ const envSchema = z
     LOG_LEVEL: z
       .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
       .default('info'),
+    JWT_ACCESS_SECRET: z
+      .string({ error: 'JWT_ACCESS_SECRET is required' })
+      .min(32, 'must be at least 32 characters (use 32+ random bytes, base64)')
+      .refine(
+        (value) => !value.startsWith('replace-with'),
+        'replace the example value from .env.example',
+      ),
+    JWT_ISSUER: z.string().min(1).default('roman-budhathoki-api'),
+    JWT_AUDIENCE: z.string().min(1).default('roman-budhathoki-admin'),
+    ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
+    REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(30).default(7),
     APP_VERSION: z.string().optional(),
     // Set automatically by Render.
     RENDER_GIT_COMMIT: z.string().optional(),
@@ -54,6 +65,15 @@ const envSchema = z
       clientOrigins,
       trustProxy: raw.TRUST_PROXY,
       logLevel: raw.LOG_LEVEL,
+      auth: {
+        accessSecret: raw.JWT_ACCESS_SECRET,
+        issuer: raw.JWT_ISSUER,
+        audience: raw.JWT_AUDIENCE,
+        accessTtlSeconds: raw.ACCESS_TOKEN_TTL_SECONDS,
+        refreshTtlDays: raw.REFRESH_TOKEN_TTL_DAYS,
+        // Browsers treat http://localhost as secure, but test clients and plain-http dev do not.
+        secureCookies: raw.NODE_ENV === 'production',
+      },
       version: raw.APP_VERSION ?? raw.RENDER_GIT_COMMIT?.slice(0, 7) ?? 'dev',
     };
   });

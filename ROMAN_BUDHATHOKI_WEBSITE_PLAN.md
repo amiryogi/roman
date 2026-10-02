@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–2 complete on 2026-10-02. Next: Phase 3 (authentication and admin foundation).
+**Status:** Phases 1–3 complete on 2026-10-02. Next: Phase 4 (Cloudinary media infrastructure).
 **Plan date:** 2026-10-02
 
 ---
@@ -76,6 +76,13 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - §10.5's "typed route helper" was dropped as unnecessary. Handlers call `sharedSchema.parse(...)` directly, and Express 5 forwards the error, which gives the same typing with less code.
 - Mongoose 9 with `sanitizeFilter` requires `mongoose.trusted()` around intentional query operators.
 - Malformed JSON returns 400 `BAD_REQUEST`, a code added to the §10.1 list.
+
+**Implementation notes (Phase 3):**
+- The refresh cookie is read without `cookie-parser`, to avoid one dependency and its `any`-typed `req.cookies`.
+- A rotated refresh token replayed within 15 s is refused without revoking anything, because it is treated as a race between browser tabs. Later replays revoke every session, as §11.2 describes.
+- After a password change, the server rejects older access tokens with `TOKEN_EXPIRED`, and the client silently refreshes using the surviving session.
+- Env uses `ACCESS_TOKEN_TTL_SECONDS` (default 900) instead of `ACCESS_TOKEN_TTL=15m`.
+- `npm run check:lockfile` guards against npm/cli#4828, where `npm install <pkg>` drops the native Rolldown and Tailwind bindings from the lockfile and breaks builds on Linux CI and Windows.
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 

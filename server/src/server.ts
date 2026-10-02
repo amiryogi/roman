@@ -41,6 +41,7 @@ const app = createApp({
   trustProxy: env.trustProxy,
   version: env.version,
   logger,
+  auth: env.auth,
 });
 
 const server = app.listen(env.port, () => {

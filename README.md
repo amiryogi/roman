@@ -38,7 +38,8 @@ npm run dev
 | `npm run format` / `format:check` | Prettier                                                                      |
 | `npm test`                        | Vitest in shared, server and client                                           |
 | `npm run check:no-js`             | Fails if any JavaScript file exists (TypeScript-only project)                 |
-| `npm run check`                   | The full gate: no-js + typecheck + lint + tests                               |
+| `npm run check`                   | The full gate: no-js + lockfile + typecheck + lint + format + tests           |
+| `npm run seed:admin -- --email …` | Creates the single admin (password from `ADMIN_SEED_PASSWORD` or a prompt)    |
 
 ## Notes
 
@@ -46,5 +47,7 @@ npm run dev
   first automatically.
 - If tests fail on Windows with "Cannot find native binding" (an npm optional-dependency bug), delete `node_modules`
   and `package-lock.json`, then run `npm install` again.
+- Admin sign-in is at `/admin/login`. Create the account first:
+  `npm run seed:admin -- --email you@example.com --name "Your Name"`. Add `--reset` to set a new password.
 - Source material (`images/`, the MP3 and the CV) is intentionally not committed. Media is uploaded to Cloudinary by
   the seed script (Phase 4).

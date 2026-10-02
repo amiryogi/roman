@@ -18,6 +18,7 @@ jobs:
 
       - run: npm ci
       - run: npm run check:no-js
+      - run: npm run check:lockfile
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check

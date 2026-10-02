@@ -21,7 +21,9 @@
     "format:check": "prettier --check .",
     "test": "npm run build -w @roman/shared && npm run test --workspaces",
     "check:no-js": "tsx scripts/check-no-js.ts",
-    "check": "npm run check:no-js && npm run typecheck && npm run lint && npm test"
+    "check:lockfile": "tsx scripts/check-lockfile.ts",
+    "seed:admin": "npm run build -w @roman/shared && npm run seed:admin -w @roman/server --",
+    "check": "npm run check:no-js && npm run check:lockfile && npm run typecheck && npm run lint && npm run format:check && npm test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

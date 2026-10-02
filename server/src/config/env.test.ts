@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import { EnvError, loadEnv } from './env.js';
 
-const MINIMAL = { MONGODB_URI: 'mongodb://127.0.0.1:27017/test' };
+const MINIMAL = {
+  MONGODB_URI: 'mongodb://127.0.0.1:27017/test',
+  JWT_ACCESS_SECRET: 'x'.repeat(32),
+};
 
 describe('loadEnv', () => {
   it('applies development defaults', () => {
@@ -23,8 +26,25 @@ describe('loadEnv', () => {
     expect(() => loadEnv({})).toThrow(/MONGODB_URI/);
   });
 
+  it('requires a long JWT secret and defaults token lifetimes', () => {
+    expect(() => loadEnv({ ...MINIMAL, JWT_ACCESS_SECRET: 'short' })).toThrow(/JWT_ACCESS_SECRET/);
+    expect(() =>
+      loadEnv({
+        ...MINIMAL,
+        JWT_ACCESS_SECRET: 'replace-with-a-long-random-secret-of-at-least-32-chars',
+      }),
+    ).toThrow(/example value/);
+    expect(loadEnv(MINIMAL).auth).toMatchObject({
+      accessTtlSeconds: 900,
+      refreshTtlDays: 7,
+      secureCookies: false,
+    });
+  });
+
   it('rejects a connection string that is not MongoDB', () => {
-    expect(() => loadEnv({ MONGODB_URI: 'postgres://localhost/db' })).toThrow(/mongodb/);
+    expect(() => loadEnv({ ...MINIMAL, MONGODB_URI: 'postgres://localhost/db' })).toThrow(
+      /mongodb/,
+    );
   });
 
   it('requires CLIENT_ORIGINS in production', () => {

@@ -3,11 +3,15 @@ import express, { Router, type Express } from 'express';
 import helmet from 'helmet';
 
 import type { Logger } from './config/logger.js';
+import { noStore } from './middleware/cacheControl.js';
 import { createErrorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 import { createGlobalRateLimiter } from './middleware/rateLimit.js';
 import { createRequestLogger } from './middleware/requestLogger.js';
+import { createRequireAuth } from './middleware/requireAuth.js';
 import { requireJsonBody } from './middleware/requireJsonBody.js';
+import type { AuthConfig } from './modules/auth/config.js';
+import { createAuthRouter } from './modules/auth/routes.js';
 import { createHealthRouter } from './modules/health/routes.js';
 
 export interface AppOptions {
@@ -16,6 +20,7 @@ export interface AppOptions {
   trustProxy: number;
   version: string;
   logger: Logger;
+  auth: AuthConfig;
 }
 
 export const JSON_BODY_LIMIT = '100kb';
@@ -46,9 +51,13 @@ export function createApp(options: AppOptions): Express {
   app.use(requireJsonBody);
   app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
-  const api = Router();
-  // Resource routers are mounted here in later phases.
-  app.use('/api', api);
+  app.use('/api/auth', noStore, createAuthRouter(options.auth));
+
+  // Everything under /api/admin requires a valid access token. Authentication is enforced here,
+  // at the mount point, so a resource router added later cannot forget it.
+  const admin = Router();
+  // Admin resource routers are mounted here in later phases.
+  app.use('/api/admin', noStore, createRequireAuth(options.auth), admin);
 
   app.use(notFound);
   app.use(createErrorHandler(options.logger));

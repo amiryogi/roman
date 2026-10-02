@@ -10,18 +10,28 @@ export const loginInputSchema = z.strictObject({
 });
 export type LoginInput = z.infer<typeof loginInputSchema>;
 
-export const changePasswordInputSchema = z
-  .strictObject({
-    currentPassword: z.string().min(1).max(200),
-    newPassword: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, `Use at least ${String(PASSWORD_MIN_LENGTH)} characters`)
-      .max(200),
-  })
-  .refine((value) => value.newPassword !== value.currentPassword, {
+/** The fields without cross-field rules, so forms can extend them (e.g. a confirmation field). */
+export const changePasswordFieldsSchema = z.strictObject({
+  currentPassword: z.string().min(1, 'Enter your current password').max(200),
+  newPassword: z
+    .string()
+    .min(PASSWORD_MIN_LENGTH, `Use at least ${String(PASSWORD_MIN_LENGTH)} characters`)
+    .max(200),
+});
+
+export const newPasswordDiffers = {
+  check: (value: { currentPassword: string; newPassword: string }) =>
+    value.newPassword !== value.currentPassword,
+  params: {
     path: ['newPassword'],
     error: 'The new password must be different from the current one',
-  });
+  },
+};
+
+export const changePasswordInputSchema = changePasswordFieldsSchema.refine(
+  newPasswordDiffers.check,
+  newPasswordDiffers.params,
+);
 export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
 
 export const adminDtoSchema = z.strictObject({
