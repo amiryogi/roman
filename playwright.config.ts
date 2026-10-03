@@ -19,7 +19,8 @@ export default defineConfig({
   forbidOnly: CI,
   timeout: 30_000,
   expect: { timeout: 7_000 },
-  reporter: CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+  // In CI, `github` turns each failure into an annotation on the run (readable without the logs).
+  reporter: CI ? [['github'], ['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: E2E_CLIENT_ORIGIN,
     trace: 'retain-on-failure',
