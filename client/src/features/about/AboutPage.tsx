@@ -188,7 +188,7 @@ function Journey({ profile }: { profile: ProfileDto }) {
   return (
     <ol className="divide-y divide-current/15 border-y border-current/15">
       {musicalJourney(profile).map((entry, i) => (
-        <li key={i} className="grid gap-2 py-8 md:grid-cols-12 md:gap-8">
+        <li key={i} className="timeline-string grid gap-2 py-8 md:grid-cols-12 md:gap-8">
           <p className="text-sm text-(--muted) tabular-nums md:col-span-3">{entry.period}</p>
           <div className="md:col-span-9">
             <p className="label-caps text-(--accent)">{entry.kind}</p>
@@ -217,7 +217,7 @@ function Teaching({ profile }: { profile: ProfileDto }) {
   return (
     <ol className="divide-y divide-current/15 border-y border-current/15">
       {teachingExperience(profile).map((item, i) => (
-        <li key={i} className="grid gap-2 py-8 md:grid-cols-12 md:gap-8">
+        <li key={i} className="timeline-string grid gap-2 py-8 md:grid-cols-12 md:gap-8">
           <p className="text-sm text-(--muted) tabular-nums md:col-span-3">{item.period}</p>
           <div className="md:col-span-9">
             <h3 className="text-xl font-medium">{item.role}</h3>

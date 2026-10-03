@@ -7,10 +7,13 @@ import { MobileNav } from './MobileNav';
 import { BOOK_PATH, NAV_ITEMS } from './navigation';
 import { Wordmark } from './Wordmark';
 
-/** Sticky header: name, navigation (full list from 1280 px, a menu below) and "Book". */
+/**
+ * Sticky header: name, navigation (full list from 1280 px, a menu below) and "Book". Each link has a
+ * "string" beneath it (`nav-string`); a varnish string along the bottom shows the scroll position.
+ */
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-ivory/10 surface-dark">
+    <header className="sticky top-0 z-40 border-b border-ivory/10 surface-dark supports-[backdrop-filter]:bg-ebony/80 supports-[backdrop-filter]:backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between gap-6 sm:h-20">
         <Wordmark withViolin />
 
@@ -21,7 +24,7 @@ export function SiteHeader() {
                 <NavLink
                   to={item.to}
                   end={item.to === '/'}
-                  className="relative inline-flex min-h-11 items-center label-caps text-mist transition-colors hover:text-ivory aria-[current=page]:text-ivory aria-[current=page]:after:absolute aria-[current=page]:after:inset-x-0 aria-[current=page]:after:bottom-2 aria-[current=page]:after:h-px aria-[current=page]:after:bg-varnish"
+                  className="nav-string inline-flex min-h-11 items-center label-caps text-mist hover:text-ivory aria-[current=page]:text-ivory"
                 >
                   {item.label}
                 </NavLink>
@@ -41,6 +44,11 @@ export function SiteHeader() {
           <MobileNav className="xl:hidden" />
         </div>
       </Container>
+      {/* How far down the page the visitor is, drawn as a varnish string. Decorative. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 -bottom-px h-px scroll-string bg-gradient-to-r from-varnish-deep via-varnish to-varnish-deep"
+      />
     </header>
   );
 }

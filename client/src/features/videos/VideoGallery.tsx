@@ -88,10 +88,10 @@ function VideoCard({
           decoding="async"
           width={800}
           height={450}
-          className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
+          className="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] motion-reduce:transition-none"
         />
-        <span className="absolute inset-0 flex items-center justify-center bg-ebony/20 transition-colors group-hover:bg-ebony/35">
-          <span className="flex size-16 items-center justify-center rounded-full bg-varnish text-ebony shadow-lg">
+        <span className="absolute inset-0 flex items-center justify-center bg-ebony/20 transition-colors duration-500 group-hover:bg-ebony/40">
+          <span className="flex size-16 items-center justify-center rounded-full bg-varnish text-ebony shadow-lg ring-0 ring-varnish/40 transition-[scale,box-shadow] duration-500 group-hover:scale-110 group-hover:ring-8 motion-reduce:transition-none">
             <PlayIcon className="size-7 translate-x-0.5" />
           </span>
         </span>

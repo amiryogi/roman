@@ -10,7 +10,8 @@ import { z } from 'zod';
 
 // In development the API is reached through this proxy, mirroring the production
 // Vercel rewrite of /api/* to the Render service (plan §0.4).
-const API_DEV_TARGET = 'http://localhost:4000';
+// API_PROXY_TARGET lets the E2E suite point the preview at its own test API.
+const API_DEV_TARGET = process.env.API_PROXY_TARGET ?? 'http://localhost:4000';
 
 /** The Zod-free part of `shared` (`@roman/shared/lite`): constants and time-zone helpers. */
 const SHARED_LITE = /[\\/]shared[\\/]dist[\\/](?:constants|timezone|lite)\.js$/;

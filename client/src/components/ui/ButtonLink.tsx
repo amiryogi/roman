@@ -4,13 +4,14 @@ import { Link } from 'react-router';
 type Variant = 'solid' | 'outline';
 
 const BASE =
-  'inline-flex min-h-11 items-center justify-center rounded-sm px-6 text-sm font-medium tracking-[0.14em] uppercase transition-colors duration-200';
+  'relative isolate inline-flex min-h-11 items-center justify-center overflow-hidden rounded-sm px-6 text-sm font-medium tracking-[0.14em] uppercase transition-[color,border-color,background-size,filter] duration-300';
 
 // Colours come from the surface (--accent, --on-accent), so a button reads right on both.
+// Solid: a soft light sweeps across on hover (`btn-sheen`). Outline: the accent fills in from the
+// left, like a bow stroke (`btn-fill`). Both are defined in styles/index.css.
 const VARIANTS: Record<Variant, string> = {
-  solid: 'bg-(--accent) text-(--on-accent) hover:brightness-110',
-  outline:
-    'border border-current hover:bg-(--accent) hover:text-(--on-accent) hover:border-(--accent)',
+  solid: 'bg-(--accent) text-(--on-accent) btn-sheen hover:brightness-110',
+  outline: 'btn-fill',
 };
 
 interface ButtonLinkProps {

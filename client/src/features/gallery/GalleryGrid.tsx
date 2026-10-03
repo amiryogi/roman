@@ -36,7 +36,7 @@ export function GalleryGrid({ images }: { images: GalleryImageDto[] }) {
                   // The first photo is the top of the first column at every width: the page's
                   // largest image (LCP), so it loads eagerly at high priority.
                   priority={index === 0}
-                  className="h-auto w-full transition-transform duration-500 hover:scale-[1.02] motion-reduce:transition-none"
+                  className="h-auto w-full transition-[transform,filter] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-[1.04] hover:brightness-105 motion-reduce:transition-none"
                 />
                 <span className="sr-only"> (open in viewer)</span>
               </button>

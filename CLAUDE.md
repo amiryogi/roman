@@ -91,16 +91,54 @@ phases, decisions and open items is in [context/sessions.md](context/sessions.md
 - The client build fails when a public page fetches more than 160 KiB of gzipped JS up front (`scripts/check-bundle.ts`);
   the margin is small, so check the numbers when public pages grow.
 - Audio: play through `useAudioPlayer()` (`playTrack`, `pause`…). Video players must call `pause()` before playing.
+  The `PlayerBar` UI is lazy-loaded on first play; its height constant lives in `features/audio/playerLayout.ts`.
+
+## Design and motion (public site)
+
+The look is a concert hall: dark "stage" sections and ivory "paper" sections alternating, varnish-orange accents,
+Cormorant Garamond for display text (28 px and up only) and Inter for everything else. Everything below lives in
+`client/src/styles/index.css`.
+
+- **Tokens and surfaces:** colours are `@theme` tokens (`ebony`, `ivory`, `varnish`, `varnish-deep`, `ink`, `mist`…).
+  Wrap content in `surface-dark` / `surface-dark-raised` / `surface-light`; they set `--accent`, `--muted`,
+  `--on-accent` and `--focus-ring`, so use those variables instead of fixed colours. `src/styles/tokens.test.ts` fails
+  if a text colour pair drops below WCAG contrast.
+- **Building blocks:** `Section` (tone, Roman-numeral "movement" eyebrow with a drawn hairline, reveal on scroll),
+  `ButtonLink` (`solid` with a light sheen, `outline` that fills like a bow stroke), `ArrowLink` for "more" links,
+  `Wordmark` (`withViolin` in the header and footer), `StringsDivider`, `SocialLinks` (icon buttons or icon plus
+  name; opens in a new tab so site music keeps playing). The footer and Contact page read contact details and
+  socials from the profile (`GET /api/profile`); never hard-code them.
+- **CSS utilities:** `nav-string` (header links: string drawn on hover, plucked when current), `btn-sheen`,
+  `btn-fill`, `timeline-string` (About timelines), `sheen-text` (wordmark highlight), `stage-light` (warm glow on dark
+  sections), `scroll-string` (scroll progress under the header, CSS scroll-driven), `label-caps`, `string-range`.
+  Icons: `icon` plus `icon-youtube` / `icon-facebook` / `icon-instagram` / `icon-link` / `icon-mail` / `icon-phone`
+  (SVG masks in the current text colour, no icon library). Always `aria-hidden`, beside text or an `aria-label`.
+- **Motion vocabulary:** `animate-rise`, `swing-in`, `rock`, `write`, `sheen`, `draw`, `kenburns`, `page`, `pluck`,
+  plus `sway`/`breathe` on the admin sign-in. Rules:
+  - Every animation is `motion-safe:` or inside `@media (prefers-reduced-motion: no-preference)`; the E2E axe scans
+    run with reduced motion, so content must be complete without it.
+  - Animate `transform`, `opacity`, `rotate`, `scale`, `clip-path` or `background-position`, never layout
+    properties (letter-spacing, width…): they cause layout shift.
+  - An element with a Tailwind `rotate-*`/`scale-*` class uses the individual CSS properties, so keyframes for it
+    animate `rotate`/`scale`, not `transform`. Put a load animation and a hover animation on nested elements; on one
+    element, leaving hover replays the load animation.
+  - No fade on the first page load (it would delay the largest paint): `PublicLayout` fades pages in only on
+    navigation. The hero photo's settle (`kenburns`) ends at its natural size, and its bottom fade stays clear of the
+    baked-in wordmark (owner decision §0.4).
+- **Budget:** class strings are shipped inside the JavaScript. For anything longer than a few classes that repeats,
+  add a utility to `index.css` rather than a long string in a public component (CSS isn't in the 160 KiB JS budget).
 
 ## Commands
 
-| Command              | Purpose                                                                          |
-| -------------------- | -------------------------------------------------------------------------------- |
-| `npm run dev`        | shared (watch) + API on :4000 + client on :5173                                  |
-| `npm run check`      | Full gate: no-js, lockfile, client-secrets, typecheck, lint, format:check, tests |
-| `npm run build`      | Build shared, server and client                                                  |
-| `npm run format`     | Prettier                                                                         |
-| `npm run lighthouse` | Lighthouse budgets against `vite preview` on :4173 (needs the API with content)  |
+| Command                 | Purpose                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| `npm run dev`           | shared (watch) + API on :4000 + client on :5173                                  |
+| `npm run check`         | Full gate: no-js, lockfile, client-secrets, typecheck, lint, format:check, tests |
+| `npm run build`         | Build shared, server and client                                                  |
+| `npm run format`        | Prettier                                                                         |
+| `npm run lighthouse`    | Lighthouse budgets against `vite preview` on :4173 (needs the API with content)  |
+| `npm run test:e2e`      | Playwright end-to-end suite (starts its own API and client)                      |
+| `npm run test:coverage` | Server tests with the 80% coverage threshold                                     |
 
 Run a single test file or test from inside the workspace (build `shared` first if it changed):
 
@@ -108,6 +146,12 @@ Run a single test file or test from inside the workspace (build `shared` first i
 cd server && npx vitest run src/modules/profile            # a folder or file
 cd client && npx vitest run src/features/admin -t "event editor"   # filter by test name
 ```
+
+E2E (`npm run test:e2e`, Playwright) starts its own test API on :4100 (`e2e/server/api.ts`: in-memory MongoDB, fake
+media, content from `e2e/server/seed.ts`) and a production build on :4300; `e2e/fixtures.ts` stubs Cloudinary and
+YouTube. Run one spec or browser with `npx playwright test e2e/admin.spec.ts --project=chromium`. Add seeded content to
+`SEEDED` in `e2e/config.ts`, and name anything a test creates with `unique()`. Server coverage (`npm run test:coverage`)
+must stay at 80% or more of lines in `server/src/modules`.
 
 Server tests start an in-memory MongoDB and use `MEDIA_DRIVER=fake`. `npm run test:cloudinary` is the opt-in smoke
 test against the real Cloudinary development folder. On Windows, "Cannot find native binding" means the npm

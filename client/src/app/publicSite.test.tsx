@@ -158,6 +158,52 @@ describe('layout and navigation', () => {
   });
 });
 
+describe('footer', () => {
+  it('shows the contact details and social links the owner entered', async () => {
+    vi.mocked(getProfile).mockResolvedValue(
+      profileFixture({
+        contact: { publicEmail: 'artist@example.com', phone: '+977 9800000000' },
+        socials: [
+          { platform: 'youtube', url: 'https://www.youtube.com/@example' },
+          { platform: 'instagram', url: 'https://www.instagram.com/example/' },
+        ],
+      }),
+    );
+    renderSite('/');
+    const footer = await screen.findByRole('contentinfo');
+
+    expect(await within(footer).findByRole('link', { name: 'artist@example.com' })).toHaveAttribute(
+      'href',
+      'mailto:artist@example.com',
+    );
+    expect(within(footer).getByRole('link', { name: '+977 9800000000' })).toHaveAttribute(
+      'href',
+      'tel:+9779800000000',
+    );
+    const youtube = within(footer).getByRole('link', {
+      name: 'Roman Budhathoki on YouTube (opens in a new tab)',
+    });
+    expect(youtube).toHaveAttribute('href', 'https://www.youtube.com/@example');
+    // A new tab keeps music playing on the site.
+    expect(youtube).toHaveAttribute('target', '_blank');
+    expect(
+      within(footer).getByRole('link', { name: /on Instagram \(opens in a new tab\)/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('leaves out contact details and social links that were not entered', async () => {
+    vi.mocked(getProfile).mockResolvedValue(profileFixture({ contact: {}, socials: [] }));
+    renderSite('/');
+    const footer = await screen.findByRole('contentinfo');
+    await waitFor(() => {
+      expect(getProfile).toHaveBeenCalled();
+    });
+
+    expect(within(footer).queryByText('Get in touch')).not.toBeInTheDocument();
+    expect(within(footer).queryByRole('list', { name: 'Social media' })).not.toBeInTheDocument();
+  });
+});
+
 describe('about page', () => {
   it('shows only the sections that have content', async () => {
     renderSite('/about');

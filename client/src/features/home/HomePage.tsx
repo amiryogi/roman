@@ -10,6 +10,7 @@ import { seoContext } from '@/components/seo/context';
 import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
 import { shareImage } from '@/components/seo/structuredData';
+import { ArrowLink } from '@/components/ui/ArrowLink';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Container } from '@/components/ui/Container';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -55,9 +56,6 @@ export function HomePage() {
   );
 }
 
-const moreLink =
-  'mt-10 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-(--accent) uppercase underline decoration-current/40 underline-offset-[6px] hover:decoration-current';
-
 type HomeSection = 'music' | 'biography' | 'videos' | 'gallery' | 'events' | 'booking';
 
 /** Stage (dark) or paper (light) per section; the closing band takes the opposite of the last. */
@@ -98,18 +96,18 @@ function HomeContent({ home }: { home: HomeDto }) {
       {present.music && (
         <Section tone="dark" label="Music" number={number('music')} title="Listen">
           <TrackList tracks={featuredTracks} />
-          <Link to="/music" className={moreLink}>
+          <ArrowLink to="/music" className="mt-10">
             All music
-          </Link>
+          </ArrowLink>
         </Section>
       )}
       <BiographyTeaser profile={profile} number={number('biography')} />
       {present.videos && (
         <Section tone="dark" label="Videos" number={number('videos')} title="Watch">
           <VideoGallery videos={featuredVideos} />
-          <Link to="/videos" className={moreLink}>
+          <ArrowLink to="/videos" className="mt-10">
             All videos
-          </Link>
+          </ArrowLink>
         </Section>
       )}
       {present.gallery && (
@@ -117,27 +115,29 @@ function HomeContent({ home }: { home: HomeDto }) {
           <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             {featuredImages.map((photo) => (
               <li key={photo.id}>
-                <ResponsiveImage
-                  asset={photo.image}
-                  alt={photo.alt}
-                  aspect={1}
-                  sizes="(min-width: 768px) 22vw, 45vw"
-                  className="h-auto w-full rounded-sm"
-                />
+                <Link to="/gallery" className="group block overflow-hidden rounded-sm">
+                  <ResponsiveImage
+                    asset={photo.image}
+                    alt={photo.alt}
+                    aspect={1}
+                    sizes="(min-width: 768px) 22vw, 45vw"
+                    className="h-auto w-full transition-[transform,filter] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] group-hover:brightness-105 motion-reduce:transition-none"
+                  />
+                </Link>
               </li>
             ))}
           </ul>
-          <Link to="/gallery" className={moreLink}>
+          <ArrowLink to="/gallery" className="mt-10">
             Open the gallery
-          </Link>
+          </ArrowLink>
         </Section>
       )}
       {present.events && (
         <Section tone="dark" label="Performances" number={number('events')} title="Upcoming">
           <EventList events={upcomingEvents} />
-          <Link to="/events" className={moreLink}>
+          <ArrowLink to="/events" className="mt-10">
             All performances
-          </Link>
+          </ArrowLink>
         </Section>
       )}
       <BookingBand number={number('booking')} tone={bookingTone} />
@@ -147,27 +147,42 @@ function HomeContent({ home }: { home: HomeDto }) {
 
 function Hero({ profile }: { profile: ProfileSummaryDto }) {
   return (
-    <section aria-labelledby="hero-title" className="surface-dark">
+    <section aria-labelledby="hero-title" className="relative isolate surface-dark">
       {profile.heroDesktop && (
         // The photograph carries the large wordmark; the HTML heading stays smaller beside it
-        // (plan §0.4). Never cropped: tall screens letterbox it instead.
-        <HeroPicture
-          desktop={profile.heroDesktop}
-          mobile={profile.heroMobile}
-          className="block h-auto max-h-[85svh] w-full object-contain"
-        />
+        // (plan §0.4). Never cropped: tall screens letterbox it, and the slow settle ends at the
+        // natural size. Its lower edge fades into the stage, only as far as stays clear of the
+        // baked-in wordmark at each size.
+        <div className="relative overflow-hidden">
+          <HeroPicture
+            desktop={profile.heroDesktop}
+            mobile={profile.heroMobile}
+            className="block h-auto max-h-[85svh] w-full object-contain motion-safe:animate-kenburns"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-ebony to-transparent sm:h-10 lg:h-16"
+          />
+        </div>
       )}
+      {/* A spotlight on the name, as on a stage. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-72 bg-[radial-gradient(ellipse_55%_80%_at_18%_100%,rgb(192_122_53/0.16),transparent_70%)]"
+      />
       <Container className="grid gap-8 py-12 sm:py-16 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-8">
-          <p className="label-caps text-varnish">{profile.tagline}</p>
+          <p className="label-caps text-varnish motion-safe:animate-rise motion-safe:[animation-delay:100ms]">
+            {profile.tagline}
+          </p>
           <h1
             id="hero-title"
-            className="mt-4 font-display text-[2.25rem] leading-[1.05] font-medium tracking-[0.08em] uppercase sm:text-[3rem]"
+            className="mt-4 font-display text-[2.25rem] leading-[1.05] font-medium tracking-[0.08em] uppercase motion-safe:animate-rise motion-safe:[animation-delay:220ms] sm:text-[3rem]"
           >
             {profile.displayName}
           </h1>
         </div>
-        <div className="flex flex-wrap gap-3 lg:col-span-4 lg:justify-end">
+        <div className="flex flex-wrap gap-3 motion-safe:animate-rise motion-safe:[animation-delay:360ms] lg:col-span-4 lg:justify-end">
           <ButtonLink to="/music">Listen</ButtonLink>
           <ButtonLink to={BOOK_PATH} variant="outline">
             Book Roman
@@ -187,12 +202,9 @@ function BiographyTeaser({ profile, number }: { profile: ProfileSummaryDto; numb
           <p className="font-display text-[1.75rem] leading-[1.3] sm:text-[2rem]">
             {profile.shortBio}
           </p>
-          <Link
-            to="/about"
-            className="mt-8 inline-flex min-h-11 items-center gap-2 text-sm font-medium tracking-[0.14em] text-varnish-deep uppercase underline decoration-varnish-deep/40 underline-offset-[6px] hover:decoration-varnish-deep"
-          >
+          <ArrowLink to="/about" className="mt-8">
             Read the full biography
-          </Link>
+          </ArrowLink>
         </div>
         {profile.portrait && (
           <div className="lg:col-span-5">

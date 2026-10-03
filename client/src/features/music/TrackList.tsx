@@ -29,7 +29,7 @@ function TrackRow({ track, queue }: { track: TrackDto; queue: TrackDto[] }) {
   return (
     <article
       aria-labelledby={headingId}
-      className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 py-4 sm:gap-6"
+      className="-mx-3 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-4 rounded-sm px-3 py-4 transition-colors duration-300 hover:bg-current/[0.04] sm:gap-6"
     >
       {/* The label changes with the state ("Play X" / "Pause X"), so no aria-pressed as well. */}
       <button
@@ -42,7 +42,7 @@ function TrackRow({ track, queue }: { track: TrackDto; queue: TrackDto[] }) {
         className="group relative size-14 shrink-0 rounded-sm"
       >
         <TrackArtwork track={track} size={56} />
-        <span className="absolute inset-0 flex items-center justify-center rounded-sm bg-ebony/45 text-ivory opacity-90 transition-opacity group-hover:bg-ebony/60">
+        <span className="absolute inset-0 flex items-center justify-center rounded-sm bg-ebony/45 text-ivory opacity-90 transition-[background-color,scale] duration-300 group-hover:scale-105 group-hover:bg-ebony/60 motion-reduce:transition-none">
           {playing ? <PauseIcon /> : <PlayIcon className="size-5 translate-x-px" />}
         </span>
       </button>

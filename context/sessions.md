@@ -1,27 +1,27 @@
 # Session summary: Roman Budhathoki website
 
-Last updated: 2026-10-03. Covers plan phases 1–10 of 12. The full specification is
+Last updated: 2026-10-03. Covers plan phases 1–11 of 12. The full specification is
 [ROMAN_BUDHATHOKI_WEBSITE_PLAN.md](../ROMAN_BUDHATHOKI_WEBSITE_PLAN.md), and each phase's deviations are recorded in
 its "Implementation notes (Phase N)" in §0.4. Working rules are in [CLAUDE.md](../CLAUDE.md).
 
 ## Where things stand
 
-| Phase | Scope                                                           | State                                                  |
-| ----- | --------------------------------------------------------------- | ------------------------------------------------------ |
-| 1     | Monorepo, TypeScript-only tooling, CI                           | Done, committed                                        |
-| 2     | Shared Zod contracts, Express foundation, all Mongoose models   | Done, committed                                        |
-| 3     | Admin sign-in (JWT in memory, rotating httpOnly refresh cookie) | Done, committed                                        |
-| 4     | Cloudinary media: signed uploads, verification, seed            | Done, committed                                        |
-| 5     | Design system, public layout, Home, About                       | Done, committed. **Owner's visual review still open.** |
-| 6     | Music: tracks, albums, persistent audio player, admin           | Done, committed                                        |
-| 7     | Videos and gallery, lightbox, bulk photo upload                 | Done, committed                                        |
-| 8     | Events (Performances) and contact/booking form                  | Done, committed                                        |
-| 9     | Admin dashboard, full profile editor, inquiries inbox           | Done; final changes **not committed**                  |
-| 10    | SEO prerendering, structured data, a11y audit, bundle trimming  | Done, **not committed**; LCP target open (see below)   |
-| 11    | Playwright E2E, coverage, CI hardening                          | Next                                                   |
-| 12    | Production deployment (Vercel, Render, Atlas, Cloudinary)       | To do                                                  |
+| Phase | Scope                                                           | State                                                 |
+| ----- | --------------------------------------------------------------- | ----------------------------------------------------- |
+| 1     | Monorepo, TypeScript-only tooling, CI                           | Done, committed                                       |
+| 2     | Shared Zod contracts, Express foundation, all Mongoose models   | Done, committed                                       |
+| 3     | Admin sign-in (JWT in memory, rotating httpOnly refresh cookie) | Done, committed                                       |
+| 4     | Cloudinary media: signed uploads, verification, seed            | Done, committed                                       |
+| 5     | Design system, public layout, Home, About                       | Done, committed. Visual direction approved 2026-10-03 |
+| 6     | Music: tracks, albums, persistent audio player, admin           | Done, committed                                       |
+| 7     | Videos and gallery, lightbox, bulk photo upload                 | Done, committed                                       |
+| 8     | Events (Performances) and contact/booking form                  | Done, committed                                       |
+| 9     | Admin dashboard, full profile editor, inquiries inbox           | Done; final changes **not committed**                 |
+| 10    | SEO prerendering, structured data, a11y audit, bundle trimming  | Done, committed; LCP target open (see below)          |
+| 11    | Playwright E2E, coverage, CI hardening                          | Done, **not committed**; CI runs pending              |
+| 12    | Production deployment (Vercel, Render, Atlas, Cloudinary)       | Next                                                  |
 
-Quality gate at the end of Phase 10: `npm run check` passes with **424 tests** (41 shared, 219 server, 164 client), plus
+Quality gate at the end of Phase 11: `npm run check` passes with **427 tests** (41 shared, 221 server, 165 client), plus
 no-JS, lockfile, client-secrets, typecheck, lint and Prettier.
 
 ## What exists
@@ -141,8 +141,24 @@ and management pages for tracks, albums, videos, the gallery (including bulk upl
 - Lighthouse (mobile): performance 92–94 (Contact 86–90), accessibility, best practices and SEO 100; axe clean.
 - Still open: LCP ≤ 2.5 s, the manual screen-reader pass, and the sharing/Rich Results validators (need the public URL).
 
-## Phase 11 scope (next)
+## Phase 11 (done)
 
-- Playwright E2E for the main flows, with `@axe-core/playwright` on every public page.
-- A seeded API in CI so `npm run lighthouse` can run there.
-- Coverage and CI hardening.
+- Playwright suite in `e2e/`: 74 cases over desktop Chromium/WebKit, Pixel 7 and iPhone 14 (72 pass; 2 skipped on
+  Windows only, where WebKit can't play media). Its own test API with seeded content; Cloudinary and YouTube stubbed.
+- Server coverage enforced at 80% (95% lines today). CI runs coverage and a new E2E job.
+- `npm run test:cloudinary` passed. Still to confirm: three consecutive green CI runs after pushing.
+
+## UI refresh (after Phase 11, 2026-10-03)
+
+- Concert-hall motion and detail, CSS only: animated wordmark (violin lifted in, name written in, sheen and sway on
+  hover), nav "strings" (drawn on hover, plucked when chosen), scroll-progress string, hero settle and spotlight,
+  section hairlines, stage lighting, button sheen/fill, arrow links, card hover, About timeline string, page fades,
+  mobile menu cascade. All respect reduced motion. Conventions are in CLAUDE.md ("Design and motion").
+- The player bar now loads on first play, which paid for the extra markup: every public page is 156.5–159.1 KiB.
+
+## Phase 12 scope (next)
+
+- Production Atlas, the Cloudinary production folder, Vercel (client) and Render (API); domain, HTTPS, secrets, CORS,
+  the `/api` rewrite in `client/vercel.json`, uptime monitoring.
+- `seed:admin` and `seed:content` in production; the owner publishes; release checklist (§25 Phase 12).
+- Needs from the owner: the domain, host accounts, and the LCP decision.

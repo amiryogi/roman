@@ -23,8 +23,39 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
-      - run: npm test
+      - run: npm run build -w @roman/shared
+      - run: npm run test -w @roman/shared
+      - run: npm run test -w @roman/client
+      # Server tests with coverage: fails below 80% of lines in src/modules (plan §25, Phase 11).
+      - run: npm run test:coverage -w @roman/server
       - run: npm run build
       # Again after the build: the bundle itself must not contain secrets.
       - run: npm run check:client-secrets
       - run: npm audit --audit-level=high
+
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium webkit
+      # Starts the test API (in-memory MongoDB, fake media) and a production build of the client.
+      - run: npm run test:e2e
+        env:
+          CI: true
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

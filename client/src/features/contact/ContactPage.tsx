@@ -4,8 +4,8 @@ import { lazy, Suspense } from 'react';
 import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
 import { Container } from '@/components/ui/Container';
+import { SocialLinks } from '@/components/ui/SocialLinks';
 import { getProfile, queryKeys } from '@/lib/api/public';
-import { SOCIAL_PLATFORM_LABELS } from '@/lib/labels';
 
 import { Skeleton } from '@/components/ui/Skeleton';
 
@@ -86,19 +86,7 @@ export function ContactPage() {
           {socials.length > 0 && (
             <div className="mt-8">
               <h2 className="label-caps text-(--muted)">Elsewhere</h2>
-              <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
-                {socials.map((link) => (
-                  <li key={link.url}>
-                    <a
-                      href={link.url}
-                      rel="me noopener noreferrer"
-                      className="text-lg text-(--accent) underline underline-offset-4"
-                    >
-                      {link.label ?? SOCIAL_PLATFORM_LABELS[link.platform]}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <SocialLinks links={socials} variant="labelled" className="mt-2" />
             </div>
           )}
 

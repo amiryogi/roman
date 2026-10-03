@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–10 complete on 2026-10-03; Phase 10's lab LCP target (2.5 s) is not met (2.7–3.0 s, see its notes). The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 11 (testing completion).
+**Status:** Phases 1–10 complete on 2026-10-03; Phase 10's lab LCP target (2.5 s) is not met (2.7–3.0 s, see its notes). The owner approved the visual direction (Phase 5 checkpoint) on 2026-10-03. Phase 11 complete on 2026-10-03, pending three consecutive green CI runs after the next push. Next: Phase 12 (production deployment).
 **Plan date:** 2026-10-02
 
 ---
@@ -184,6 +184,18 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
   Every budget is met except **LCP ≤ 2.5 s**. The site renders in the browser, so nothing paints until about 128 KiB of JavaScript has downloaded and run (first paint about 2.2 s in this simulation). Reaching 2.5 s would need the page body itself in the prerendered HTML (build-time rendering of the React tree with hydration), which §17 deliberately avoided. That is an owner decision.
 - **Accessibility:** axe-core 4.10 reports no violations on any public page at 390 and 1280 px (a heading-order issue on Videos was fixed). Keyboard order and visible focus were checked on Home. The manual screen-reader pass (NVDA + Firefox, VoiceOver + Safari iOS) still needs a person with those tools.
 - **Not yet possible:** the Facebook Sharing Debugger, X card validator and Rich Results Test need the public URL (Phase 12).
+
+**Implementation notes (Phase 11):**
+
+- **E2E stack:** `playwright.config.ts` starts `e2e/server/api.ts` (the real Express app on an in-memory MongoDB with the fake media driver, seeded by `e2e/server/seed.ts` with neutral test content, on port 4100) and a production build of the client served by `vite preview` on port 4300 (`API_PROXY_TARGET` points its `/api` proxy at the test API), so every run also exercises the CSP and routing from `vercel.json`. Nothing reaches the internet: `e2e/fixtures.ts` serves Cloudinary images and audio (a generated WAV tone), YouTube embeds and thumbnails, and answers Cloudinary's upload API with an asset in the signed folder; the test API treats any asset in its folders as uploaded.
+- **Rate limits** can be switched off with the `createApp` option `rateLimiting: false`, used only by the E2E API (one browser session per test would trip the login and inquiry limits). Production has no setting for it; a test checks the switch.
+- **Projects:** desktop Chromium and WebKit, Pixel 7 and iPhone 14; the admin spec runs on the desktop projects only. One worker (shared database) and no retries, so flaky tests fail rather than hide.
+- **Coverage:** `npm run test:coverage` (CI) fails below 80% of lines, statements or functions in `server/src/modules`. Current: 95% lines, 88% statements, 94% functions, 71% branches.
+- **Scenarios (§19):** visitor: every page from the navigation, music continuing across pages (position advancing after navigation), the video dialog with no YouTube request before the click, gallery category filter and keyboard lightbox, the booking form's errors and a successful send, drafts hidden, the 404 page. Admin: sign-in, a session restored after reload, sign-out; a track uploaded, published, shown publicly, edited and deleted; an event published and removed; photos bulk-uploaded with alt text, published and deleted; an inquiry marked read on opening and its status changed. Accessibility: axe on every public page and the sign-in page (no serious or critical violations), with reduced motion so text isn't measured mid-fade. Event and photo editing are not separate E2E cases; they share the editor patterns the track case covers.
+- **Results (Windows, local):** 72 passed and 2 skipped in two consecutive fresh runs. The skipped case is music playback on WebKit: Playwright's WebKit build for Windows can't play media, so it runs only on Linux (CI).
+- **Fixes found by the suite:** none in the app. Test-side fixes: the browser names delete buttons "Delete : title" (a space before the screen-reader text), phones show the seek slider only in the full player, and sign-in on WebKit/Windows can take longer than 7 s.
+- **CI:** the check job runs server tests with coverage; a new `e2e` job installs Chromium and WebKit and runs the suite, uploading the report on failure. Lighthouse stays a manual pre-release step (`npm run lighthouse` against real content): with fake media the images don't load, so CI numbers wouldn't mean anything.
+- `npm run test:cloudinary` passed against the development folder (11 checks, test assets cleaned up).
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 
@@ -1511,7 +1523,7 @@ Phase 9 becomes the dashboard, profile editor, inquiries inbox and admin polish.
   - Keyboard-only navigation works, the skip link works, and the mobile menu traps focus.
   - The About page shows **only** CV-derived content, and achievements and philosophy are hidden while empty.
   - Lighthouse mobile on Home gives a11y ≥ 95 and performance ≥ 85 (preliminary).
-  - The owner reviews the visual direction (**checkpoint**).
+  - The owner reviews the visual direction (**checkpoint**). Approved by the owner on 2026-10-03.
 
 ### Phase 6: Music and audio system
 - **Objectives:**

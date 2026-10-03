@@ -14,9 +14,6 @@ import { ChevronDownIcon, CloseIcon } from './icons';
 import { hasNext } from './playerState';
 import { TrackArtwork } from './TrackArtwork';
 
-/** Height reserved at the bottom of the page while the bar is visible (plan §7.4). */
-export const PLAYER_BAR_PADDING = 'pb-16 md:pb-20';
-
 const textButton =
   'inline-flex min-h-11 items-center rounded-sm px-3 text-sm font-medium underline-offset-4 hover:underline';
 

@@ -7,9 +7,10 @@ import { Container } from './Container';
 
 export type SectionTone = 'dark' | 'dark-raised' | 'light';
 
+// Dark sections are lit like a stage (a warm glow from above-left).
 const TONE_CLASS: Record<SectionTone, string> = {
-  dark: 'surface-dark',
-  'dark-raised': 'surface-dark-raised',
+  dark: 'surface-dark stage-light',
+  'dark-raised': 'surface-dark-raised stage-light',
   light: 'surface-light',
 };
 
@@ -52,8 +53,10 @@ export function Section({
       <Container className="py-20 sm:py-24 lg:py-32">
         <div ref={revealRef} data-reveal={revealState}>
           {eyebrow && (
-            <p className="label-caps text-(--accent)" aria-hidden="true">
+            // The hairline after the label is drawn like a bow stroke as the section arrives.
+            <p className="flex items-center gap-4 label-caps text-(--accent)" aria-hidden="true">
               {eyebrow}
+              <span className="bow-line h-px w-12 bg-current opacity-60 sm:w-16" />
             </p>
           )}
           <h2

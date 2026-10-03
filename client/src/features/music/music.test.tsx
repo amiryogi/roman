@@ -89,7 +89,8 @@ describe('music page and player', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Play First' }));
 
-    const player = screen.getByRole('region', { name: 'Audio player' });
+    // The bar's code loads on first play.
+    const player = await screen.findByRole('region', { name: 'Audio player' });
     expect(within(player).getAllByRole('button', { name: 'Pause First' }).length).toBeGreaterThan(
       0,
     );

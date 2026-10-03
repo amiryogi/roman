@@ -51,12 +51,14 @@ describe('contact page', () => {
   it('shows only the contact details the owner made public', async () => {
     renderContact();
 
-    expect(await screen.findByRole('link', { name: 'artist@example.com' })).toHaveAttribute(
+    // The footer repeats the address, so look in the page itself.
+    const main = await screen.findByRole('main');
+    expect(await within(main).findByRole('link', { name: 'artist@example.com' })).toHaveAttribute(
       'href',
       'mailto:artist@example.com',
     );
     // The fixture has no public phone number.
-    expect(screen.queryByText('Phone', { selector: 'dt' })).not.toBeInTheDocument();
+    expect(within(main).queryByText('Phone', { selector: 'dt' })).not.toBeInTheDocument();
   });
 
   it('sends a booking with the form token, then announces success', async () => {

@@ -90,15 +90,20 @@ export function MobileNav({ className }: { className?: string }) {
 
           <nav aria-label="Main" className="flex-1 py-10">
             <ul className="flex flex-col gap-2">
-              {NAV_ITEMS.map((item) => (
-                <li key={item.to}>
+              {/* The links cascade in when the menu opens (the dialog re-renders them each time). */}
+              {NAV_ITEMS.map((item, index) => (
+                <li
+                  key={item.to}
+                  className={open ? 'motion-safe:animate-rise' : undefined}
+                  style={{ animationDelay: `${String(60 + index * 50)}ms` }}
+                >
                   <NavLink
                     to={item.to}
                     end={item.to === '/'}
                     onClick={() => {
                       closeFor(item.to);
                     }}
-                    className="inline-flex min-h-14 items-center font-display text-[2.25rem] leading-none text-(--muted) transition-colors hover:text-ivory aria-[current=page]:text-ivory"
+                    className="group inline-flex min-h-14 items-center gap-4 font-display text-[2.25rem] leading-none text-(--muted) transition-colors hover:text-ivory aria-[current=page]:text-ivory"
                   >
                     {item.label}
                   </NavLink>

@@ -29,21 +29,23 @@ npm run dev
 
 ## Scripts (run from the repository root)
 
-| Script                            | Description                                                                             |
-| --------------------------------- | --------------------------------------------------------------------------------------- |
-| `npm run dev`                     | Builds `shared`, then runs shared (watch), API and client together                      |
-| `npm run build`                   | Production build of shared, server (`server/dist`) and client (`client/dist`)           |
-| `npm run typecheck`               | Strict TypeScript checks for every workspace                                            |
-| `npm run lint`                    | ESLint (type-aware, `any` and type assertions forbidden)                                |
-| `npm run format` / `format:check` | Prettier                                                                                |
-| `npm test`                        | Vitest in shared, server and client                                                     |
-| `npm run check:no-js`             | Fails if any JavaScript file exists (TypeScript-only project)                           |
-| `npm run check`                   | The full gate: no-js + lockfile + client-secrets + typecheck + lint + format + tests    |
-| `npm run seed:admin -- --email …` | Creates the single admin (password from `ADMIN_SEED_PASSWORD` or a prompt)              |
-| `npm run seed:content`            | Uploads the source photos and MP3 to Cloudinary and creates the initial (draft) content |
-| `npm run cleanup:media`           | Lists Cloudinary assets no content uses (`-- --apply` deletes them)                     |
-| `npm run test:cloudinary`         | Opt-in smoke test against the real Cloudinary account (development folder only)         |
-| `npm run lighthouse`              | Lighthouse budgets (`lighthouse-budgets.json`) against a running preview with content   |
+| Script                            | Description                                                                                  |
+| --------------------------------- | -------------------------------------------------------------------------------------------- |
+| `npm run dev`                     | Builds `shared`, then runs shared (watch), API and client together                           |
+| `npm run build`                   | Production build of shared, server (`server/dist`) and client (`client/dist`)                |
+| `npm run typecheck`               | Strict TypeScript checks for every workspace                                                 |
+| `npm run lint`                    | ESLint (type-aware, `any` and type assertions forbidden)                                     |
+| `npm run format` / `format:check` | Prettier                                                                                     |
+| `npm test`                        | Vitest in shared, server and client                                                          |
+| `npm run check:no-js`             | Fails if any JavaScript file exists (TypeScript-only project)                                |
+| `npm run check`                   | The full gate: no-js + lockfile + client-secrets + typecheck + lint + format + tests         |
+| `npm run seed:admin -- --email …` | Creates the single admin (password from `ADMIN_SEED_PASSWORD` or a prompt)                   |
+| `npm run seed:content`            | Uploads the source photos and MP3 to Cloudinary and creates the initial (draft) content      |
+| `npm run cleanup:media`           | Lists Cloudinary assets no content uses (`-- --apply` deletes them)                          |
+| `npm run test:cloudinary`         | Opt-in smoke test against the real Cloudinary account (development folder only)              |
+| `npm run lighthouse`              | Lighthouse budgets (`lighthouse-budgets.json`) against a running preview with content        |
+| `npm run test:e2e`                | Playwright end-to-end tests (desktop and phone browsers; starts its own test API and client) |
+| `npm run test:coverage`           | Server tests with coverage (fails below 80% of lines in the modules)                         |
 
 ## Notes
 
@@ -62,6 +64,12 @@ npm run dev
 - Inquiries are stored for the admin inbox; nothing is emailed.
 - `IP_HASH_SALT` in `server/.env` (16+ random characters) keys the hashed visitor IPs and the form's anti-spam token.
   It is required in production; development uses a built-in value when it is unset.
+
+## End-to-end tests
+
+- Run `npx playwright install chromium webkit` once. `npm run test:e2e` then starts a test API (in-memory database,
+  fake media, seeded test content) on port 4100 and a production build of the client on port 4300.
+- The tests never reach Cloudinary or YouTube; the test fixtures answer those requests.
 
 ## Build, SEO and performance
 
