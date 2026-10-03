@@ -69,14 +69,12 @@ describe('audio controller', () => {
   let state: PlayerState;
   const urls = () => createMediaUrls('test-cloud');
 
-  function setup(initial: PlayerState = initialPlayerState, resumeAt?: number) {
-    state = initial;
+  function setup() {
+    state = initialPlayerState;
     return createAudioController({
       dispatch: (action) => {
         state = playerReducer(state, action);
       },
-      initial,
-      resumeAt,
       urls,
     });
   }
@@ -153,25 +151,20 @@ describe('audio controller', () => {
     expect(state.status).toBe('playing');
   });
 
-  it('saves the session and resumes it paused, at the saved position', () => {
+  it('saves the session and resumes it paused, at the saved position', async () => {
     const player = setup();
     player.playTrack(tracks[2] ?? trackFixture(), tracks);
     const audio = FakeAudio.last();
     audio.currentTime = 61;
     audio.pause();
 
-    const saved = loadSession();
+    const saved = await loadSession();
     expect(saved).toMatchObject({ index: 2, position: 61 });
 
-    // A reload: a new controller from the saved session.
+    // A reload: a new controller, then the saved session once it has been validated.
     FakeAudio.reset();
-    const restored = playerReducer(initialPlayerState, {
-      type: 'restore',
-      queue: saved?.queue ?? [],
-      index: saved?.index ?? 0,
-      volume: saved?.volume ?? 1,
-    });
-    const resumed = setup(restored, saved?.position);
+    const resumed = setup();
+    if (saved) resumed.restore(saved);
     expect(state).toMatchObject({ status: 'paused', visible: true });
     expect(resumed.timeStore.get().currentTime).toBe(61);
     expect(FakeAudio.instances).toHaveLength(0); // nothing loads until play is pressed
@@ -183,7 +176,18 @@ describe('audio controller', () => {
     expect(state.status).toBe('playing');
   });
 
-  it('stops, hides and forgets the session on close', () => {
+  it('ignores a saved session that arrives after something has started playing', async () => {
+    const player = setup();
+    player.playTrack(tracks[2] ?? trackFixture(), tracks);
+    const saved = await loadSession();
+
+    const fresh = setup();
+    fresh.playTrack(tracks[0] ?? trackFixture(), tracks);
+    if (saved) fresh.restore(saved);
+    expect(state).toMatchObject({ index: 0, status: 'playing' });
+  });
+
+  it('stops, hides and forgets the session on close', async () => {
     const player = setup();
     player.playTrack(tracks[0] ?? trackFixture());
     player.close();
@@ -191,7 +195,7 @@ describe('audio controller', () => {
     expect(FakeAudio.last().paused).toBe(true);
     expect(FakeAudio.last().getAttribute('src')).toBeNull();
     expect(state.visible).toBe(false);
-    expect(loadSession()).toBeUndefined();
+    expect(await loadSession()).toBeUndefined();
   });
 
   it('unmutes when the volume is raised', () => {

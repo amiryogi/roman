@@ -4,7 +4,12 @@ import { useState } from 'react';
 import type { AlbumDto } from '@roman/shared';
 
 import { ResponsiveImage } from '@/components/media/ResponsiveImage';
+import { seoContext } from '@/components/seo/context';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
+import { SITE_NAME } from '@/components/seo/site';
+import { albumJsonLd, personRef, trackJsonLd } from '@/components/seo/structuredData';
 import { Container } from '@/components/ui/Container';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Section } from '@/components/ui/Section';
@@ -31,7 +36,15 @@ export function MusicPage() {
 
   return (
     <>
-      <Seo title="Music" path="/music" />
+      <Seo {...PAGE_SEO.music} />
+      <JsonLd
+        items={[
+          ...albumList.map((album) =>
+            albumJsonLd(album, personRef(seoContext(), SITE_NAME), seoContext()),
+          ),
+          ...allTracks.map((track) => trackJsonLd(track, seoContext())),
+        ]}
+      />
       <header className="surface-dark">
         <Container className="pt-16 pb-4 sm:pt-24">
           <p className="label-caps text-varnish">Listen</p>

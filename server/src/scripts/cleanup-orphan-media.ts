@@ -26,7 +26,7 @@ try {
 
   const { env, media } = loadMediaScriptEnv();
   configureMongoose({ autoIndex: false });
-  await connectDb(env.mongodbUri);
+  await connectDb(env.mongodbUri, { dnsServers: env.dnsServers });
 
   const referenced = await collectReferencedPublicIds();
   const resources = [];

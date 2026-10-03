@@ -236,6 +236,7 @@ export function GalleryUploadPage() {
         <label className="flex flex-col gap-1.5 text-sm font-medium text-stone-800">
           Photographer for new photos
           <input
+            name="defaultCredit"
             value={credit}
             onChange={(event) => {
               setCredit(event.currentTarget.value);
@@ -246,6 +247,7 @@ export function GalleryUploadPage() {
         <label className="flex items-center gap-3 self-end text-sm font-medium text-stone-800">
           <input
             type="checkbox"
+            name="publishOnSave"
             checked={publish}
             onChange={(event) => {
               setPublish(event.currentTarget.checked);

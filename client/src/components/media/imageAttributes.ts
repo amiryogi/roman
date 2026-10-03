@@ -1,6 +1,6 @@
 import type { MediaAssetDto } from '@roman/shared';
 
-import type { MediaUrls, SrcSetOptions } from '@/lib/cloudinary';
+import type { MediaUrls, SrcSetOptions } from '../../lib/mediaUrls';
 
 /** Fallback `src` width for browsers without srcset support; srcset does the real work. */
 const FALLBACK_WIDTH = 1024;

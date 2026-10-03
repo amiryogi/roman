@@ -73,11 +73,13 @@ const IMAGE_TEXT: Record<ImageSlot, { label: string; hint: string }> = {
   },
   ogImage: {
     label: 'Link preview image (optional)',
-    hint: 'Shown when the site is shared on social media. Ideally 1200 × 630 pixels.',
+    hint: 'Shown when a page of the site is shared on social media (from the next deploy). Without it, the wide hero image is used. Ideally 1200 × 630 pixels.',
   },
 };
 
-function profileAssets(profile: ProfileAdminDto | undefined): Record<ImageSlot, MediaAssetDto | null> {
+function profileAssets(
+  profile: ProfileAdminDto | undefined,
+): Record<ImageSlot, MediaAssetDto | null> {
   return {
     portrait: profile?.portrait?.asset ?? null,
     heroDesktop: profile?.heroDesktop?.asset ?? null,
@@ -100,11 +102,7 @@ export function ProfileEditPage() {
 }
 
 function ProfileForm({ profile }: { profile: ProfileAdminDto | undefined }) {
-  const invalidate = useInvalidate(
-    adminKeys.profile,
-    queryKeys.profile,
-    queryKeys.home,
-  );
+  const invalidate = useInvalidate(adminKeys.profile, queryKeys.profile, queryKeys.home);
   const [assets, setAssets] = useState(() => profileAssets(profile));
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -176,12 +174,20 @@ function ProfileForm({ profile }: { profile: ProfileAdminDto | undefined }) {
       </nav>
 
       <FormProvider {...form}>
-        <form noValidate className="flex flex-col gap-12" onSubmit={(event) => void onSubmit(event)}>
+        <form
+          noValidate
+          className="flex flex-col gap-12"
+          onSubmit={(event) => void onSubmit(event)}
+        >
           {formError && <FormAlert tone="error">{formError}</FormAlert>}
 
           <fieldset id="identity" className="flex scroll-mt-6 flex-col gap-4">
             <legend className="mb-2 text-lg font-semibold">Identity</legend>
-            <FormField label="Name" error={errors.displayName?.message} {...register('displayName')} />
+            <FormField
+              label="Name"
+              error={errors.displayName?.message}
+              {...register('displayName')}
+            />
             <FormField
               label="Tagline"
               hint="One line under the name, e.g. “Violinist · Educator”."
@@ -290,8 +296,9 @@ function ProfileForm({ profile }: { profile: ProfileAdminDto | undefined }) {
           <fieldset id="seo" className="flex scroll-mt-6 flex-col gap-4">
             <legend className="mb-2 text-lg font-semibold">Search & sharing</legend>
             <p className="-mt-2 text-sm text-stone-600">
-              Optional overrides for search results and link previews. They are applied the next
-              time the site is deployed.
+              Optional. They replace the home page’s title and description in search results and
+              link previews. The site uses them straight away; link previews on WhatsApp, Facebook
+              and similar apps update after the next deploy.
             </p>
             <FormField
               label="Title for search results (optional)"

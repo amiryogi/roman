@@ -6,7 +6,10 @@ import type { HomeDto, ProfileSummaryDto } from '@roman/shared';
 import { BOOK_PATH } from '@/components/layout/navigation';
 import { HeroPicture } from '@/components/media/HeroPicture';
 import { ResponsiveImage } from '@/components/media/ResponsiveImage';
+import { seoContext } from '@/components/seo/context';
+import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
+import { shareImage } from '@/components/seo/structuredData';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Container } from '@/components/ui/Container';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -22,10 +25,16 @@ import { BookingBand } from './BookingBand';
 
 export function HomePage() {
   const home = useQuery({ queryKey: queryKeys.home, queryFn: getHome });
+  const profile = home.data?.profile;
 
   return (
     <>
-      <Seo path="/" type="profile" />
+      <Seo
+        {...PAGE_SEO.home}
+        fullTitle={profile?.seo.metaTitle}
+        description={profile?.seo.metaDescription ?? PAGE_SEO.home.description}
+        image={profile && shareImage(profile, seoContext())}
+      />
       {home.isPending ? (
         <HeroSkeleton />
       ) : home.isError ? (

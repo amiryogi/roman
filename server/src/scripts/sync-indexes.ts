@@ -7,7 +7,7 @@ import { syncAllIndexes } from '../models.js';
 try {
   const env = loadEnv();
   configureMongoose({ autoIndex: false });
-  await connectDb(env.mongodbUri);
+  await connectDb(env.mongodbUri, { dnsServers: env.dnsServers });
   await syncAllIndexes();
   console.info('Indexes are in sync.');
 } catch (error) {

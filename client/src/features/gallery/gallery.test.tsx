@@ -55,7 +55,12 @@ describe('gallery', () => {
     const image = await screen.findByRole('img', { name: 'Violinist on stage' });
     expect(image).toHaveAttribute('width', '1200');
     expect(image).toHaveAttribute('height', '1600');
-    expect(image).toHaveAttribute('loading', 'lazy');
+    // The first photo is the page's largest image (LCP); the rest load as they scroll into view.
+    expect(image).toHaveAttribute('loading', 'eager');
+    expect(image).toHaveAttribute('fetchpriority', 'high');
+    const rest = screen.getAllByRole('img').filter((img) => img !== image);
+    expect(rest.length).toBeGreaterThan(0);
+    for (const img of rest) expect(img).toHaveAttribute('loading', 'lazy');
     expect(screen.getByText(/Evening concert/)).toHaveTextContent('Photo: A. Photographer');
   });
 

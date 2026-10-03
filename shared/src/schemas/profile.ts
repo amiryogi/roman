@@ -120,7 +120,7 @@ export const profileAdminDtoSchema = profileDtoSchema.extend({
 });
 export type ProfileAdminDto = z.infer<typeof profileAdminDtoSchema>;
 
-/** The slice of the profile the home page needs. */
+/** The slice of the profile the home page needs, including its search title/description. */
 export const profileSummaryDtoSchema = profileDtoSchema.pick({
   displayName: true,
   tagline: true,
@@ -128,5 +128,7 @@ export const profileSummaryDtoSchema = profileDtoSchema.pick({
   portrait: true,
   heroDesktop: true,
   heroMobile: true,
+  ogImage: true,
+  seo: true,
 });
 export type ProfileSummaryDto = z.infer<typeof profileSummaryDtoSchema>;

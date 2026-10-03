@@ -8,15 +8,19 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
   return failureCount < 1 && !clientError;
 }
 
-/** Public defaults (plan §12.3): the content is mostly static, so fetch rarely. */
+/**
+ * Public defaults (plan §12.3). Data counts as fresh for 30 s, so moving between pages doesn't
+ * refetch, and it is checked again when the tab regains focus, so something just published in the
+ * admin shows up on return. The API answers unchanged data with a small 304 (ETag).
+ */
 export function createQueryClient(): QueryClient {
   const client = new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 5 * 60 * 1000,
+        staleTime: 30 * 1000,
         gcTime: 30 * 60 * 1000,
         retry: shouldRetry,
-        refetchOnWindowFocus: false,
+        refetchOnWindowFocus: true,
       },
       // Mutations are never retried automatically (plan §22).
       mutations: { retry: false },

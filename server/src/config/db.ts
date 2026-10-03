@@ -1,3 +1,5 @@
+import { setServers } from 'node:dns';
+
 import mongoose from 'mongoose';
 
 /**
@@ -13,7 +15,15 @@ export function configureMongoose(options: { autoIndex: boolean }): void {
   mongoose.set('autoIndex', options.autoIndex);
 }
 
-export async function connectDb(uri: string): Promise<void> {
+/**
+ * Connects to MongoDB. `dnsServers` (env DNS_SERVERS) replaces the resolvers Node uses for its own
+ * lookups, which a `mongodb+srv://` URI needs for its SRV record.
+ */
+export async function connectDb(
+  uri: string,
+  { dnsServers = [] }: { dnsServers?: string[] } = {},
+): Promise<void> {
+  if (dnsServers.length > 0) setServers(dnsServers);
   await mongoose.connect(uri, { serverSelectionTimeoutMS: 10_000 });
 }
 

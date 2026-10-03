@@ -43,6 +43,19 @@ function renderAdmin(
   return router;
 }
 
+/** renderAdmin, also returning the rendered container (for decorative, aria-hidden parts). */
+function renderAdminWithContainer(path: string, state: AuthState) {
+  const router = createMemoryRouter([{ path: '/admin/login', element: <LoginPage /> }], {
+    initialEntries: [path],
+  });
+  const value: AuthContextValue = { state, login: vi.fn(), logout: vi.fn() };
+  return render(
+    <AuthContext value={value}>
+      <RouterProvider router={router} />
+    </AuthContext>,
+  );
+}
+
 describe('RequireAuth', () => {
   it('redirects anonymous visitors to the login page, remembering where they were going', () => {
     const router = renderAdmin('/admin/account?tab=1', { status: 'anonymous' });
@@ -68,6 +81,17 @@ describe('RequireAuth', () => {
 });
 
 describe('LoginPage', () => {
+  it('plucks the strings in turn as the fields change, whatever is typed', async () => {
+    const { container } = renderAdminWithContainer('/admin/login', { status: 'anonymous' });
+    const plucked = () => container.querySelectorAll('.animate-pluck').length;
+    expect(plucked()).toBe(0);
+
+    await userEvent.type(screen.getByLabelText('Password'), 'ab');
+    expect(plucked()).toBe(2);
+    await userEvent.type(screen.getByLabelText('Email'), 'xyz');
+    expect(plucked()).toBe(4);
+  });
+
   it('validates the fields before calling the API', async () => {
     const login = vi.fn<(input: LoginInput) => Promise<void>>();
     renderAdmin('/admin/login', { status: 'anonymous' }, login);

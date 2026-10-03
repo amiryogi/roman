@@ -2,13 +2,17 @@ import {
   eventDtoSchema,
   galleryImageDtoSchema,
   homeDtoSchema,
+  inquiryDtoSchema,
+  profileAdminDtoSchema,
   profileDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
   type EventDto,
   type GalleryImageDto,
   type HomeDto,
+  type InquiryDto,
   type MediaAssetDto,
+  type ProfileAdminDto,
   type ProfileDto,
   type TrackDto,
   type VideoDto,
@@ -97,6 +101,7 @@ export function homeFixture(overrides: Partial<HomeDto> = {}): HomeDto {
       shortBio: profile.shortBio,
       portrait: profile.portrait,
       heroDesktop: { asset: imageAsset({ publicId: 'root/profile/hero' }), alt: 'Artist on stage' },
+      seo: {},
     },
     featuredTracks: [],
     featuredVideos: [],
@@ -205,6 +210,31 @@ export function eventFixture(overrides: Partial<EventDto> = {}): EventDto {
     featured: false,
     createdAt: '2026-10-02T12:00:00.000Z',
     updatedAt: '2026-10-02T12:00:00.000Z',
+    ...overrides,
+  });
+}
+
+export function adminProfileFixture(overrides: Partial<ProfileAdminDto> = {}): ProfileAdminDto {
+  return profileAdminDtoSchema.parse({
+    ...profileFixture(),
+    contact: { publicEmail: 'artist@example.com', phone: '+977 9800000000', showPhone: false },
+    ...overrides,
+  });
+}
+
+export function inquiryFixture(overrides: Partial<InquiryDto> = {}): InquiryDto {
+  return inquiryDtoSchema.parse({
+    id: 'inquiry-1',
+    name: 'Test Person',
+    email: 'person@example.com',
+    inquiryType: 'booking',
+    eventType: 'wedding',
+    preferredDate: '2027-03-12',
+    eventLocation: 'Test Venue',
+    message: 'Hello, we would like live violin for our event.',
+    status: 'new',
+    createdAt: '2026-10-02T09:30:00.000Z',
+    updatedAt: '2026-10-02T09:30:00.000Z',
     ...overrides,
   });
 }

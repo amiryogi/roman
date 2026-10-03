@@ -34,7 +34,7 @@ describe('public profile and home', () => {
       expect(profile.displayName).toBe('Test Artist');
       expect(profile.education).toHaveLength(1);
       expect(profile.portrait?.alt).toBe('Portrait of the artist with a violin');
-      expect(res.headers['cache-control']).toBe('public, max-age=60, stale-while-revalidate=300');
+      expect(res.headers['cache-control']).toBe('public, no-cache');
       expect(res.headers.etag).toMatch(/^W\//);
     });
 

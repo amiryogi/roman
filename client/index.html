@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0F0D0B" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <!-- Every image, video and audio file comes from Cloudinary's CDN (plan §16). -->
     <link rel="preconnect" href="https://res.cloudinary.com" />
-    <!-- Replaced by each page's own tags once the app starts (see src/main.tsx). -->
+    <!-- Placeholders. scripts/postbuild-seo.ts writes each page's own tags (all marked
+         data-prerender), and src/main.tsx removes them once React renders the live ones. -->
     <title data-prerender>Roman Budhathoki — Violinist, Kathmandu</title>
     <meta
       data-prerender

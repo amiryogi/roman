@@ -12,7 +12,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-ivory/10 surface-dark">
       <Container className="flex h-16 items-center justify-between gap-6 sm:h-20">
-        <Wordmark />
+        <Wordmark withViolin />
 
         <nav aria-label="Main" className="hidden xl:block">
           <ul className="flex items-center gap-7">

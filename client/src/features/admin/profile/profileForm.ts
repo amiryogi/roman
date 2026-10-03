@@ -71,7 +71,10 @@ export function toFormValues(profile: ProfileAdminDto): ProfileInput {
     })),
     philosophy: profile.philosophy ?? '',
     skills: profile.skills,
-    affiliations: profile.affiliations.map((item) => ({ name: item.name, since: item.since ?? '' })),
+    affiliations: profile.affiliations.map((item) => ({
+      name: item.name,
+      since: item.since ?? '',
+    })),
     contact: {
       publicEmail: profile.contact.publicEmail ?? '',
       phone: profile.contact.phone ?? '',
@@ -114,4 +117,3 @@ export const EMPTY_PROFILE: ProfileInput = {
   heroMobile: null,
   ogImage: null,
 };
-

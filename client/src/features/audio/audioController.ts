@@ -2,13 +2,13 @@ import type { TrackDto } from '@roman/shared';
 
 import type { MediaUrls } from '@/lib/cloudinary';
 
-import { clearSession, saveSession } from './persistence';
+import { clearSession, saveSession, type SavedSession } from './persistence';
 import {
   currentTrack,
   hasNext,
+  initialPlayerState,
   playerReducer,
   type PlayerAction,
-  type PlayerState,
 } from './playerState';
 import { createTimeStore, type TimeStore } from './timeStore';
 
@@ -29,15 +29,14 @@ export interface AudioController {
   pause: () => void;
   close: () => void;
   retry: () => void;
+  /** Brings back a saved session, paused, unless something has been played since loading. */
+  restore: (saved: SavedSession) => void;
   destroy: () => void;
 }
 
 interface ControllerOptions {
   /** React's dispatch. Every action also updates the controller's own copy of the state. */
   dispatch: (action: PlayerAction) => void;
-  initial: PlayerState;
-  /** Where to resume a restored session, in seconds. */
-  resumeAt?: number;
   urls: () => MediaUrls;
 }
 
@@ -61,24 +60,17 @@ function artworkFor(track: TrackDto, urls: MediaUrls): MediaImage[] {
  * element and playback survive page navigation. Nothing plays without a user gesture: the element
  * has preload="none" and gets its source only when someone presses play.
  */
-export function createAudioController({
-  dispatch,
-  initial,
-  resumeAt,
-  urls,
-}: ControllerOptions): AudioController {
-  let state = initial;
+export function createAudioController({ dispatch, urls }: ControllerOptions): AudioController {
+  let state = initialPlayerState;
   let element: HTMLAudioElement | undefined;
-  let pendingSeek = resumeAt;
+  /** Where to start the next load from: a restored session's saved position. */
+  let pendingSeek: number | undefined;
   let lastSave = 0;
   const timeStore = createTimeStore();
   const session =
     typeof navigator !== 'undefined' && 'mediaSession' in navigator
       ? navigator.mediaSession
       : undefined;
-
-  const restored = currentTrack(state);
-  if (restored) timeStore.set({ currentTime: resumeAt ?? 0, duration: restored.duration });
 
   function send(action: PlayerAction): void {
     state = playerReducer(state, action);
@@ -291,6 +283,14 @@ export function createAudioController({
 
     retry() {
       load(state.queue, state.index, element?.currentTime);
+    },
+
+    restore(saved) {
+      if (state.index !== -1) return;
+      send({ type: 'restore', queue: saved.queue, index: saved.index, volume: saved.volume });
+      pendingSeek = saved.position;
+      const track = currentTrack(state);
+      if (track) timeStore.set({ currentTime: saved.position, duration: track.duration });
     },
 
     destroy() {

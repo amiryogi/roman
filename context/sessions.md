@@ -1,6 +1,6 @@
 # Session summary: Roman Budhathoki website
 
-Last updated: 2026-10-03. Covers plan phases 1–8 of 12. The full specification is
+Last updated: 2026-10-03. Covers plan phases 1–10 of 12. The full specification is
 [ROMAN_BUDHATHOKI_WEBSITE_PLAN.md](../ROMAN_BUDHATHOKI_WEBSITE_PLAN.md), and each phase's deviations are recorded in
 its "Implementation notes (Phase N)" in §0.4. Working rules are in [CLAUDE.md](../CLAUDE.md).
 
@@ -15,13 +15,13 @@ its "Implementation notes (Phase N)" in §0.4. Working rules are in [CLAUDE.md](
 | 5     | Design system, public layout, Home, About                       | Done, committed. **Owner's visual review still open.** |
 | 6     | Music: tracks, albums, persistent audio player, admin           | Done, committed                                        |
 | 7     | Videos and gallery, lightbox, bulk photo upload                 | Done, committed                                        |
-| 8     | Events (Performances) and contact/booking form                  | Done, **not committed yet**                            |
-| 9     | Admin dashboard, full profile editor, inquiries inbox           | Next                                                   |
-| 10    | SEO prerendering, structured data, a11y audit, bundle trimming  | To do                                                  |
-| 11    | Playwright E2E, coverage, CI hardening                          | To do                                                  |
+| 8     | Events (Performances) and contact/booking form                  | Done, committed                                        |
+| 9     | Admin dashboard, full profile editor, inquiries inbox           | Done; final changes **not committed**                  |
+| 10    | SEO prerendering, structured data, a11y audit, bundle trimming  | Done, **not committed**; LCP target open (see below)   |
+| 11    | Playwright E2E, coverage, CI hardening                          | Next                                                   |
 | 12    | Production deployment (Vercel, Render, Atlas, Cloudinary)       | To do                                                  |
 
-Quality gate at the end of Phase 8: `npm run check` passes with **377 tests** (41 shared, 206 server, 130 client), plus
+Quality gate at the end of Phase 10: `npm run check` passes with **424 tests** (41 shared, 219 server, 164 client), plus
 no-JS, lockfile, client-secrets, typecheck, lint and Prettier.
 
 ## What exists
@@ -35,18 +35,18 @@ no-JS, lockfile, client-secrets, typecheck, lint and Prettier.
 - **Videos:** YouTube embeds or uploaded files, each played in a modal.
 - **Gallery:** masonry grid with a lazy-loaded lightbox.
 - **Performances:** upcoming and past events, shown in the event's own time zone.
-- **Contact:** booking form.
+- **Contact:** booking form, public contact details and social links.
 - **Also:** 404 page, route error page.
 
-**Admin** (`/admin`, lazy-loaded): sign-in, account and password, and management pages for tracks, albums, videos, the
-gallery (including bulk upload) and events. They share `ContentListPage`, `AdminTable` and `ConfirmDialog`, and save
-with toasts. The Dashboard is still a placeholder, filled in Phase 9.
+**Admin** (`/admin`, lazy-loaded): sign-in, account and password, a dashboard, the profile editor, the inquiries inbox,
+and management pages for tracks, albums, videos, the gallery (including bulk upload) and events. They share
+`ContentListPage`, `AdminTable` and `ConfirmDialog`, save with toasts, and ask before leaving unsaved changes.
 
 **API** (Express 5 + Mongoose):
 
 - **Public:** `/api/health`, `profile`, `home`, `tracks`, `albums`, `albums/:slug`, `videos`, `gallery`, `events`,
   `inquiries` (plus `form-token`).
-- **Admin:** `/api/admin/{uploads,tracks,albums,videos,gallery,events}`, all behind `requireAuth`. Every admin path is
+- **Admin:** `/api/admin/{uploads,tracks,albums,videos,gallery,events,profile,inquiries,stats}`, all behind `requireAuth`. Every admin path is
   in the 401 sweep test.
 
 **Media:**
@@ -78,39 +78,71 @@ with toasts. The Dashboard is still a placeholder, filled in Phase 9.
 
 ## Notes for the next session
 
-- **Local DNS quirk:** on this machine, Node's DNS points at `127.0.0.1`, which refuses SRV lookups, so the Atlas
-  `mongodb+srv://` URI fails and `npm run dev` can't reach the dev database. Workarounds: fix the machine's DNS (find the
-  VPN, DNS filter or virtual adapter), or use Atlas's standard `mongodb://host1,host2,host3/...` connection string. For
-  checks, the sessions used a throwaway in-memory MongoDB seeded from the real Cloudinary dev folder.
+- **Local DNS quirk (fixed):** Windows resolves through 8.8.8.8/1.1.1.1, but Node's own resolver gets `127.0.0.1`,
+  so the SRV lookup behind `mongodb+srv://` failed (`querySrv ECONNREFUSED`). `server/.env` now sets
+  `DNS_SERVERS=8.8.8.8,1.1.1.1`, which `connectDb` applies before connecting (server and all scripts). Production
+  doesn't need it.
 - **Environment:**
   - `server/.env` holds the Cloudinary credentials and a generated `JWT_ACCESS_SECRET`.
   - `client/.env` holds `VITE_CLOUDINARY_CLOUD_NAME`.
   - Production additionally needs `IP_HASH_SALT`, `CLOUDINARY_ROOT_FOLDER` and `CLIENT_ORIGINS`.
   - Never commit `.env` files. The credentials were once typed into `.env.example`; they were blanked before any commit,
     but rotating the Cloudinary secret is still advisable.
-- **Bundle budget:** Home's initial JS is 156.8 KiB gzipped against a 160 KB budget. Zod is about 30 KB of it. Phase 10
-  should trim it, for example by lazy-loading below-the-fold Home sections.
+- **JS budget:** every client build checks it (`scripts/check-bundle.ts`): 157.1–159.6 KiB of 160 KiB fetched up front,
+  counting the preloaded validation chunk. Little headroom: trim before adding to public pages.
+- **LCP:** 2.7–3.0 s in Lighthouse's mobile simulation against a 2.5 s target. Closing the gap needs build-time
+  rendering of the page body with hydration (an owner decision; §17 chose head-only prerendering).
 - **Captions:** video caption files (VTT) are a planned enhancement; no empty `<track>` is rendered.
+- **In-memory MongoDB for checks:** a scratch script outside the server's Vitest config downloads its own 781 MB
+  binary. Set `MONGOMS_DOWNLOAD_DIR=server/node_modules/.cache/mongodb-memory-server` to reuse the tests' copy.
+- **SEO overrides:** the profile's `seo` fields apply to the home page; link previews pick them up on the next deploy
+  (set `SEO_BUILD_API_URL` for the build). Experience entries in the "Other" category are stored but never shown.
+- **Background servers in checks:** background tasks stop after 30 minutes by default; give the API, database and
+  preview a longer limit, and free ports 4000/4173/27999 by PID afterwards (stopping the wrapper leaves the child).
 - **Unchecked:** lock-screen controls on a real Android or iPhone (manual check from Phase 6).
 
 ### Bugs found and fixed
 
-| Phase | Bug                                                           | Fix                                                          |
-| ----- | ------------------------------------------------------------- | ------------------------------------------------------------ |
-| 4     | Cloudinary SDK errors carried the API secret into server logs | SDK errors reduced to message and HTTP status before logging |
-| 4     | Audio duration missing from the Admin API response            | Verification requests `media_metadata`                       |
-| 5     | Header overflowed at 360 px                                   | Header "Book" button hidden via a wrapper on phones          |
-| 5     | Footer shifted the layout while pages loaded                  | `<main>` given at least a full viewport of height            |
-| 5     | StrictMode moved focus on first load                          | Route focus keyed on the previous pathname                   |
-| 6     | Hydration warning when opening a lazy page directly           | Dark hydrate fallback for the public routes                  |
-| 7     | Placeholder colour showed through transparent PNGs            | Placeholder cleared once the image loads                     |
-| 7     | Technical alt-text validation message                         | Plain-language messages in the shared alt-text schema        |
+| Phase | Bug                                                           | Fix                                                           |
+| ----- | ------------------------------------------------------------- | ------------------------------------------------------------- |
+| 4     | Cloudinary SDK errors carried the API secret into server logs | SDK errors reduced to message and HTTP status before logging  |
+| 4     | Audio duration missing from the Admin API response            | Verification requests `media_metadata`                        |
+| 5     | Header overflowed at 360 px                                   | Header "Book" button hidden via a wrapper on phones           |
+| 5     | Footer shifted the layout while pages loaded                  | `<main>` given at least a full viewport of height             |
+| 5     | StrictMode moved focus on first load                          | Route focus keyed on the previous pathname                    |
+| 6     | Hydration warning when opening a lazy page directly           | Dark hydrate fallback for the public routes                   |
+| 7     | Placeholder colour showed through transparent PNGs            | Placeholder cleared once the image loads                      |
+| 7     | Technical alt-text validation message                         | Plain-language messages in the shared alt-text schema         |
+| 9     | Social links were stored but shown nowhere publicly           | Listed on the Contact page under "Elsewhere"                  |
+| 9     | Selected inquiry status button rendered white on white        | Own class instead of overriding the secondary button style    |
+| 9     | Saving an inquiry refetched the detail it had just updated    | Only the list queries and stats are invalidated               |
+| 10    | Zod's eval probe reported as a CSP violation                  | `jitless` set from the entry via `globalThis`                 |
+| 10    | Constants chunk pulled Zod into the entry                     | Rolldown groups with priority (`shared-lite` above `schemas`) |
+| 10    | Video card headings skipped a level on the Videos page        | `headingLevel` prop (h2 there, h3 on Home)                    |
+| 10    | Contact details pushed the form down while loading (CLS 0.09) | Placeholder of the details' size while the profile loads      |
 
-## Phase 9 scope (next)
+## Phase 9 (done)
 
-- **Dashboard:** counts from `GET /api/admin/stats`, the latest new inquiries, and shortcuts.
-- **Profile editor:** `GET` and `PUT /api/admin/profile` for every §8 field (identity, biography, education, experience,
-  achievements, philosophy, skills, contact including `showPhone`, socials, the four image slots, SEO).
-- **Inquiries inbox:** `/api/admin/inquiries` with filters, a detail view, status, private notes, a `mailto:` reply,
-  delete, and a "new" count badge.
-- **Admin polish:** an unsaved-changes prompt, consistent empty states, and updating the 401 sweep for the new paths.
+- Dashboard (`GET /api/admin/stats`): counts, the latest five new inquiries, shortcuts. The sidebar shows a "new"
+  inquiries badge that refreshes every minute.
+- Profile editor (`GET|PUT /api/admin/profile`): every §8 field, repeatable sections with move up/down, four image
+  slots with alt text, contact with `showPhone`, socials, SEO. `PUT` creates the profile if it is missing.
+- Inquiries inbox: URL filters, a detail page that marks new messages read, a `mailto:` reply, status buttons, private
+  notes, and delete with confirmation.
+- `useUnsavedChanges(isDirty)` on every admin edit form; navigate with `SAVED_STATE` after a save.
+
+## Phase 10 (done)
+
+- Prerendered heads per public page (title, description, canonical, Open Graph, JSON-LD, preloads), `spa.html` for
+  other addresses, `sitemap.xml`, `robots.txt`, manifest and icons. Content from `SEO_BUILD_API_URL` at build time.
+- Structured data from real data only: `Person`, `MusicEvent` (upcoming), `MusicRecording`/`MusicAlbum`, `VideoObject`.
+- Zod and the schemas load with the first request instead of with the page; each page preloads its chunks, its first
+  API request and the validation chunk. `client/vercel.json` holds the CSP, caching and routing; `vite preview` mirrors it.
+- Lighthouse (mobile): performance 92–94 (Contact 86–90), accessibility, best practices and SEO 100; axe clean.
+- Still open: LCP ≤ 2.5 s, the manual screen-reader pass, and the sharing/Rich Results validators (need the public URL).
+
+## Phase 11 scope (next)
+
+- Playwright E2E for the main flows, with `@axe-core/playwright` on every public page.
+- A seeded API in CI so `npm run lighthouse` can run there.
+- Coverage and CI hardening.

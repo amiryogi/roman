@@ -64,7 +64,49 @@ export default defineConfig([
   },
 
   {
-    files: ['server/**/*.ts', 'shared/**/*.ts', 'scripts/**/*.ts', '*.ts'],
+    // Public pages keep Zod and the schemas out of their initial JavaScript (plan §16): they import
+    // values from `@roman/shared/lite` and validate through the lazily loaded lib/api/validation.ts.
+    files: ['client/src/**/*.{ts,tsx}'],
+    ignores: [
+      'client/src/features/admin/**',
+      'client/src/lib/api/{admin,auth,uploads,validation}.ts',
+      'client/src/lib/cloudinaryUpload.ts',
+      'client/src/features/audio/sessionSchema.ts',
+      'client/src/features/contact/ContactForm.tsx',
+      'client/src/**/*.test.{ts,tsx}',
+      'client/src/test/**',
+    ],
+    rules: {
+      '@typescript-eslint/no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@roman/shared',
+              allowTypeImports: true,
+              message:
+                'Public code imports values from @roman/shared/lite; schemas load lazily (plan §16).',
+            },
+            {
+              name: 'zod',
+              allowTypeImports: true,
+              message: 'Zod loads lazily on public pages (plan §16).',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    files: [
+      'server/**/*.ts',
+      'shared/**/*.ts',
+      'scripts/**/*.ts',
+      '*.ts',
+      'client/scripts/**/*.ts',
+      'client/*.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
 

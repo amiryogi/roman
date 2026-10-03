@@ -2,10 +2,8 @@ import type { ImageDto } from '@roman/shared';
 
 import { getMediaUrls, type MediaUrls } from '@/lib/cloudinary';
 
+import { HERO_MOBILE_QUERY, HERO_SIZES } from './hero';
 import { clearPlaceholder, imageAttributes, placeholderStyle } from './imageAttributes';
-
-/** Below this width the mobile image is used (Tailwind's `md` breakpoint). */
-export const HERO_MOBILE_QUERY = '(max-width: 767px)';
 
 interface HeroPictureProps {
   desktop: ImageDto;
@@ -34,7 +32,7 @@ export function HeroPicture({
         <source
           media={HERO_MOBILE_QUERY}
           srcSet={small.srcSet}
-          sizes="100vw"
+          sizes={HERO_SIZES}
           width={small.width}
           height={small.height}
         />
@@ -42,7 +40,7 @@ export function HeroPicture({
       <img
         src={main.src}
         srcSet={main.srcSet}
-        sizes="100vw"
+        sizes={HERO_SIZES}
         width={main.width}
         height={main.height}
         alt={desktop.alt}

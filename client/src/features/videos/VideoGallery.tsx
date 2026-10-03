@@ -14,7 +14,13 @@ import { videoPosterUrl } from './videoPoster';
  * A grid of video cards and the player dialog they open (plan §12.6). Nothing from the video,
  * and no YouTube code, loads until a card is clicked; starting a video pauses the music.
  */
-export function VideoGallery({ videos }: { videos: VideoDto[] }) {
+interface VideoGalleryProps {
+  videos: VideoDto[];
+  /** 2 directly under the page's <h1> (Videos page), 3 inside a titled section (Home). */
+  headingLevel?: 2 | 3;
+}
+
+export function VideoGallery({ videos, headingLevel = 3 }: VideoGalleryProps) {
   const [selected, setSelected] = useState<VideoDto | null>(null);
 
   return (
@@ -24,6 +30,7 @@ export function VideoGallery({ videos }: { videos: VideoDto[] }) {
           <li key={video.id}>
             <VideoCard
               video={video}
+              headingLevel={headingLevel}
               onPlay={() => {
                 setSelected(video);
               }}
@@ -43,7 +50,16 @@ export function VideoGallery({ videos }: { videos: VideoDto[] }) {
   );
 }
 
-function VideoCard({ video, onPlay }: { video: VideoDto; onPlay: () => void }) {
+function VideoCard({
+  video,
+  headingLevel,
+  onPlay,
+}: {
+  video: VideoDto;
+  headingLevel: 2 | 3;
+  onPlay: () => void;
+}) {
+  const Heading = headingLevel === 2 ? 'h2' : 'h3';
   const urls = getMediaUrls();
   const details = [
     VIDEO_CATEGORY_LABELS[video.category],
@@ -86,9 +102,9 @@ function VideoCard({ video, onPlay }: { video: VideoDto; onPlay: () => void }) {
         )}
       </button>
       <div>
-        <h3 id={`video-${video.id}`} className="text-lg font-medium">
+        <Heading id={`video-${video.id}`} className="text-lg font-medium">
           {video.title}
-        </h3>
+        </Heading>
         {details && <p className="mt-1 text-sm text-(--muted)">{details}</p>}
       </div>
     </article>

@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–8 complete on 2026-10-03. The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 9 (admin dashboard, profile editor, inquiries).
+**Status:** Phases 1–10 complete on 2026-10-03; Phase 10's lab LCP target (2.5 s) is not met (2.7–3.0 s, see its notes). The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 11 (testing completion).
 **Plan date:** 2026-10-02
 
 ---
@@ -149,6 +149,41 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - The contact form shows the error summary as an alert, with links to the fields, and moves focus to the first invalid field (§12.4). Success is announced with `role="status"`. There is no success toast on the public site, to keep `sonner` out of the public bundle; the inline message is the announcement.
 - The temporary "In preparation" placeholder pages are gone: every public section is real now.
 - Real-browser check: a submission 2 s after load was refused, the retry was stored with a hashed IP only, and the server log contains no visitor details. Initial JS for Home is 156.8 KiB gzipped (160,589 bytes; budget 160 KB), so Phase 10's bundle work is due.
+
+**Implementation notes (Phase 9):**
+
+- `GET /api/admin/stats` counts all tracks, videos and gallery images (drafts included), upcoming events, new inquiries, and drafts summed across tracks, albums, videos, gallery and events. The dashboard's drafts card has no link because there is no single list to send it to.
+- `PUT /api/admin/profile` replaces the whole profile and creates it if it doesn't exist yet; the editor starts empty on a 404. As with any full replacement, an image slot that isn't sent is removed, and `{ alt }` alone keeps the current image. Replaced or removed images are deleted from Cloudinary after the save succeeds.
+- The profile editor is one hand-written form (§13): repeatable sections with add, remove and move up/down buttons, and skills and highlights entered one per line. It validates with the shared `profileInputSchema` before sending.
+- Social links had no public display yet, so the Contact page now lists them under "Elsewhere". The SEO overrides and the link-preview image are stored, but nothing reads them until Phase 10's `postbuild-seo.ts`; the editor says they apply on the next deploy. Experience entries in the "Other" category are stored but not shown on the About page, and the editor says so.
+- Inquiries inbox: filters (`status`, `type`) and the page number live in the URL. Opening a "new" inquiry marks it read. The sidebar badge comes from the stats query and refreshes every 60 s. "Reply by email" opens a `mailto:` link with a subject such as "Re: Booking a performance (12 March 2027)"; the status is changed by hand once the email is sent.
+- Unsaved changes: every admin edit form (the five content editors, the profile and inquiry notes) uses `useUnsavedChanges(isDirty)`. Leaving through the app asks in a `ConfirmDialog`; closing or reloading the tab gets the browser's own prompt. Navigation after a successful save passes `SAVED_STATE` so it is never blocked.
+- Real-browser check (in-memory database, seeded content): two inquiries through the public API, the dashboard counts and badge, auto-read, status change, notes, the leave prompt, filters, a profile save visible through `GET /api/profile` (phone still hidden), the new social link on Contact, and leaving a track editor without saving. No console errors. The "inquiry workflow E2E" acceptance item is covered by this scripted browser run plus component and API tests; there is no committed browser E2E suite.
+
+**Implementation notes (Phase 10):**
+
+- **Prerendered heads.** `client/scripts/postbuild-seo.ts` writes `dist/<page>/index.html` for the seven public pages and `dist/spa.html` (no canonical) for every other address, plus `sitemap.xml` (with `lastmod` per section) and `robots.txt` with the sitemap URL. Titles, descriptions and canonical/OG data come from `resolveSeo` and `PAGE_SEO` (`client/src/components/seo/`), the same code the runtime `<Seo>` uses. Content comes from `SEO_BUILD_API_URL`; when it is set but unreachable (three attempts, 60 s each for a sleeping Render instance), the build fails rather than silently shipping without previews.
+- **Profile SEO overrides** (`seo.metaTitle`, `seo.metaDescription`) apply to the home page, at runtime (so Google's rendered view sees them immediately) and in the prerendered HTML (link previews, from the next deploy). `ProfileSummaryDto` gained `seo` and `ogImage` for this. The share image is `ogImage`, else a 1200×630 crop of the hero, else the portrait.
+- **Structured data** (`structuredData.ts`): `Person` on Home (build time only, since Home has no full profile at runtime) and About; `MusicEvent` for upcoming events (start time with the zone's offset, offers only with a ticket link, no prices); `MusicRecording`/`MusicAlbum`; `VideoObject`. Fields without data are left out. `memberOf` lists current performance roles with one named organisation; collective entries ("Various bands…") are left out. JSON is serialised with `<` escaped. Pages render the same data at runtime from live content, and `main.tsx` removes the prerendered copies (`data-prerender`).
+- **Zod out of the initial JavaScript.** Public code imports values only from `@roman/shared/lite` (constants and time-zone helpers; a lint rule enforces it). Responses are validated by `lib/api/validation.ts`, loaded on demand: public requests pass a picker, `(s) => s.homeDtoSchema`. `env.ts` validates by hand, the player's saved session is validated asynchronously, and the contact form is lazy-loaded behind a placeholder of its size.
+- **Preloads in the prerendered HTML:** the page's own chunks and the validation chunk (`modulepreload`), the page's first API request (`<link rel="preload" as="fetch">`, URLs from `lib/api/publicPaths.ts`), the hero (phone and desktop sources) on Home, the first photo on Gallery, and the two critical fonts. Without the font preloads the late font swap shifted Music's layout (CLS 0.081); with them, 0.025.
+- **JS budget, counted strictly:** `scripts/check-bundle.ts` runs at the end of every client build and fails it when a public page fetches more than 160 KiB of gzipped JavaScript up front, including the preloaded validation code. Result: 157.1–159.6 KiB (render-blocking part: 128–131 KiB, from 147–157 KiB before). The margin is small, so growth on public pages needs trimming first.
+- **CSP:** `client/vercel.json` sets the §15 headers, long-term caching for `/assets/*`, `X-Robots-Tag: noindex` for `/admin` and the fallback to `spa.html`; the `/api` rewrite to Render is added in Phase 12 with the service URL. `vite preview` uses the same headers and routing. Zod's `new Function` probe would be reported as a CSP violation, so the entry sets Zod's `jitless` flag through `globalThis.__zod_globalConfig` before any schema exists; Zod and the schemas are one chunk (`schemas`) and the Zod-free constants another (`shared-lite`, a higher-priority Rolldown group so the entry never pulls in Zod).
+- **Icons and manifest:** `manifest.webmanifest`, 192/512 px icons, a maskable icon and an Apple touch icon, rendered from the favicon design.
+- **Deviations:** `lighthouserc.json`/`@lhci/cli` were replaced by `lighthouse-budgets.json` and `npm run lighthouse` (a small runner around Lighthouse 13), because `@lhci/cli` brings 11 high-severity advisories that would fail CI's `npm audit`. The Lighthouse run is not in CI yet: it needs a seeded API, which Phase 11's E2E setup provides. No LQIP was added: the dominant-colour placeholders already give CLS 0 on image pages.
+- **Results** (Lighthouse 13, mobile, simulated slow 4G, production build with seeded content):
+
+  | Page | Performance | Accessibility | Best practices | SEO | LCP | CLS |
+  |---|---|---|---|---|---|---|
+  | Home | 92–94 | 100 | 100 | 100 | 2.74–3.04 s | 0 |
+  | Music | 93–94 | 100 | 100 | 100 | 2.75–2.77 s | 0.025 |
+  | Gallery | 92–93 | 100 | 100 | 100 | 2.87–3.01 s | 0 |
+  | About / Videos / Events | 93–94 | 100 | 100 | 100 | 2.77–2.88 s | ≤ 0.003 |
+  | Contact | 86–90 | 100 | 100 | 100 | 3.09–3.38 s | 0 |
+
+  Every budget is met except **LCP ≤ 2.5 s**. The site renders in the browser, so nothing paints until about 128 KiB of JavaScript has downloaded and run (first paint about 2.2 s in this simulation). Reaching 2.5 s would need the page body itself in the prerendered HTML (build-time rendering of the React tree with hydration), which §17 deliberately avoided. That is an owner decision.
+- **Accessibility:** axe-core 4.10 reports no violations on any public page at 390 and 1280 px (a heading-order issue on Videos was fixed). Keyboard order and visible focus were checked on Home. The manual screen-reader pass (NVDA + Firefox, VoiceOver + Safari iOS) still needs a person with those tools.
+- **Not yet possible:** the Facebook Sharing Debugger, X card validator and Rich Results Test need the public URL (Phase 12).
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 
@@ -771,7 +806,7 @@ They build URLs from `VITE_CLOUDINARY_CLOUD_NAME` (public information). There is
 
 - **Pagination:** `?page=1&limit=12`. `limit` defaults vary by resource and are capped at 50. The query is validated by Zod (coerced ints).
 - **IDs:** admin routes use `:id` (a validated ObjectId; invalid gets 404, not 500). Public routes use slugs or lists.
-- **Public GET caching:** `Cache-Control: public, max-age=60, stale-while-revalidate=300` plus a weak ETag. Admin routes and auth routes get `Cache-Control: no-store`.
+- **Public GET caching:** `Cache-Control: public, no-cache` plus a weak ETag (changed after testing: a `max-age` kept newly published content hidden for minutes). Admin routes and auth routes get `Cache-Control: no-store`.
 - **Partial updates:** `PATCH` with a partial body validated by `schema.partial().strict()`. Unknown keys get 422. `PUT` is used only for the singleton profile.
 - **Auth header:** `Authorization: Bearer <accessToken>` on `/api/admin/*` and on `/api/auth/me` and `/api/auth/password`.
 
@@ -1076,7 +1111,7 @@ Resource-specific endpoints:
 7. **Caching:**
    - Cloudinary URLs are immutable thanks to the `v<version>` segment, so the CDN and browser cache them long-term.
    - Vite assets are content-hashed (`Cache-Control: immutable, max-age=31536000`), and `index.html` uses `no-cache`.
-   - API GETs use short `max-age` plus SWR and ETag.
+   - API GETs use `no-cache` with an ETag: always revalidated, a 304 when unchanged.
    - TanStack Query `staleTime` avoids refetching on navigation.
 8. **Database:** compound indexes matching each public query's filter and sort (§8). Index usage is verified with `explain()` in Phase 2 tests for the list queries.
 9. **Vite:**

@@ -1,8 +1,12 @@
 import type { RequestHandler } from 'express';
 
-/** Public content: short browser/CDN cache with background revalidation (plan §16). */
+/**
+ * Public content: cacheable, but checked with the server every time. Express's ETag turns an
+ * unchanged response into a small 304, and a change the owner publishes shows on the next request
+ * instead of after a cache period (a max-age kept stale lists on screen for minutes).
+ */
 export const publicCache: RequestHandler = (_req, res, next) => {
-  res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 'public, no-cache');
   next();
 };
 

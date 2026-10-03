@@ -1,0 +1,15 @@
+{
+  "$comment": "Lighthouse budgets (plan §16, Phase 10). Checked by `npm run lighthouse` against a running preview build with content.",
+  "paths": ["/", "/music", "/gallery"],
+  "categories": {
+    "performance": 0.9,
+    "accessibility": 1,
+    "best-practices": 0.95,
+    "seo": 1
+  },
+  "metrics": {
+    "largest-contentful-paint": 2500,
+    "cumulative-layout-shift": 0.05,
+    "total-blocking-time": 200
+  }
+}

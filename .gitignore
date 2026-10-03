@@ -17,7 +17,7 @@ test-results/
 # Source material: personal data and raw media live outside git.
 # Media is uploaded to Cloudinary by the seed script (plan ASM-7).
 *.docx
-images/
+/images/
 *.mp3
 
 # OS / editors

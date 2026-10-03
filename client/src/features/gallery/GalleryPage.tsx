@@ -1,8 +1,9 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 
-import { GALLERY_CATEGORIES, galleryCategorySchema } from '@roman/shared';
+import { GALLERY_CATEGORIES, isOneOf } from '@roman/shared/lite';
 
+import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
 import { CategoryFilter } from '@/components/ui/CategoryFilter';
 import { Container } from '@/components/ui/Container';
@@ -16,8 +17,8 @@ import { GalleryGrid } from './GalleryGrid';
 /** Gallery (plan §6): category filter in the URL, masonry grid, "Load more", viewer. */
 export function GalleryPage() {
   const [search] = useSearchParams();
-  const parsed = galleryCategorySchema.safeParse(search.get('category'));
-  const category = parsed.success ? parsed.data : undefined;
+  const requested = search.get('category');
+  const category = isOneOf(GALLERY_CATEGORIES, requested) ? requested : undefined;
 
   const gallery = useInfiniteQuery({
     queryKey: queryKeys.gallery(category),
@@ -30,7 +31,7 @@ export function GalleryPage() {
 
   return (
     <div className="surface-light">
-      <Seo title="Gallery" path="/gallery" />
+      <Seo {...PAGE_SEO.gallery} />
       <Container className="pt-16 pb-24 sm:pt-24">
         <p className="label-caps text-(--accent)">Photographs</p>
         <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">

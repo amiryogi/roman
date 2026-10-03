@@ -1,11 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
+import { lazy, Suspense } from 'react';
 
+import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
 import { Container } from '@/components/ui/Container';
 import { getProfile, queryKeys } from '@/lib/api/public';
 import { SOCIAL_PLATFORM_LABELS } from '@/lib/labels';
 
-import { ContactForm } from './ContactForm';
+import { Skeleton } from '@/components/ui/Skeleton';
+
+// The form brings React Hook Form and the validation schemas; loading it separately lets the page's
+// text and contact details render first (plan §16).
+const ContactForm = lazy(() =>
+  import('./ContactForm').then((module) => ({ default: module.ContactForm })),
+);
 
 /**
  * Contact and booking (plan §6): the form, the public contact details the owner chose to show
@@ -18,11 +26,7 @@ export function ContactPage() {
 
   return (
     <div className="surface-light">
-      <Seo
-        title="Contact & Booking"
-        path="/contact"
-        description="Book Roman Budhathoki, violinist in Kathmandu, for weddings, concerts, events, studio recordings and violin lessons."
-      />
+      <Seo {...PAGE_SEO.contact} />
       <Container className="grid gap-12 pt-16 pb-24 sm:pt-24 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
           <p className="label-caps text-(--accent)">Contact & booking</p>
@@ -35,6 +39,13 @@ export function ContactPage() {
             music, the better.
           </p>
 
+          {profile.isPending && (
+            // Holds the place of the usual two entries (email and location), so the form below
+            // doesn't move when the details arrive.
+            <div aria-hidden="true" className="mt-10 border-t border-current/15 pt-8">
+              <Skeleton className="h-[7.25rem]" />
+            </div>
+          )}
           {contact && (contact.publicEmail ?? contact.phone ?? contact.location) && (
             <dl className="mt-10 space-y-5 border-t border-current/15 pt-8">
               {contact.publicEmail && (
@@ -99,7 +110,15 @@ export function ContactPage() {
         </div>
 
         <div className="lg:col-span-7">
-          <ContactForm />
+          <Suspense
+            fallback={
+              <div role="status" aria-label="Loading the booking form">
+                <Skeleton className="h-[52rem]" />
+              </div>
+            }
+          >
+            <ContactForm />
+          </Suspense>
         </div>
       </Container>
     </div>

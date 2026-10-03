@@ -51,7 +51,7 @@ async function main(): Promise<void> {
 
   const env = loadEnv();
   configureMongoose({ autoIndex: false });
-  await connectDb(env.mongodbUri);
+  await connectDb(env.mongodbUri, { dnsServers: env.dnsServers });
 
   const normalisedEmail = email.data.toLowerCase();
   const existing = await AdminModel.findOne({ email: normalisedEmail });

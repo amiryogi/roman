@@ -30,7 +30,7 @@ mongoose.connection.on('reconnected', () => {
 });
 
 try {
-  await connectDb(env.mongodbUri);
+  await connectDb(env.mongodbUri, { dnsServers: env.dnsServers });
   logger.info('MongoDB connected');
 } catch (error) {
   logger.fatal({ err: error }, 'Could not connect to MongoDB');

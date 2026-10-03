@@ -1,16 +1,33 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import {
-  apiErrorBodySchema,
-  paginationMetaSchema,
-  authResponseDtoSchema,
-  type ApiErrorDetail,
-  type AuthResponseDto,
-  type ErrorCode,
-  type Paginated,
-} from '@roman/shared';
+import type { ApiErrorDetail, AuthResponseDto, ErrorCode, Paginated } from '@roman/shared';
 
 import { env } from '@/lib/env';
+
+import type { ResponseSchemas } from './validation';
+
+/**
+ * A response schema, or a function that picks one of the public response schemas. Public code uses
+ * the picker form, `(s) => s.homeDtoSchema`, so Zod and the schemas load with the first request
+ * instead of with the page (plan §16). Admin code, which is lazy-loaded anyway, passes schemas.
+ */
+export type SchemaSource<S extends z.ZodType> = S | ((schemas: ResponseSchemas) => S);
+
+function isPicker<S extends z.ZodType>(
+  source: SchemaSource<S>,
+): source is (schemas: ResponseSchemas) => S {
+  return typeof source === 'function';
+}
+
+/** The validation chunk. A failed download (e.g. offline) is reported like a failed request. */
+function loadValidation() {
+  const loading = import('./validation').catch(() => {
+    throw new ApiClientError(0, 'NETWORK_ERROR', 'Could not reach the server.');
+  });
+  // The request may fail first; the caller then never awaits this, so don't report it unhandled.
+  loading.catch(() => undefined);
+  return loading;
+}
 
 export type ClientErrorCode = ErrorCode | 'NETWORK_ERROR' | 'TIMEOUT' | 'INVALID_RESPONSE';
 
@@ -37,13 +54,6 @@ export interface RequestOptions {
 }
 
 const REQUEST_TIMEOUT_MS = 15_000;
-
-// The envelope is checked first, then `data` against the endpoint's own schema.
-const successEnvelopeSchema = z.object({
-  success: z.literal(true),
-  data: z.unknown(),
-  meta: paginationMetaSchema.optional(),
-});
 
 // --- Admin session: the access token lives in memory only (plan §11.2) ---------------------------
 
@@ -108,11 +118,9 @@ async function readJson(res: Response): Promise<unknown> {
 }
 
 async function toApiError(res: Response): Promise<ApiClientError> {
-  const parsed = apiErrorBodySchema.safeParse(await readJson(res));
-  if (parsed.success) {
-    const { code, message, details } = parsed.data.error;
-    return new ApiClientError(res.status, code, message, details);
-  }
+  const [body, { parseErrorBody }] = await Promise.all([readJson(res), loadValidation()]);
+  const error = parseErrorBody(body);
+  if (error) return new ApiClientError(res.status, error.code, error.message, error.details);
   return new ApiClientError(res.status, 'INVALID_RESPONSE', 'Unexpected response from the server.');
 }
 
@@ -137,42 +145,37 @@ async function execute(path: string, options: RequestOptions): Promise<Response>
   throw error;
 }
 
+function invalidResponse(res: Response): ApiClientError {
+  return new ApiClientError(res.status, 'INVALID_RESPONSE', 'Unexpected response from the server.');
+}
+
 /** Performs a request and validates the success envelope's `data` against `schema`. */
 export async function apiRequest<S extends z.ZodType>(
   path: string,
-  schema: S,
+  schema: SchemaSource<S>,
   options: RequestOptions = {},
 ): Promise<z.output<S>> {
+  // Started first, so the validation code downloads while the request is in flight.
+  const validation = loadValidation();
   const res = await execute(path, options);
-  const envelope = successEnvelopeSchema.safeParse(await readJson(res));
-  const data = envelope.success ? schema.safeParse(envelope.data.data) : undefined;
-  if (!data?.success) {
-    throw new ApiClientError(
-      res.status,
-      'INVALID_RESPONSE',
-      'Unexpected response from the server.',
-    );
-  }
-  return data.data;
+  const [body, { parseData, schemas }] = await Promise.all([readJson(res), validation]);
+  const data = parseData(body, isPicker(schema) ? schema(schemas) : schema);
+  if (data === undefined) throw invalidResponse(res);
+  return data;
 }
 
 /** For paginated lists: validates each item and requires the pagination `meta`. */
 export async function apiRequestPage<S extends z.ZodType>(
   path: string,
-  itemSchema: S,
+  itemSchema: SchemaSource<S>,
   options: RequestOptions = {},
 ): Promise<Paginated<z.output<S>>> {
+  const validation = loadValidation();
   const res = await execute(path, options);
-  const envelope = successEnvelopeSchema.safeParse(await readJson(res));
-  const items = envelope.success ? z.array(itemSchema).safeParse(envelope.data.data) : undefined;
-  if (!envelope.success || !envelope.data.meta || !items?.success) {
-    throw new ApiClientError(
-      res.status,
-      'INVALID_RESPONSE',
-      'Unexpected response from the server.',
-    );
-  }
-  return { items: items.data, meta: envelope.data.meta };
+  const [body, { parsePage, schemas }] = await Promise.all([readJson(res), validation]);
+  const page = parsePage(body, isPicker(itemSchema) ? itemSchema(schemas) : itemSchema);
+  if (!page) throw invalidResponse(res);
+  return page;
 }
 
 /** For endpoints that answer 204 No Content. */
@@ -191,7 +194,13 @@ export async function apiRequestNoContent(
 export function refreshSession(): Promise<AuthResponseDto | null> {
   refreshInFlight ??= (async () => {
     try {
-      const session = await apiRequest('/auth/refresh', authResponseDtoSchema, { method: 'POST' });
+      const session = await apiRequest(
+        '/auth/refresh',
+        (schemas) => schemas.authResponseDtoSchema,
+        {
+          method: 'POST',
+        },
+      );
       accessToken = session.accessToken;
       return session;
     } catch (error) {

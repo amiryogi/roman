@@ -1,31 +1,29 @@
-import {
-  albumDetailDtoSchema,
-  albumDtoSchema,
-  eventDtoSchema,
-  galleryImageDtoSchema,
-  homeDtoSchema,
-  inquiryFormTokenDtoSchema,
-  inquiryReceiptDtoSchema,
-  profileDtoSchema,
-  trackDtoSchema,
-  videoDtoSchema,
-  type AlbumDetailDto,
-  type AlbumDto,
-  type EventDto,
-  type EventTimeframe,
-  type GalleryCategory,
-  type GalleryImageDto,
-  type HomeDto,
-  type InquiryCreateInput,
-  type InquiryReceiptDto,
-  type Paginated,
-  type ProfileDto,
-  type TrackDto,
-  type VideoCategory,
-  type VideoDto,
+import type {
+  AlbumDetailDto,
+  AlbumDto,
+  EventDto,
+  EventTimeframe,
+  GalleryCategory,
+  GalleryImageDto,
+  HomeDto,
+  InquiryCreateInput,
+  InquiryReceiptDto,
+  Paginated,
+  ProfileDto,
+  TrackDto,
+  VideoCategory,
+  VideoDto,
 } from '@roman/shared';
 
 import { apiRequest, apiRequestPage } from './client';
+import { publicPaths } from './publicPaths';
+
+export {
+  EVENTS_PAGE_SIZE,
+  GALLERY_PAGE_SIZE,
+  TRACKS_PAGE_SIZE,
+  VIDEOS_PAGE_SIZE,
+} from './publicPaths';
 
 /** Typed query keys, so cache entries are shared and invalidated consistently. */
 export const queryKeys = {
@@ -39,44 +37,31 @@ export const queryKeys = {
   events: (when: EventTimeframe) => ['events', when] as const,
 };
 
-export const TRACKS_PAGE_SIZE = 50;
-export const VIDEOS_PAGE_SIZE = 12;
-export const GALLERY_PAGE_SIZE = 24;
-
-function pageQuery(page: number, limit: number, category?: string): string {
-  const search = new URLSearchParams({ page: String(page), limit: String(limit) });
-  if (category) search.set('category', category);
-  return search.toString();
-}
-
 export function getHome(): Promise<HomeDto> {
-  return apiRequest('/home', homeDtoSchema);
+  return apiRequest(publicPaths.home(), (s) => s.homeDtoSchema);
 }
 
 export function getProfile(): Promise<ProfileDto> {
-  return apiRequest('/profile', profileDtoSchema);
+  return apiRequest(publicPaths.profile(), (s) => s.profileDtoSchema);
 }
 
 /** Published tracks, featured first. */
 export function getTracks(page: number): Promise<Paginated<TrackDto>> {
-  return apiRequestPage(
-    `/tracks?page=${String(page)}&limit=${String(TRACKS_PAGE_SIZE)}`,
-    trackDtoSchema,
-  );
+  return apiRequestPage(publicPaths.tracks(page), (s) => s.trackDtoSchema);
 }
 
 /** Published albums (rarely more than a few, so one page). */
 export function getAlbums(): Promise<Paginated<AlbumDto>> {
-  return apiRequestPage('/albums?limit=50', albumDtoSchema);
+  return apiRequestPage(publicPaths.albums(), (s) => s.albumDtoSchema);
 }
 
 export function getAlbum(slug: string): Promise<AlbumDetailDto> {
-  return apiRequest(`/albums/${encodeURIComponent(slug)}`, albumDetailDtoSchema);
+  return apiRequest(publicPaths.album(slug), (s) => s.albumDetailDtoSchema);
 }
 
 /** Published videos, optionally one category. */
 export function getVideos(page: number, category?: VideoCategory): Promise<Paginated<VideoDto>> {
-  return apiRequestPage(`/videos?${pageQuery(page, VIDEOS_PAGE_SIZE, category)}`, videoDtoSchema);
+  return apiRequestPage(publicPaths.videos(page, category), (s) => s.videoDtoSchema);
 }
 
 /** Published gallery photos, optionally one category. */
@@ -84,30 +69,26 @@ export function getGallery(
   page: number,
   category?: GalleryCategory,
 ): Promise<Paginated<GalleryImageDto>> {
-  return apiRequestPage(
-    `/gallery?${pageQuery(page, GALLERY_PAGE_SIZE, category)}`,
-    galleryImageDtoSchema,
-  );
+  return apiRequestPage(publicPaths.gallery(page, category), (s) => s.galleryImageDtoSchema);
 }
-
-export const EVENTS_PAGE_SIZE = 10;
 
 /** Published events; upcoming soonest first, past most recent first. */
 export function getEvents(page: number, when: EventTimeframe): Promise<Paginated<EventDto>> {
-  const search = new URLSearchParams({
-    page: String(page),
-    limit: String(EVENTS_PAGE_SIZE),
-    when,
-  });
-  return apiRequestPage(`/events?${search.toString()}`, eventDtoSchema);
+  return apiRequestPage(publicPaths.events(page, when), (s) => s.eventDtoSchema);
 }
 
 /** A signed timestamp for the contact form (minimum fill time, plan §15). */
 export async function getInquiryFormToken(): Promise<string> {
-  const { token } = await apiRequest('/inquiries/form-token', inquiryFormTokenDtoSchema);
+  const { token } = await apiRequest(
+    publicPaths.inquiryFormToken(),
+    (s) => s.inquiryFormTokenDtoSchema,
+  );
   return token;
 }
 
 export function sendInquiry(input: InquiryCreateInput): Promise<InquiryReceiptDto> {
-  return apiRequest('/inquiries', inquiryReceiptDtoSchema, { method: 'POST', body: input });
+  return apiRequest(publicPaths.inquiries(), (s) => s.inquiryReceiptDtoSchema, {
+    method: 'POST',
+    body: input,
+  });
 }

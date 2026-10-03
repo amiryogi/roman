@@ -4,6 +4,8 @@ import type { GalleryImageDto } from '@roman/shared';
 
 import { ResponsiveImage } from '@/components/media/ResponsiveImage';
 
+import { GALLERY_IMAGE_SIZES } from './galleryLayout';
+
 // The viewer and its styles load on the first click only (plan §16).
 const GalleryLightbox = lazy(() => import('./GalleryLightbox'));
 
@@ -30,7 +32,10 @@ export function GalleryGrid({ images }: { images: GalleryImageDto[] }) {
                 <ResponsiveImage
                   asset={photo.image}
                   alt={photo.alt}
-                  sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw"
+                  sizes={GALLERY_IMAGE_SIZES}
+                  // The first photo is the top of the first column at every width: the page's
+                  // largest image (LCP), so it loads eagerly at high priority.
+                  priority={index === 0}
                   className="h-auto w-full transition-transform duration-500 hover:scale-[1.02] motion-reduce:transition-none"
                 />
                 <span className="sr-only"> (open in viewer)</span>

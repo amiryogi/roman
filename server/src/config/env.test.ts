@@ -37,6 +37,14 @@ describe('loadEnv', () => {
     });
   });
 
+  it('reads optional DNS servers for SRV lookups', () => {
+    expect(loadEnv(MINIMAL).dnsServers).toEqual([]);
+    expect(
+      loadEnv({ ...MINIMAL, DNS_SERVERS: ' 8.8.8.8, 2606:4700:4700::1111 ' }).dnsServers,
+    ).toEqual(['8.8.8.8', '2606:4700:4700::1111']);
+    expect(() => loadEnv({ ...MINIMAL, DNS_SERVERS: 'dns.google' })).toThrow(EnvError);
+  });
+
   it('fails with a clear message when MONGODB_URI is missing', () => {
     expect(() => loadEnv({})).toThrow(EnvError);
     expect(() => loadEnv({})).toThrow(/MONGODB_URI/);

@@ -14,6 +14,12 @@ const rawEnvSchema = z.object({
   MONGODB_URI: z
     .string({ error: 'MONGODB_URI is required' })
     .regex(/^mongodb(?:\+srv)?:\/\//, 'must start with mongodb:// or mongodb+srv://'),
+  /**
+   * Optional DNS servers for Node's own lookups, e.g. "8.8.8.8,1.1.1.1". A `mongodb+srv://` URI needs
+   * an SRV lookup, which Node does itself rather than through the operating system; on some
+   * machines (VPNs, DNS filters) Node is handed an unusable resolver such as 127.0.0.1.
+   */
+  DNS_SERVERS: z.string().optional(),
   CLIENT_ORIGINS: z.string().optional(),
   TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
@@ -82,6 +88,21 @@ const envSchema = rawEnvSchema.transform((raw, ctx) => {
     }
   }
 
+  const dnsServers = (raw.DNS_SERVERS ?? '')
+    .split(',')
+    .map((server) => server.trim())
+    .filter((server) => server !== '');
+  for (const server of dnsServers) {
+    if (!z.union([z.ipv4(), z.ipv6()]).safeParse(server).success) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['DNS_SERVERS'],
+        message: `"${server}" is not an IP address`,
+      });
+      return z.NEVER;
+    }
+  }
+
   const media = parseMedia(raw, (path, message) => {
     ctx.addIssue({ code: 'custom', path: [path], message });
   });
@@ -97,6 +118,7 @@ const envSchema = rawEnvSchema.transform((raw, ctx) => {
     isProduction: raw.NODE_ENV === 'production',
     port: raw.PORT,
     mongodbUri: raw.MONGODB_URI,
+    dnsServers,
     clientOrigins,
     trustProxy: raw.TRUST_PROXY,
     logLevel: raw.LOG_LEVEL,

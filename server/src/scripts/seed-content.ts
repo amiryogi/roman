@@ -18,7 +18,7 @@ try {
   const { values } = parseArgs({ options: { 'source-dir': { type: 'string' } } });
   const { env, logger, media } = loadMediaScriptEnv();
   configureMongoose({ autoIndex: false });
-  await connectDb(env.mongodbUri);
+  await connectDb(env.mongodbUri, { dnsServers: env.dnsServers });
 
   const summary = await seedContent({
     sourceDir: values['source-dir'] ?? REPO_ROOT,

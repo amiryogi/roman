@@ -1,9 +1,13 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'react-router';
 
-import { VIDEO_CATEGORIES, videoCategorySchema } from '@roman/shared';
+import { VIDEO_CATEGORIES, isOneOf } from '@roman/shared/lite';
 
+import { seoContext } from '@/components/seo/context';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
+import { videoJsonLd } from '@/components/seo/structuredData';
 import { CategoryFilter } from '@/components/ui/CategoryFilter';
 import { Container } from '@/components/ui/Container';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -17,8 +21,8 @@ import { VideoGallery } from './VideoGallery';
 /** Videos (plan §6): a filterable grid; each video plays in a dialog. No detail pages (ADR-9). */
 export function VideosPage() {
   const [search] = useSearchParams();
-  const parsed = videoCategorySchema.safeParse(search.get('category'));
-  const category = parsed.success ? parsed.data : undefined;
+  const requested = search.get('category');
+  const category = isOneOf(VIDEO_CATEGORIES, requested) ? requested : undefined;
 
   const videos = useInfiniteQuery({
     queryKey: queryKeys.videos(category),
@@ -31,7 +35,8 @@ export function VideosPage() {
 
   return (
     <>
-      <Seo title="Videos" path="/videos" />
+      <Seo {...PAGE_SEO.videos} />
+      <JsonLd items={items.map((video) => videoJsonLd(video, seoContext()))} />
       <div className="surface-dark">
         <Container className="pt-16 pb-24 sm:pt-24">
           <p className="label-caps text-varnish">Watch</p>
@@ -72,7 +77,7 @@ export function VideosPage() {
               </p>
             ) : (
               <>
-                <VideoGallery videos={items} />
+                <VideoGallery videos={items} headingLevel={2} />
                 {videos.hasNextPage && (
                   <button
                     type="button"

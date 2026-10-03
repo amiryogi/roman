@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { UPLOAD_KINDS } from '../enums.js';
+import { UPLOAD_KINDS } from '../constants.js';
 import {
   fileExtension,
   MEDIA_FORMATS,

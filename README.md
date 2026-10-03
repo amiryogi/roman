@@ -43,6 +43,7 @@ npm run dev
 | `npm run seed:content`            | Uploads the source photos and MP3 to Cloudinary and creates the initial (draft) content |
 | `npm run cleanup:media`           | Lists Cloudinary assets no content uses (`-- --apply` deletes them)                     |
 | `npm run test:cloudinary`         | Opt-in smoke test against the real Cloudinary account (development folder only)         |
+| `npm run lighthouse`              | Lighthouse budgets (`lighthouse-budgets.json`) against a running preview with content   |
 
 ## Notes
 
@@ -61,6 +62,19 @@ npm run dev
 - Inquiries are stored for the admin inbox; nothing is emailed.
 - `IP_HASH_SALT` in `server/.env` (16+ random characters) keys the hashed visitor IPs and the form's anti-spam token.
   It is required in production; development uses a built-in value when it is unset.
+
+## Build, SEO and performance
+
+- `npm run build -w @roman/client` runs `vite build`, then `scripts/postbuild-seo.ts` and `scripts/check-bundle.ts`:
+  - Every public page gets its own `dist/<page>/index.html` with title, description, canonical URL, Open Graph tags,
+    structured data (JSON-LD) and preloads; other addresses get `dist/spa.html`. `sitemap.xml` and `robots.txt` are
+    written too.
+  - Content comes from `SEO_BUILD_API_URL` at build time (see `client/.env.example`). Set `VITE_SITE_URL` to the real
+    address for production builds. If the API is configured but can't be reached, the build fails.
+  - The build fails when a public page fetches more than 160 KiB of gzipped JavaScript up front.
+- `client/vercel.json` holds the security headers (CSP), asset caching and routing; `vite preview` uses the same headers
+  and routing, so `npm run build -w @roman/client && npm run preview -w @roman/client` behaves like production.
+- `npm run lighthouse` needs that preview running on port 4173 with the API and content behind it.
 
 ## Media (Cloudinary)
 

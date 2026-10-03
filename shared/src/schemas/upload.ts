@@ -33,24 +33,6 @@ export const UPLOAD_KIND_RULES: Record<UploadKind, UploadKindRule> = {
   event: { mediaKind: 'image', resourceType: 'image', folder: 'events' },
 };
 
-/**
- * Cloudinary delivery type for every asset. "private" means the untransformed original (which
- * may contain camera and GPS metadata) needs a signed URL, while transformed versions, the only
- * URLs the site builds, stay public. Transformations strip that metadata.
- */
-export const MEDIA_DELIVERY_TYPE = 'private';
-
-/**
- * Standard video rendition. The server requests it as an eager transformation at upload time and
- * the client delivers exactly this, so the first viewer never waits for a transcode (plan §9.4).
- */
-export const VIDEO_STANDARD_TRANSFORMATION = 'c_limit,w_1280,q_auto,vc_auto';
-export const VIDEO_STANDARD_FORMAT = 'mp4';
-
-/** Streaming audio: MP3 at 160 kbps (Cloudinary `ac_mp3,br_160k`, delivered as .mp3; plan §9.5). */
-export const AUDIO_STREAM_TRANSFORMATION = 'ac_mp3,br_160k';
-export const AUDIO_STREAM_FORMAT = 'mp3';
-
 /** Lower-case extension of a file name, without the dot ("" if there is none). */
 export function fileExtension(fileName: string): string {
   const dot = fileName.lastIndexOf('.');

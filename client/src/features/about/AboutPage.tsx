@@ -3,7 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import type { ProfileDto } from '@roman/shared';
 
 import { ResponsiveImage } from '@/components/media/ResponsiveImage';
+import { seoContext } from '@/components/seo/context';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
+import { personJsonLd, shareImage } from '@/components/seo/structuredData';
 import { SITE_NAME } from '@/components/seo/site';
 import { Container } from '@/components/ui/Container';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -32,7 +36,8 @@ export function AboutPage() {
 
   return (
     <>
-      <Seo title="About" path="/about" type="profile" />
+      <Seo {...PAGE_SEO.about} image={profile.data && shareImage(profile.data, seoContext())} />
+      {profile.data && <JsonLd items={[personJsonLd(profile.data, seoContext())]} />}
       <header className="surface-light">
         <Container className="pt-16 pb-4 sm:pt-24">
           <p className="label-caps text-(--accent)">{SITE_NAME}</p>

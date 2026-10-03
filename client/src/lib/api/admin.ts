@@ -65,6 +65,7 @@ export const adminKeys = {
   stats: ['admin', 'stats'] as const,
   profile: ['admin', 'profile'] as const,
   inquiries: ['admin', 'inquiries'] as const,
+  inquiryLists: ['admin', 'inquiries', 'list'] as const,
   inquiryList: (params: InquiryListParams) => ['admin', 'inquiries', 'list', params] as const,
   inquiry: (id: string) => ['admin', 'inquiries', id] as const,
 };
@@ -247,7 +248,11 @@ export function getAdminProfile(): Promise<ProfileAdminDto> {
 
 /** Replaces the whole profile (PUT). */
 export function saveProfile(input: ProfileInput): Promise<ProfileAdminDto> {
-  return apiRequest('/admin/profile', profileAdminDtoSchema, { ...auth, method: 'PUT', body: input });
+  return apiRequest('/admin/profile', profileAdminDtoSchema, {
+    ...auth,
+    method: 'PUT',
+    body: input,
+  });
 }
 
 export interface InquiryListParams {

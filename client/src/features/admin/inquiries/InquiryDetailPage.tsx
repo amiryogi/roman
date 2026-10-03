@@ -37,6 +37,11 @@ import {
 
 import { InquiryStatusBadge } from './InquiryStatusBadge';
 
+// The current status: a pressed, dark button (not a variant of the secondary style, whose
+// background would win in the cascade).
+const currentStatusButton =
+  'inline-flex min-h-10 items-center rounded-sm border border-stone-900 bg-stone-900 px-4 text-sm font-medium text-white';
+
 const notesSchema = inquiryUpdateInputSchema.pick({ adminNotes: true });
 type NotesInput = z.input<typeof notesSchema>;
 type NotesParsed = z.output<typeof notesSchema>;
@@ -70,7 +75,8 @@ export function InquiryDetailPage() {
 function InquiryView({ inquiry }: { inquiry: InquiryDto }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const invalidateLists = useInvalidate(adminKeys.inquiries, adminKeys.stats);
+  // The detail itself is updated from the response; only lists and counts need refetching.
+  const invalidateLists = useInvalidate(adminKeys.inquiryLists, adminKeys.stats);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [notesError, setNotesError] = useState<string | null>(null);
 
@@ -225,11 +231,7 @@ function InquiryView({ inquiry }: { inquiry: InquiryDto }) {
               onClick={() => {
                 setStatus.mutate(status);
               }}
-              className={
-                inquiry.status === status
-                  ? `${adminSecondaryButton} border-stone-900 bg-stone-900 text-white hover:bg-stone-900 disabled:opacity-100`
-                  : adminSecondaryButton
-              }
+              className={inquiry.status === status ? currentStatusButton : adminSecondaryButton}
             >
               {INQUIRY_STATUS_LABELS[status]}
             </button>

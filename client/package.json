@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && tsx scripts/postbuild-seo.ts && tsx scripts/check-bundle.ts",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run"

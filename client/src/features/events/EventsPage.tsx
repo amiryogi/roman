@@ -4,7 +4,12 @@ import { Link, useSearchParams } from 'react-router';
 import type { EventTimeframe } from '@roman/shared';
 
 import { BOOK_PATH } from '@/components/layout/navigation';
+import { seoContext } from '@/components/seo/context';
+import { JsonLd } from '@/components/seo/JsonLd';
+import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
+import { SITE_NAME } from '@/components/seo/site';
+import { eventJsonLd, personRef } from '@/components/seo/structuredData';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Container } from '@/components/ui/Container';
 import { ErrorState } from '@/components/ui/ErrorState';
@@ -35,7 +40,15 @@ export function EventsPage() {
 
   return (
     <>
-      <Seo title="Performances" path="/events" />
+      <Seo {...PAGE_SEO.events} />
+      {/* Only upcoming events are marked up as MusicEvent (plan §17). */}
+      {when === 'upcoming' && (
+        <JsonLd
+          items={items.map((event) =>
+            eventJsonLd(event, personRef(seoContext(), SITE_NAME), seoContext()),
+          )}
+        />
+      )}
       <div className="surface-dark">
         <Container className="pt-16 pb-24 sm:pt-24">
           <p className="label-caps text-varnish">Concerts and events</p>
