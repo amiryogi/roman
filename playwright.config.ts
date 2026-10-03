@@ -43,7 +43,8 @@ export default defineConfig({
     },
     {
       command:
-        'npm run build -w @roman/shared && npm run build -w @roman/client && ' +
+        // `shared` is already built by `npm run test:e2e`; both servers import it.
+        'npm run build -w @roman/client && ' +
         `npm run preview -w @roman/client -- --port ${String(E2E_CLIENT_PORT)} --strictPort`,
       url: E2E_CLIENT_ORIGIN,
       reuseExistingServer: !CI,
