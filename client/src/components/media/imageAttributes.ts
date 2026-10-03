@@ -42,3 +42,11 @@ export function imageAttributes(
 export function placeholderStyle(asset: MediaAssetDto): { backgroundColor?: string } {
   return asset.dominantColor ? { backgroundColor: asset.dominantColor } : {};
 }
+
+/**
+ * Removes the placeholder colour once the image has loaded, so it can't show through transparent
+ * areas of PNG or WebP images.
+ */
+export function clearPlaceholder(event: { currentTarget: HTMLImageElement }): void {
+  event.currentTarget.style.removeProperty('background-color');
+}

@@ -14,6 +14,7 @@ import { Section } from '@/components/ui/Section';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StringsDivider } from '@/components/ui/StringsDivider';
 import { TrackList } from '@/features/music/TrackList';
+import { VideoGallery } from '@/features/videos/VideoGallery';
 import { getHome, queryKeys } from '@/lib/api/public';
 
 import { BookingBand } from './BookingBand';
@@ -44,30 +45,71 @@ export function HomePage() {
   );
 }
 
+const moreLink =
+  'mt-10 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-(--accent) uppercase underline decoration-current/40 underline-offset-[6px] hover:decoration-current';
+
+type HomeSection = 'music' | 'biography' | 'videos' | 'gallery' | 'booking';
+
 /**
- * Order follows plan §6. Sections with no content are left out entirely (plan §12.5), and the
- * movement numbers follow the visible order. Videos, photos and events join in Phases 7–8.
+ * Order follows plan §6, except that videos come before the photo strip so stage and paper keep
+ * alternating. Sections with no content are left out entirely (plan §12.5), and the movement
+ * numbers follow the visible order. Upcoming events join in Phase 8.
  */
 function HomeContent({ home }: { home: HomeDto }) {
-  const { profile, featuredTracks } = home;
-  const hasMusic = featuredTracks.length > 0;
-  const biographyNumber = hasMusic ? 2 : 1;
+  const { profile, featuredTracks, featuredVideos, featuredImages } = home;
+  const present: Record<HomeSection, boolean> = {
+    music: featuredTracks.length > 0,
+    biography: true,
+    videos: featuredVideos.length > 0,
+    gallery: featuredImages.length > 0,
+    booking: true,
+  };
+  const order = (['music', 'biography', 'videos', 'gallery', 'booking'] as const).filter(
+    (key) => present[key],
+  );
+  const number = (key: HomeSection) => order.indexOf(key) + 1;
+
   return (
     <>
       <Hero profile={profile} />
-      {hasMusic && (
-        <Section tone="dark" label="Music" number={1} title="Listen">
+      {present.music && (
+        <Section tone="dark" label="Music" number={number('music')} title="Listen">
           <TrackList tracks={featuredTracks} />
-          <Link
-            to="/music"
-            className="mt-8 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-varnish uppercase underline decoration-varnish/40 underline-offset-[6px] hover:decoration-varnish"
-          >
+          <Link to="/music" className={moreLink}>
             All music
           </Link>
         </Section>
       )}
-      <BiographyTeaser profile={profile} number={biographyNumber} />
-      <BookingBand number={biographyNumber + 1} />
+      <BiographyTeaser profile={profile} number={number('biography')} />
+      {present.videos && (
+        <Section tone="dark" label="Videos" number={number('videos')} title="Watch">
+          <VideoGallery videos={featuredVideos} />
+          <Link to="/videos" className={moreLink}>
+            All videos
+          </Link>
+        </Section>
+      )}
+      {present.gallery && (
+        <Section tone="light" label="Gallery" number={number('gallery')} title="Photographs">
+          <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
+            {featuredImages.map((photo) => (
+              <li key={photo.id}>
+                <ResponsiveImage
+                  asset={photo.image}
+                  alt={photo.alt}
+                  aspect={1}
+                  sizes="(min-width: 768px) 22vw, 45vw"
+                  className="h-auto w-full rounded-sm"
+                />
+              </li>
+            ))}
+          </ul>
+          <Link to="/gallery" className={moreLink}>
+            Open the gallery
+          </Link>
+        </Section>
+      )}
+      <BookingBand number={number('booking')} />
     </>
   );
 }

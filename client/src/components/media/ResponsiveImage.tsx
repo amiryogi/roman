@@ -4,7 +4,12 @@ import type { MediaAssetDto } from '@roman/shared';
 
 import { getMediaUrls, type MediaUrls } from '@/lib/cloudinary';
 
-import { imageAttributes, placeholderStyle, type ImageCrop } from './imageAttributes';
+import {
+  clearPlaceholder,
+  imageAttributes,
+  placeholderStyle,
+  type ImageCrop,
+} from './imageAttributes';
 
 type ImgProps = Omit<
   ComponentPropsWithoutRef<'img'>,
@@ -36,6 +41,7 @@ export function ResponsiveImage({
   priority = false,
   urls = getMediaUrls(),
   style,
+  onLoad,
   ...imgProps
 }: ResponsiveImageProps) {
   const attributes = imageAttributes(urls, asset, { aspect, gravity });
@@ -50,6 +56,10 @@ export function ResponsiveImage({
       decoding={priority ? 'sync' : 'async'}
       fetchPriority={priority ? 'high' : undefined}
       style={{ ...placeholderStyle(asset), ...style }}
+      onLoad={(event) => {
+        clearPlaceholder(event);
+        onLoad?.(event);
+      }}
     />
   );
 }

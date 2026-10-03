@@ -9,8 +9,6 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 
 // Sections built in later phases; each placeholder is replaced by its real page (plan §25).
 const UPCOMING_SECTIONS = [
-  { path: 'videos', title: 'Videos' },
-  { path: 'gallery', title: 'Gallery' },
   { path: 'events', title: 'Performances' },
   { path: 'contact', title: 'Contact & Booking' },
 ] as const;
@@ -32,6 +30,16 @@ const publicRoutes: RouteObject = {
     {
       path: 'music',
       lazy: async () => ({ Component: (await import('@/features/music/MusicPage')).MusicPage }),
+    },
+    {
+      path: 'videos',
+      lazy: async () => ({ Component: (await import('@/features/videos/VideosPage')).VideosPage }),
+    },
+    {
+      path: 'gallery',
+      lazy: async () => ({
+        Component: (await import('@/features/gallery/GalleryPage')).GalleryPage,
+      }),
     },
     ...UPCOMING_SECTIONS.map(({ path, title }) => ({
       path,
@@ -86,6 +94,38 @@ const adminRoutes: RouteObject = {
           path: 'albums/:id',
           lazy: async () => ({
             Component: (await import('@/features/admin/albums/AlbumEditPage')).AlbumEditPage,
+          }),
+        },
+        {
+          path: 'videos',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/videos/VideosPage')).VideosPage,
+          }),
+        },
+        {
+          path: 'videos/:id',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/videos/VideoEditPage')).VideoEditPage,
+          }),
+        },
+        {
+          path: 'gallery',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/gallery/GalleryAdminPage')).GalleryAdminPage,
+          }),
+        },
+        {
+          path: 'gallery/upload',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/gallery/GalleryUploadPage'))
+              .GalleryUploadPage,
+          }),
+        },
+        {
+          path: 'gallery/:id',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/gallery/GalleryImageEditPage'))
+              .GalleryImageEditPage,
           }),
         },
         {

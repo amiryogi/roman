@@ -1,15 +1,21 @@
 import {
   albumDetailDtoSchema,
   albumDtoSchema,
+  galleryImageDtoSchema,
   homeDtoSchema,
   profileDtoSchema,
   trackDtoSchema,
+  videoDtoSchema,
   type AlbumDetailDto,
   type AlbumDto,
+  type GalleryCategory,
+  type GalleryImageDto,
   type HomeDto,
   type Paginated,
   type ProfileDto,
   type TrackDto,
+  type VideoCategory,
+  type VideoDto,
 } from '@roman/shared';
 
 import { apiRequest, apiRequestPage } from './client';
@@ -21,9 +27,19 @@ export const queryKeys = {
   tracks: ['tracks'] as const,
   albums: ['albums'] as const,
   album: (slug: string) => ['albums', slug] as const,
+  videos: (category?: VideoCategory) => ['videos', category ?? 'all'] as const,
+  gallery: (category?: GalleryCategory) => ['gallery', category ?? 'all'] as const,
 };
 
 export const TRACKS_PAGE_SIZE = 50;
+export const VIDEOS_PAGE_SIZE = 12;
+export const GALLERY_PAGE_SIZE = 24;
+
+function pageQuery(page: number, limit: number, category?: string): string {
+  const search = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (category) search.set('category', category);
+  return search.toString();
+}
 
 export function getHome(): Promise<HomeDto> {
   return apiRequest('/home', homeDtoSchema);
@@ -48,4 +64,20 @@ export function getAlbums(): Promise<Paginated<AlbumDto>> {
 
 export function getAlbum(slug: string): Promise<AlbumDetailDto> {
   return apiRequest(`/albums/${encodeURIComponent(slug)}`, albumDetailDtoSchema);
+}
+
+/** Published videos, optionally one category. */
+export function getVideos(page: number, category?: VideoCategory): Promise<Paginated<VideoDto>> {
+  return apiRequestPage(`/videos?${pageQuery(page, VIDEOS_PAGE_SIZE, category)}`, videoDtoSchema);
+}
+
+/** Published gallery photos, optionally one category. */
+export function getGallery(
+  page: number,
+  category?: GalleryCategory,
+): Promise<Paginated<GalleryImageDto>> {
+  return apiRequestPage(
+    `/gallery?${pageQuery(page, GALLERY_PAGE_SIZE, category)}`,
+    galleryImageDtoSchema,
+  );
 }

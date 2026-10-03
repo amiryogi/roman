@@ -8,6 +8,8 @@ const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/tracks', label: 'Tracks', end: false },
   { to: '/admin/albums', label: 'Albums', end: false },
+  { to: '/admin/videos', label: 'Videos', end: false },
+  { to: '/admin/gallery', label: 'Gallery', end: false },
   { to: '/admin/account', label: 'Account', end: false },
 ] as const;
 

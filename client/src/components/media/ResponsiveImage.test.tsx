@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
 import { createMediaUrls } from '@/lib/cloudinary';
@@ -33,6 +33,10 @@ describe('ResponsiveImage', () => {
     expect(img.getAttribute('srcset')).toMatch(/ 2000w$/);
     expect(img.getAttribute('src')).toContain('c_limit,w_1024,');
     expect(img).toHaveStyle({ backgroundColor: '#2b2118' });
+
+    // Once loaded, the colour must not show through transparent parts of the image.
+    fireEvent.load(img);
+    expect(img.style.backgroundColor).toBe('');
   });
 
   it('crops to an aspect ratio and reports the cropped dimensions', () => {

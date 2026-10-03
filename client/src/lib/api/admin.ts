@@ -1,14 +1,22 @@
 import {
   albumDtoSchema,
+  galleryImageDtoSchema,
   trackDtoSchema,
+  videoDtoSchema,
   type AlbumCreateInput,
   type AlbumDto,
   type AlbumUpdateInput,
+  type GalleryImageCreateInput,
+  type GalleryImageDto,
+  type GalleryImageUpdateInput,
   type Paginated,
   type PublicationStatus,
   type TrackCreateInput,
   type TrackDto,
   type TrackUpdateInput,
+  type VideoCreateInput,
+  type VideoDto,
+  type VideoUpdateInput,
 } from '@roman/shared';
 
 import { apiRequest, apiRequestNoContent, apiRequestPage } from './client';
@@ -31,6 +39,12 @@ export const adminKeys = {
   albums: ['admin', 'albums'] as const,
   albumList: (params: AdminListParams) => ['admin', 'albums', 'list', params] as const,
   album: (id: string) => ['admin', 'albums', id] as const,
+  videos: ['admin', 'videos'] as const,
+  videoList: (params: AdminListParams) => ['admin', 'videos', 'list', params] as const,
+  video: (id: string) => ['admin', 'videos', id] as const,
+  gallery: ['admin', 'gallery'] as const,
+  galleryList: (params: AdminListParams) => ['admin', 'gallery', 'list', params] as const,
+  galleryImage: (id: string) => ['admin', 'gallery', id] as const,
 };
 
 function listQuery(params: AdminListParams): string {
@@ -104,4 +118,71 @@ export function deleteAlbum(id: string, detachTracks = false): Promise<void> {
 
 export function reorderAlbums(ids: string[]): Promise<void> {
   return apiRequestNoContent('/admin/albums/order', { ...auth, method: 'PATCH', body: { ids } });
+}
+
+// --- Videos ---------------------------------------------------------------------------------
+
+export function listVideos(params: AdminListParams): Promise<Paginated<VideoDto>> {
+  return apiRequestPage(`/admin/videos?${listQuery(params)}`, videoDtoSchema, auth);
+}
+
+export function getVideo(id: string): Promise<VideoDto> {
+  return apiRequest(`/admin/videos/${id}`, videoDtoSchema, auth);
+}
+
+export function createVideo(input: VideoCreateInput): Promise<VideoDto> {
+  return apiRequest('/admin/videos', videoDtoSchema, { ...auth, method: 'POST', body: input });
+}
+
+export function updateVideo(id: string, input: VideoUpdateInput): Promise<VideoDto> {
+  return apiRequest(`/admin/videos/${id}`, videoDtoSchema, {
+    ...auth,
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export function deleteVideo(id: string): Promise<void> {
+  return apiRequestNoContent(`/admin/videos/${id}`, { ...auth, method: 'DELETE' });
+}
+
+export function reorderVideos(ids: string[]): Promise<void> {
+  return apiRequestNoContent('/admin/videos/order', { ...auth, method: 'PATCH', body: { ids } });
+}
+
+// --- Gallery --------------------------------------------------------------------------------
+
+export function listGallery(params: AdminListParams): Promise<Paginated<GalleryImageDto>> {
+  return apiRequestPage(`/admin/gallery?${listQuery(params)}`, galleryImageDtoSchema, auth);
+}
+
+export function getGalleryImage(id: string): Promise<GalleryImageDto> {
+  return apiRequest(`/admin/gallery/${id}`, galleryImageDtoSchema, auth);
+}
+
+export function createGalleryImage(input: GalleryImageCreateInput): Promise<GalleryImageDto> {
+  return apiRequest('/admin/gallery', galleryImageDtoSchema, {
+    ...auth,
+    method: 'POST',
+    body: input,
+  });
+}
+
+export function updateGalleryImage(
+  id: string,
+  input: GalleryImageUpdateInput,
+): Promise<GalleryImageDto> {
+  return apiRequest(`/admin/gallery/${id}`, galleryImageDtoSchema, {
+    ...auth,
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export function deleteGalleryImage(id: string): Promise<void> {
+  return apiRequestNoContent(`/admin/gallery/${id}`, { ...auth, method: 'DELETE' });
+}
+
+export function reorderGallery(ids: string[]): Promise<void> {
+  return apiRequestNoContent('/admin/gallery/order', { ...auth, method: 'PATCH', body: { ids } });
 }

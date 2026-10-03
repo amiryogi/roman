@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { hexColorSchema, text } from './common.js';
+import { hexColorSchema } from './common.js';
 import { mediaResourceTypeSchema } from './enums.js';
 
 /**
@@ -37,7 +37,12 @@ export const mediaRefSchema = z.strictObject({
 });
 export type MediaRef = z.infer<typeof mediaRefSchema>;
 
-export const altTextSchema = text(250, 5);
+/** Image descriptions for people who can't see the image (plan §18). */
+export const altTextSchema = z
+  .string()
+  .trim()
+  .min(5, 'Describe the image in at least 5 characters')
+  .max(250, 'Keep the description under 250 characters');
 
 export const imageDtoSchema = z.strictObject({
   asset: mediaAssetSchema,

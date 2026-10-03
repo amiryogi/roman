@@ -58,8 +58,8 @@ working on a phase. Owner decisions are in §0.4 and override defaults elsewhere
   refreshed and retried automatically.
 - Show errors with `getErrorMessage(error)`. Forms use React Hook Form with `zodResolver(sharedSchema)`; pass
   `useForm<z.input, unknown, z.output>` explicitly and map server 422s with `applyFieldErrors`.
-- Admin: TanStack Query keys from `adminKeys` (start with `"admin"`, never cached). Lists use `useAdminListParams`
-  (filters in the URL), `AdminTable`, `useMove` and `ConfirmDialog`; confirm saves with `sonner` toasts. Public pages
+- Admin: TanStack Query keys from `adminKeys` (start with `"admin"`, never cached). Content lists use `ContentListPage` with a
+  config (filters in the URL, publish/feature toggles, reorder, confirmed delete); confirm saves with `sonner` toasts. Public pages
   use `queryKeys` from `lib/api/public.ts`; invalidate them after admin changes.
 - Audio: play through `useAudioPlayer()` (`playTrack`, `pause`…). Video players must call `pause()` before playing.
 

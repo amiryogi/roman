@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–6 complete on 2026-10-03. The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 7 (video and gallery system).
+**Status:** Phases 1–7 complete on 2026-10-03. The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 8 (events and contact/booking).
 **Plan date:** 2026-10-02
 
 ---
@@ -123,6 +123,17 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - The Home page shows featured tracks first after the hero (§6 order); its section numbers follow the visible sections.
 - Admin pages use TanStack Query with `staleTime: 0` for `["admin", …]` keys, `sonner` toasts (only in the admin chunk), and the generic `AdminTable`, `ConfirmDialog`, `StatusBadge` and form fields. List filters live in the URL. The temporary `/admin/media-test` page from Phase 4 is gone.
 - Real-browser check (headless Chrome, Cloudinary audio from the development folder): playback started on a real click, then continued while navigating from Music to About (3 s → 7 s → 10 s). Initial JS is 150 KB gzipped (budget 160 KB).
+
+**Implementation notes (Phase 7):**
+
+- Video cards are the YouTube facade (§12.6). Clicking one opens a modal player, so the click that opens it also starts the video. YouTube uses the `youtube-nocookie.com` embed with `autoplay=1`. Uploaded videos use `<video autoplay preload="none">` with a 720 px source for phones and the eager 1280 px rendition otherwise. No YouTube request and no video bytes load before the click (checked in a real browser). Opening a YouTube video pauses the music; uploaded videos pause it on `play`.
+- Videos can switch between an upload and YouTube. The new source's field is then required, and the old upload is deleted after saving. In the editor, the inactive source's field is unregistered so the form always matches the strict discriminated union.
+- No captions `<track>` is rendered yet. An empty track would only pretend captions exist, and caption files are a planned enhancement (§18, §28). The lint rule is disabled at that one spot, with the reason.
+- The gallery uses CSS columns with each image's intrinsic size (CLS 0.003 measured), and the `yet-another-react-lightbox` viewer is loaded on first open. The dominant-colour placeholder is removed once an image loads, so it can't show through transparent PNGs.
+- Admin photo search covers alt text and captions (photos have no title). Bulk upload sends up to 3 files in parallel and saves a photo only once the shared schema accepts its alt text (5–250 characters, with plain-language messages). Rows are plain controlled inputs rather than one form instance per row.
+- The admin lists for tracks, videos and photos share `ContentListPage`. Albums keep their own page because of the detach-before-delete rule.
+- Home puts videos (dark) before the photo strip (light), so stage and paper keep alternating. §6 lists the gallery first.
+- Initial JS for Home is now 156 KB gzipped (budget 160 KB). Zod alone is a 30 KB chunk, so Phase 10's bundle work should look at it first.
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 

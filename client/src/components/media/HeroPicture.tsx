@@ -2,7 +2,7 @@ import type { ImageDto } from '@roman/shared';
 
 import { getMediaUrls, type MediaUrls } from '@/lib/cloudinary';
 
-import { imageAttributes, placeholderStyle } from './imageAttributes';
+import { clearPlaceholder, imageAttributes, placeholderStyle } from './imageAttributes';
 
 /** Below this width the mobile image is used (Tailwind's `md` breakpoint). */
 export const HERO_MOBILE_QUERY = '(max-width: 767px)';
@@ -51,6 +51,7 @@ export function HeroPicture({
         fetchPriority="high"
         className={className}
         style={placeholderStyle(desktop.asset)}
+        onLoad={clearPlaceholder}
       />
     </picture>
   );

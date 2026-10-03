@@ -1,11 +1,15 @@
 import {
+  galleryImageDtoSchema,
   homeDtoSchema,
   profileDtoSchema,
   trackDtoSchema,
+  videoDtoSchema,
+  type GalleryImageDto,
   type HomeDto,
   type MediaAssetDto,
   type ProfileDto,
   type TrackDto,
+  type VideoDto,
 } from '@roman/shared';
 
 // Test fixtures only: neutral placeholder data, not facts about Roman. Parsed with the shared
@@ -116,6 +120,65 @@ export function trackFixture(overrides: Partial<TrackDto> = {}): TrackDto {
     },
     duration: 225,
     tags: [],
+    status: 'published',
+    featured: false,
+    sortOrder: 1,
+    createdAt: '2026-10-02T12:00:00.000Z',
+    updatedAt: '2026-10-02T12:00:00.000Z',
+    ...overrides,
+  });
+}
+
+export function youtubeVideoFixture(overrides: Partial<VideoDto> = {}): VideoDto {
+  return videoDtoSchema.parse({
+    id: 'video-yt',
+    title: 'Concert excerpt',
+    slug: 'concert-excerpt',
+    source: 'youtube',
+    youtubeId: 'dQw4w9WgXcQ',
+    category: 'performance',
+    status: 'published',
+    featured: false,
+    sortOrder: 1,
+    createdAt: '2026-10-02T12:00:00.000Z',
+    updatedAt: '2026-10-02T12:00:00.000Z',
+    ...overrides,
+  });
+}
+
+export function uploadedVideoFixture(overrides: Partial<VideoDto> = {}): VideoDto {
+  return videoDtoSchema.parse({
+    id: 'video-up',
+    title: 'Studio take',
+    slug: 'studio-take',
+    source: 'cloudinary',
+    media: {
+      publicId: 'root/videos/media/take',
+      resourceType: 'video',
+      version: 3,
+      format: 'mp4',
+      bytes: 9_000_000,
+      width: 1920,
+      height: 1080,
+      duration: 95,
+    },
+    duration: 95,
+    category: 'studio',
+    status: 'published',
+    featured: false,
+    sortOrder: 2,
+    createdAt: '2026-10-02T12:00:00.000Z',
+    updatedAt: '2026-10-02T12:00:00.000Z',
+    ...overrides,
+  });
+}
+
+export function photoFixture(overrides: Partial<GalleryImageDto> = {}): GalleryImageDto {
+  return galleryImageDtoSchema.parse({
+    id: 'photo-1',
+    image: imageAsset({ publicId: 'root/gallery/photo-1', width: 1200, height: 1600 }),
+    alt: 'Violinist on stage',
+    category: 'performance',
     status: 'published',
     featured: false,
     sortOrder: 1,
