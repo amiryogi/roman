@@ -19,7 +19,8 @@
     "seed:content:prod": "node dist/scripts/seed-content.js",
     "cleanup:media": "tsx --env-file-if-exists=.env src/scripts/cleanup-orphan-media.ts",
     "cleanup:media:prod": "node dist/scripts/cleanup-orphan-media.js",
-    "test:cloudinary": "tsx --env-file-if-exists=.env src/scripts/test-cloudinary.ts"
+    "test:cloudinary": "tsx --env-file-if-exists=.env src/scripts/test-cloudinary.ts",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@roman/shared": "^0.1.0",

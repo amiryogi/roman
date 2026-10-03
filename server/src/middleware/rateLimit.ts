@@ -13,9 +13,17 @@ interface LimiterOptions {
   skipFailedRequests?: boolean;
 }
 
+/**
+ * App setting that switches every limiter off. Only the E2E test server sets it (`createApp`
+ * option `rateLimiting: false`), because one browser session per test would trip the login and
+ * inquiry limits. Production never sets it.
+ */
+export const RATE_LIMITING_SETTING = 'rateLimiting';
+
 /** Rate limiter that answers with the standard error envelope and a Retry-After header. */
 export function createRateLimiter(options: LimiterOptions): RateLimitRequestHandler {
   return rateLimit({
+    skip: (req) => req.app.get(RATE_LIMITING_SETTING) === false,
     windowMs: options.windowMs,
     limit: options.limit,
     standardHeaders: 'draft-8',

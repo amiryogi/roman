@@ -6,7 +6,7 @@ import type { Logger } from './config/logger.js';
 import { noStore, publicCache } from './middleware/cacheControl.js';
 import { createErrorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
-import { createGlobalRateLimiter } from './middleware/rateLimit.js';
+import { createGlobalRateLimiter, RATE_LIMITING_SETTING } from './middleware/rateLimit.js';
 import { createRequestLogger } from './middleware/requestLogger.js';
 import { createRequireAuth } from './middleware/requireAuth.js';
 import { requireJsonBody } from './middleware/requireJsonBody.js';
@@ -38,6 +38,8 @@ export interface AppOptions {
   auth: AuthConfig;
   media: MediaService;
   inquiries: InquiryConfig;
+  /** Off only for the E2E test server (see RATE_LIMITING_SETTING). Defaults to on. */
+  rateLimiting?: boolean;
 }
 
 export const JSON_BODY_LIMIT = '100kb';
@@ -47,6 +49,7 @@ export function createApp(options: AppOptions): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', options.trustProxy);
+  app.set(RATE_LIMITING_SETTING, options.rateLimiting ?? true);
 
   app.use(createRequestLogger(options.logger));
   app.use(helmet());

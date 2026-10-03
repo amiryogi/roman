@@ -107,6 +107,17 @@ describe('auth', () => {
       expect(errorOf(blocked).code).toBe('RATE_LIMITED');
       expect(blocked.headers['retry-after']).toBeDefined();
     });
+
+    it('skips every limit only when rate limiting is switched off (E2E test server)', async () => {
+      const unlimited = createTestApp(undefined, { rateLimiting: false });
+      for (let attempt = 0; attempt < 7; attempt++) {
+        const res = await request(unlimited)
+          .post('/api/auth/login')
+          .set('Origin', TEST_ORIGIN)
+          .send({ email: ADMIN_EMAIL, password: 'wrong password' });
+        expect(res.status).toBe(401);
+      }
+    });
   });
 
   describe('POST /refresh', () => {

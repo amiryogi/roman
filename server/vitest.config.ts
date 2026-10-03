@@ -15,5 +15,13 @@ export default defineConfig({
     env: { MONGOMS_DOWNLOAD_DIR: MONGO_BINARY_DIR },
     // Allows for a first-time binary download on a fresh machine or CI runner.
     hookTimeout: 180_000,
+    // `npm run test:coverage` (CI): plan §25 Phase 11 asks for at least 80% of lines in the modules.
+    coverage: {
+      provider: 'v8',
+      include: ['src/modules/**/*.ts'],
+      exclude: ['**/*.test.ts'],
+      reporter: ['text-summary', 'text'],
+      thresholds: { lines: 80, statements: 80, functions: 80 },
+    },
   },
 });

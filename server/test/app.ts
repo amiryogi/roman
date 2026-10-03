@@ -31,8 +31,12 @@ export function createTestMedia(): FakeMediaService {
   });
 }
 
-export function createTestApp(media: FakeMediaService = createTestMedia()): Express {
+export function createTestApp(
+  media: FakeMediaService = createTestMedia(),
+  { rateLimiting = true }: { rateLimiting?: boolean } = {},
+): Express {
   return createApp({
+    rateLimiting,
     clientOrigins: [TEST_ORIGIN],
     trustProxy: 0,
     version: 'test',
