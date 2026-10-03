@@ -77,5 +77,7 @@ export function toProfileSummaryDto(doc: WithId<ProfileDoc>): ProfileSummaryDto 
     portrait: toImageDto(doc.portrait),
     heroDesktop: toImageDto(doc.heroDesktop),
     heroMobile: toImageDto(doc.heroMobile),
+    ogImage: toImageDto(doc.ogImage),
+    seo: { metaTitle: doc.seo?.metaTitle, metaDescription: doc.seo?.metaDescription },
   };
 }

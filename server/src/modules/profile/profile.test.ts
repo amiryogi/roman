@@ -73,7 +73,7 @@ describe('public profile and home', () => {
       const home = homeResponse.parse(res.body).data;
       expect(home.profile).toMatchObject({ displayName: 'Test Artist', tagline: 'Violinist' });
       expect(Object.keys(home.profile).sort()).toEqual(
-        ['displayName', 'portrait', 'shortBio', 'tagline'].sort(),
+        ['displayName', 'portrait', 'seo', 'shortBio', 'tagline'].sort(),
       );
       expect(home.featuredTracks).toEqual([]);
       expect(home.featuredVideos).toEqual([]);
