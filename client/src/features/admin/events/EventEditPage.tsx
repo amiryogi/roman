@@ -24,6 +24,7 @@ import { FormField } from '@/features/admin/components/FormField';
 import { MediaUploader } from '@/features/admin/components/MediaUploader';
 import { PageSpinner } from '@/features/admin/components/PageSpinner';
 import { useInvalidate } from '@/features/admin/components/useAdminList';
+import { SAVED_STATE, useUnsavedChanges } from '@/features/admin/components/useUnsavedChanges';
 import { adminKeys, createEvent, getEvent, updateEvent } from '@/lib/api/admin';
 import { getErrorMessage } from '@/lib/api/errors';
 import { queryKeys } from '@/lib/api/public';
@@ -145,7 +146,7 @@ function EventForm({ event }: { event: EventDto | undefined }) {
     setValue,
     getValues,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<EventCreateInput, unknown, EventCreateParsed>({
     resolver,
     defaultValues: event ? toFormValues(event) : NEW_EVENT,
@@ -156,13 +157,15 @@ function EventForm({ event }: { event: EventDto | undefined }) {
       event ? updateEvent(event.id, values) : createEvent(values),
   });
 
+  const unsavedPrompt = useUnsavedChanges(isDirty);
+
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
       const saved = await save.mutateAsync(values);
       toast.success(`“${saved.title}” saved`);
       await invalidate();
-      await navigate('/admin/events');
+      await navigate('/admin/events', { state: SAVED_STATE });
     } catch (error) {
       if (!applyFieldErrors(error, setError, FIELDS)) setFormError(getErrorMessage(error));
     }
@@ -296,6 +299,7 @@ function EventForm({ event }: { event: EventDto | undefined }) {
                       alt: getValues('image.alt') ?? '',
                     }
                   : null,
+                { shouldDirty: true },
               );
             }}
           />
@@ -326,6 +330,7 @@ function EventForm({ event }: { event: EventDto | undefined }) {
           </Link>
         </div>
       </form>
+      {unsavedPrompt}
     </section>
   );
 }

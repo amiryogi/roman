@@ -1,15 +1,19 @@
 import request from 'supertest';
+import { z } from 'zod';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   apiErrorBodySchema,
   apiSuccessSchema,
+  inquiryDtoSchema,
   inquiryFormTokenDtoSchema,
   inquiryReceiptDtoSchema,
 } from '@roman/shared';
 
 import { createTestApp, TEST_INQUIRY_SECRET } from '../../../test/app.js';
+import { adminAccessToken } from '../../../test/auth.js';
 import { useTestDb } from '../../../test/db.js';
+import { createInquiry } from '../../../test/factories.js';
 import { checkFormToken, issueFormToken, MAX_AGE_MS, MIN_FILL_MS } from './formToken.js';
 import { InquiryModel } from './model.js';
 
@@ -162,5 +166,68 @@ describe('POST /api/inquiries', () => {
       expect((await send(booking({ message: 'short' }))).status).toBe(422);
     }
     expect((await send(booking())).status).toBe(201);
+  });
+});
+
+describe('admin inbox', () => {
+  let app: ReturnType<typeof createTestApp>;
+  let token: string;
+
+  beforeEach(async () => {
+    app = createTestApp();
+    token = await adminAccessToken(app);
+  });
+
+  const auth = (req: request.Test) => req.set('Authorization', `Bearer ${token}`);
+  const listResponse = apiSuccessSchema(z.array(inquiryDtoSchema));
+  const itemResponse = apiSuccessSchema(inquiryDtoSchema);
+
+  it('lists newest first and filters by status and type', async () => {
+    await createInquiry({ name: 'Older', createdAt: new Date('2026-09-01T00:00:00Z') });
+    await createInquiry({ name: 'Newer', inquiryType: 'lessons', eventType: undefined });
+    await createInquiry({ name: 'Done', status: 'archived' });
+
+    const all = listResponse.parse((await auth(request(app).get('/api/admin/inquiries'))).body);
+    expect(all.data.map((i) => i.name)).toEqual(['Done', 'Newer', 'Older']);
+    expect(all.data[0]).not.toHaveProperty('meta');
+
+    const lessons = listResponse.parse(
+      (await auth(request(app).get('/api/admin/inquiries?inquiryType=lessons'))).body,
+    );
+    expect(lessons.data.map((i) => i.name)).toEqual(['Newer']);
+    const archived = listResponse.parse(
+      (await auth(request(app).get('/api/admin/inquiries?status=archived'))).body,
+    );
+    expect(archived.data.map((i) => i.name)).toEqual(['Done']);
+  });
+
+  it('marks a message, keeps private notes and clears them', async () => {
+    const inquiry = await createInquiry();
+    const path = `/api/admin/inquiries/${inquiry._id.toHexString()}`;
+
+    const replied = itemResponse.parse(
+      (
+        await auth(request(app).patch(path)).send({
+          status: 'replied',
+          adminNotes: 'Sent a quote.',
+        })
+      ).body,
+    ).data;
+    expect(replied).toMatchObject({ status: 'replied', adminNotes: 'Sent a quote.' });
+
+    const cleared = itemResponse.parse(
+      (await auth(request(app).patch(path)).send({ adminNotes: '' })).body,
+    ).data;
+    expect(cleared.adminNotes).toBeUndefined();
+    expect((await auth(request(app).patch(path)).send({ status: 'spam' })).status).toBe(422);
+  });
+
+  it('deletes a message for good', async () => {
+    const inquiry = await createInquiry();
+    const path = `/api/admin/inquiries/${inquiry._id.toHexString()}`;
+
+    expect((await auth(request(app).delete(path))).status).toBe(204);
+    expect((await auth(request(app).get(path))).status).toBe(404);
+    expect(await InquiryModel.countDocuments()).toBe(0);
   });
 });

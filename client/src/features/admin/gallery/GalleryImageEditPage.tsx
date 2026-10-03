@@ -22,6 +22,7 @@ import { applyFieldErrors } from '@/lib/forms';
 import { MediaUploader } from '@/features/admin/components/MediaUploader';
 import { PageSpinner } from '@/features/admin/components/PageSpinner';
 import { useInvalidate } from '@/features/admin/components/useAdminList';
+import { SAVED_STATE, useUnsavedChanges } from '@/features/admin/components/useUnsavedChanges';
 import { adminKeys, getGalleryImage, updateGalleryImage } from '@/lib/api/admin';
 import { getErrorMessage } from '@/lib/api/errors';
 import { queryKeys } from '@/lib/api/public';
@@ -66,7 +67,7 @@ function PhotoForm({ photo }: { photo: GalleryImageDto }) {
     handleSubmit,
     setValue,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<PhotoFormInput, unknown, PhotoFormOutput>({
     resolver: zodResolver(photoFormSchema),
     defaultValues: {
@@ -85,13 +86,15 @@ function PhotoForm({ photo }: { photo: GalleryImageDto }) {
     mutationFn: (values: PhotoFormInput) => updateGalleryImage(photo.id, values),
   });
 
+  const unsavedPrompt = useUnsavedChanges(isDirty);
+
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
       await save.mutateAsync(values);
       toast.success('Photo saved');
       await invalidate();
-      await navigate('/admin/gallery');
+      await navigate('/admin/gallery', { state: SAVED_STATE });
     } catch (error) {
       if (!applyFieldErrors(error, setError, FIELDS)) setFormError(getErrorMessage(error));
     }
@@ -111,7 +114,11 @@ function PhotoForm({ photo }: { photo: GalleryImageDto }) {
           onChange={(next) => {
             if (!next) return;
             setAsset(next);
-            setValue('image', { publicId: next.publicId, resourceType: next.resourceType });
+            setValue(
+              'image',
+              { publicId: next.publicId, resourceType: next.resourceType },
+              { shouldDirty: true },
+            );
           }}
         />
         <TextAreaField
@@ -164,6 +171,7 @@ function PhotoForm({ photo }: { photo: GalleryImageDto }) {
           </Link>
         </div>
       </form>
+      {unsavedPrompt}
     </section>
   );
 }

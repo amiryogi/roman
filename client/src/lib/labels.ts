@@ -1,4 +1,12 @@
-import type { BookingEventType, GalleryCategory, InquiryType, VideoCategory } from '@roman/shared';
+import type {
+  BookingEventType,
+  ExperienceCategory,
+  GalleryCategory,
+  InquiryStatus,
+  InquiryType,
+  SocialPlatform,
+  VideoCategory,
+} from '@roman/shared';
 
 // Display names for categories. They describe kinds of work listed in the CV, not claims.
 
@@ -31,5 +39,27 @@ export const BOOKING_EVENT_TYPE_LABELS: Record<BookingEventType, string> = {
   corporate: 'Corporate event',
   'private-event': 'Private event',
   'studio-recording': 'Studio recording',
+  other: 'Other',
+};
+
+export const INQUIRY_STATUS_LABELS: Record<InquiryStatus, string> = {
+  new: 'New',
+  read: 'Read',
+  replied: 'Replied',
+  archived: 'Archived',
+};
+
+export const SOCIAL_PLATFORM_LABELS: Record<SocialPlatform, string> = {
+  youtube: 'YouTube',
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  tiktok: 'TikTok',
+  spotify: 'Spotify',
+  other: 'Other',
+};
+
+export const EXPERIENCE_CATEGORY_LABELS: Record<ExperienceCategory, string> = {
+  teaching: 'Teaching',
+  performance: 'Performance',
   other: 'Other',
 };

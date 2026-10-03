@@ -1,9 +1,13 @@
 import {
+  adminStatsDtoSchema,
   albumDtoSchema,
   eventDtoSchema,
   galleryImageDtoSchema,
+  inquiryDtoSchema,
+  profileAdminDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
+  type AdminStatsDto,
   type AlbumCreateInput,
   type AlbumDto,
   type AlbumUpdateInput,
@@ -13,7 +17,13 @@ import {
   type GalleryImageCreateInput,
   type GalleryImageDto,
   type GalleryImageUpdateInput,
+  type InquiryDto,
+  type InquiryStatus,
+  type InquiryType,
+  type InquiryUpdateInput,
   type Paginated,
+  type ProfileAdminDto,
+  type ProfileInput,
   type PublicationStatus,
   type TrackCreateInput,
   type TrackDto,
@@ -52,6 +62,11 @@ export const adminKeys = {
   events: ['admin', 'events'] as const,
   eventList: (params: AdminListParams) => ['admin', 'events', 'list', params] as const,
   event: (id: string) => ['admin', 'events', id] as const,
+  stats: ['admin', 'stats'] as const,
+  profile: ['admin', 'profile'] as const,
+  inquiries: ['admin', 'inquiries'] as const,
+  inquiryList: (params: InquiryListParams) => ['admin', 'inquiries', 'list', params] as const,
+  inquiry: (id: string) => ['admin', 'inquiries', id] as const,
 };
 
 function listQuery(params: AdminListParams): string {
@@ -218,4 +233,48 @@ export function updateEvent(id: string, input: EventUpdateInput): Promise<EventD
 
 export function deleteEvent(id: string): Promise<void> {
   return apiRequestNoContent(`/admin/events/${id}`, { ...auth, method: 'DELETE' });
+}
+
+// --- Dashboard, profile, inbox (Phase 9) ----------------------------------------------------------
+
+export function getStats(): Promise<AdminStatsDto> {
+  return apiRequest('/admin/stats', adminStatsDtoSchema, auth);
+}
+
+export function getAdminProfile(): Promise<ProfileAdminDto> {
+  return apiRequest('/admin/profile', profileAdminDtoSchema, auth);
+}
+
+/** Replaces the whole profile (PUT). */
+export function saveProfile(input: ProfileInput): Promise<ProfileAdminDto> {
+  return apiRequest('/admin/profile', profileAdminDtoSchema, { ...auth, method: 'PUT', body: input });
+}
+
+export interface InquiryListParams {
+  page: number;
+  status?: InquiryStatus;
+  inquiryType?: InquiryType;
+}
+
+export function listInquiries(params: InquiryListParams): Promise<Paginated<InquiryDto>> {
+  const search = new URLSearchParams({ page: String(params.page), limit: String(ADMIN_PAGE_SIZE) });
+  if (params.status) search.set('status', params.status);
+  if (params.inquiryType) search.set('inquiryType', params.inquiryType);
+  return apiRequestPage(`/admin/inquiries?${search.toString()}`, inquiryDtoSchema, auth);
+}
+
+export function getInquiry(id: string): Promise<InquiryDto> {
+  return apiRequest(`/admin/inquiries/${id}`, inquiryDtoSchema, auth);
+}
+
+export function updateInquiry(id: string, input: InquiryUpdateInput): Promise<InquiryDto> {
+  return apiRequest(`/admin/inquiries/${id}`, inquiryDtoSchema, {
+    ...auth,
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export function deleteInquiry(id: string): Promise<void> {
+  return apiRequestNoContent(`/admin/inquiries/${id}`, { ...auth, method: 'DELETE' });
 }

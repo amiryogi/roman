@@ -24,3 +24,10 @@ export function startYear(period: string): number | undefined {
   const match = /\b(\d{4})\b/.exec(period);
   return match?.[1] ? Number(match[1]) : undefined;
 }
+
+/** "3 Oct 2026, 14:05" in the viewer's own time zone: when an admin-side record was created. */
+export function formatDateTime(iso: string): string {
+  return new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium', timeStyle: 'short' }).format(
+    new Date(iso),
+  );
+}

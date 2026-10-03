@@ -1,11 +1,14 @@
+import { useQuery } from '@tanstack/react-query';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 
 import { useAuth } from '@/features/admin/auth/AuthContext';
 import { RequireAuth } from '@/features/admin/auth/RequireAuth';
+import { adminKeys, getStats } from '@/lib/api/admin';
 
-// Sections are added as their phases land (plan §25).
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', end: true },
+  { to: '/admin/inquiries', label: 'Inquiries', end: false },
+  { to: '/admin/profile', label: 'Profile', end: false },
   { to: '/admin/tracks', label: 'Tracks', end: false },
   { to: '/admin/albums', label: 'Albums', end: false },
   { to: '/admin/videos', label: 'Videos', end: false },
@@ -21,6 +24,13 @@ function AdminShell() {
   const { state, logout } = useAuth();
   const navigate = useNavigate();
   const adminName = state.status === 'authenticated' ? state.admin.name : '';
+  // The "new inquiries" badge refreshes in the background while the admin is open.
+  const stats = useQuery({
+    queryKey: adminKeys.stats,
+    queryFn: getStats,
+    refetchInterval: 60_000,
+  });
+  const newInquiries = stats.data?.inquiriesNew ?? 0;
 
   async function handleLogout() {
     await logout();
@@ -57,6 +67,12 @@ function AdminShell() {
                   }
                 >
                   {item.label}
+                  {item.to === '/admin/inquiries' && newInquiries > 0 && (
+                    <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-amber-700 px-1.5 text-xs font-semibold text-white">
+                      {newInquiries}
+                      <span className="sr-only"> new</span>
+                    </span>
+                  )}
                 </NavLink>
               </li>
             ))}

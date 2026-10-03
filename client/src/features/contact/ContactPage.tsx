@@ -3,16 +3,18 @@ import { useQuery } from '@tanstack/react-query';
 import { Seo } from '@/components/seo/Seo';
 import { Container } from '@/components/ui/Container';
 import { getProfile, queryKeys } from '@/lib/api/public';
+import { SOCIAL_PLATFORM_LABELS } from '@/lib/labels';
 
 import { ContactForm } from './ContactForm';
 
 /**
  * Contact and booking (plan §6): the form, the public contact details the owner chose to show
- * (the phone number only if allowed), and a privacy note.
+ * (the phone number only if allowed), social links, and a privacy note.
  */
 export function ContactPage() {
   const profile = useQuery({ queryKey: queryKeys.profile, queryFn: getProfile });
   const contact = profile.data?.contact;
+  const socials = profile.data?.socials ?? [];
 
   return (
     <div className="surface-light">
@@ -68,6 +70,25 @@ export function ContactPage() {
                 </div>
               )}
             </dl>
+          )}
+
+          {socials.length > 0 && (
+            <div className="mt-8">
+              <h2 className="label-caps text-(--muted)">Elsewhere</h2>
+              <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
+                {socials.map((link) => (
+                  <li key={link.url}>
+                    <a
+                      href={link.url}
+                      rel="me noopener noreferrer"
+                      className="text-lg text-(--accent) underline underline-offset-4"
+                    >
+                      {link.label ?? SOCIAL_PLATFORM_LABELS[link.platform]}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           <p className="mt-10 text-sm leading-relaxed text-(--muted)">

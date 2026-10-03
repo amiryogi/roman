@@ -1,13 +1,25 @@
 import { Router } from 'express';
 import { ipKeyGenerator } from 'express-rate-limit';
 
-import { inquiryCreateInputSchema, type InquiryFormTokenDto } from '@roman/shared';
+import {
+  inquiryAdminListQuerySchema,
+  inquiryCreateInputSchema,
+  inquiryUpdateInputSchema,
+  type InquiryFormTokenDto,
+} from '@roman/shared';
 
 import type { Logger } from '../../config/logger.js';
-import { sendData } from '../../lib/respond.js';
+import { idParam } from '../../lib/query.js';
+import { sendData, sendNoContent } from '../../lib/respond.js';
 import { createRateLimiter } from '../../middleware/rateLimit.js';
 import { issueFormToken } from './formToken.js';
-import { createInquiry } from './service.js';
+import {
+  createInquiry,
+  deleteInquiry,
+  getInquiry,
+  listInquiries,
+  updateInquiry,
+} from './service.js';
 
 export interface InquiryConfig {
   /** Keys IP hashes and form tokens (IP_HASH_SALT). */
@@ -42,6 +54,32 @@ export function createInquiriesRouter(config: InquiryConfig, logger: Logger): Ro
       logger,
     });
     sendData(res, receipt, { status: 201 });
+  });
+
+  return router;
+}
+
+/** `/api/admin/inquiries/*` (plan §10.4): the inbox. Mounted behind requireAuth. */
+export function createAdminInquiriesRouter(): Router {
+  const router = Router();
+
+  router.get('/', async (req, res) => {
+    const { items, meta } = await listInquiries(inquiryAdminListQuerySchema.parse(req.query));
+    sendData(res, items, { meta });
+  });
+
+  router.get('/:id', async (req, res) => {
+    sendData(res, await getInquiry(idParam(req.params)));
+  });
+
+  router.patch('/:id', async (req, res) => {
+    const id = idParam(req.params);
+    sendData(res, await updateInquiry(id, inquiryUpdateInputSchema.parse(req.body)));
+  });
+
+  router.delete('/:id', async (req, res) => {
+    await deleteInquiry(idParam(req.params));
+    sendNoContent(res);
   });
 
   return router;

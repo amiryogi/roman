@@ -1,13 +1,23 @@
-import { Types } from 'mongoose';
+import { Types, type QueryFilter } from 'mongoose';
 import type { z } from 'zod';
 
-import type { inquiryCreateInputSchema, InquiryReceiptDto } from '@roman/shared';
+import type {
+  inquiryAdminListQuerySchema,
+  inquiryCreateInputSchema,
+  InquiryDto,
+  InquiryReceiptDto,
+  inquiryUpdateInputSchema,
+  PaginationMeta,
+} from '@roman/shared';
 
 import type { Logger } from '../../config/logger.js';
 import { AppError } from '../../lib/AppError.js';
 import { fromIsoDate } from '../../lib/dates.js';
+import type { WithId } from '../../lib/mongo.js';
+import { paginationMeta, skipFor } from '../../lib/pagination.js';
 import { checkFormToken, hashIp } from './formToken.js';
-import { InquiryModel } from './model.js';
+import { toInquiryDto } from './mapper.js';
+import { InquiryModel, type InquiryDoc } from './model.js';
 
 type InquiryCreate = z.output<typeof inquiryCreateInputSchema>;
 
@@ -63,4 +73,48 @@ export async function createInquiry(
     'Inquiry received',
   );
   return { id: created._id.toHexString(), receivedAt: created.createdAt.toISOString() };
+}
+
+// --- Admin inbox (plan §13) -------------------------------------------------------------------
+
+type AdminQuery = z.output<typeof inquiryAdminListQuerySchema>;
+type InquiryUpdate = z.output<typeof inquiryUpdateInputSchema>;
+
+/** Newest first, optionally one status and/or one type. */
+export async function listInquiries(
+  query: AdminQuery,
+): Promise<{ items: InquiryDto[]; meta: PaginationMeta }> {
+  const filter: QueryFilter<InquiryDoc> = {};
+  if (query.status) filter.status = query.status;
+  if (query.inquiryType) filter.inquiryType = query.inquiryType;
+  const [docs, total] = await Promise.all([
+    InquiryModel.find(filter)
+      .sort({ createdAt: -1, _id: -1 })
+      .skip(skipFor(query.page, query.limit))
+      .limit(query.limit)
+      .lean<WithId<InquiryDoc>[]>(),
+    InquiryModel.countDocuments(filter),
+  ]);
+  return { items: docs.map(toInquiryDto), meta: paginationMeta(query.page, query.limit, total) };
+}
+
+export async function getInquiry(id: string): Promise<InquiryDto> {
+  const doc = await InquiryModel.findById(id).lean<WithId<InquiryDoc>>();
+  if (!doc) throw AppError.notFound('This message no longer exists.');
+  return toInquiryDto(doc);
+}
+
+export async function updateInquiry(id: string, input: InquiryUpdate): Promise<InquiryDto> {
+  const doc = await InquiryModel.findById(id);
+  if (!doc) throw AppError.notFound('This message no longer exists.');
+  if (input.status !== undefined) doc.status = input.status;
+  if (input.adminNotes !== undefined) doc.adminNotes = input.adminNotes ?? undefined;
+  await doc.save();
+  return getInquiry(id);
+}
+
+/** For privacy requests: the message is gone for good (plan §15). */
+export async function deleteInquiry(id: string): Promise<void> {
+  const doc = await InquiryModel.findByIdAndDelete(id).lean<WithId<InquiryDoc>>();
+  if (!doc) throw AppError.notFound('This message no longer exists.');
 }

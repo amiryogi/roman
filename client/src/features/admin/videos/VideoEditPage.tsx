@@ -23,6 +23,7 @@ import { applyFieldErrors } from '@/lib/forms';
 import { MediaUploader } from '@/features/admin/components/MediaUploader';
 import { PageSpinner } from '@/features/admin/components/PageSpinner';
 import { useInvalidate } from '@/features/admin/components/useAdminList';
+import { SAVED_STATE, useUnsavedChanges } from '@/features/admin/components/useUnsavedChanges';
 import { adminKeys, createVideo, getVideo, updateVideo } from '@/lib/api/admin';
 import { getErrorMessage } from '@/lib/api/errors';
 import { queryKeys } from '@/lib/api/public';
@@ -116,7 +117,7 @@ function VideoForm({ video }: { video: VideoDto | undefined }) {
     setValue,
     getValues,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<VideoCreateInput, unknown, VideoCreateParsed>({
     resolver: zodResolver(videoCreateInputSchema),
     defaultValues: video ? toFormValues(video) : NEW_VIDEO,
@@ -128,13 +129,15 @@ function VideoForm({ video }: { video: VideoDto | undefined }) {
       video ? updateVideo(video.id, values) : createVideo(values),
   });
 
+  const unsavedPrompt = useUnsavedChanges(isDirty);
+
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
       const saved = await save.mutateAsync(values);
       toast.success(`“${saved.title}” saved`);
       await invalidate();
-      await navigate('/admin/videos');
+      await navigate('/admin/videos', { state: SAVED_STATE });
     } catch (error) {
       if (!applyFieldErrors(error, setError, FIELDS)) setFormError(getErrorMessage(error));
     }
@@ -206,7 +209,7 @@ function VideoForm({ video }: { video: VideoDto | undefined }) {
                   setValue(
                     'mediaRef',
                     { publicId: asset.publicId, resourceType: asset.resourceType },
-                    { shouldValidate: true },
+                    { shouldDirty: true, shouldValidate: true },
                   );
                 }}
               />
@@ -273,6 +276,7 @@ function VideoForm({ video }: { video: VideoDto | undefined }) {
                       alt: getValues('poster.alt') ?? '',
                     }
                   : null,
+                { shouldDirty: true },
               );
             }}
           />
@@ -303,6 +307,7 @@ function VideoForm({ video }: { video: VideoDto | undefined }) {
           </Link>
         </div>
       </form>
+      {unsavedPrompt}
     </section>
   );
 }

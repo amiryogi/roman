@@ -140,6 +140,25 @@ const adminRoutes: RouteObject = {
           }),
         },
         {
+          path: 'profile',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/profile/ProfileEditPage')).ProfileEditPage,
+          }),
+        },
+        {
+          path: 'inquiries',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/inquiries/InquiriesPage')).InquiriesPage,
+          }),
+        },
+        {
+          path: 'inquiries/:id',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/inquiries/InquiryDetailPage'))
+              .InquiryDetailPage,
+          }),
+        },
+        {
           path: 'account',
           lazy: async () => ({
             Component: (await import('@/features/admin/account/AccountPage')).AccountPage,

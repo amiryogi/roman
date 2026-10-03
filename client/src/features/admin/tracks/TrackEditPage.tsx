@@ -23,6 +23,7 @@ import { applyFieldErrors } from '@/lib/forms';
 import { MediaUploader } from '@/features/admin/components/MediaUploader';
 import { PageSpinner } from '@/features/admin/components/PageSpinner';
 import { useInvalidate } from '@/features/admin/components/useAdminList';
+import { SAVED_STATE, useUnsavedChanges } from '@/features/admin/components/useUnsavedChanges';
 import { adminKeys, createTrack, getTrack, listAlbums, updateTrack } from '@/lib/api/admin';
 import { getErrorMessage } from '@/lib/api/errors';
 import { queryKeys } from '@/lib/api/public';
@@ -129,7 +130,7 @@ function TrackForm({ track }: { track: TrackDto | undefined }) {
     setValue,
     getValues,
     setError,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
   } = useForm<TrackCreateInput, unknown, TrackCreateParsed>({
     resolver: zodResolver(trackCreateInputSchema),
     defaultValues: track ? toFormValues(track) : NEW_TRACK,
@@ -140,13 +141,15 @@ function TrackForm({ track }: { track: TrackDto | undefined }) {
       track ? updateTrack(track.id, values) : createTrack(values),
   });
 
+  const unsavedPrompt = useUnsavedChanges(isDirty);
+
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
     try {
       const saved = await save.mutateAsync(values);
       toast.success(`“${saved.title}” saved`);
       await invalidate();
-      await navigate('/admin/tracks');
+      await navigate('/admin/tracks', { state: SAVED_STATE });
     } catch (error) {
       if (!applyFieldErrors(error, setError, FIELDS)) setFormError(getErrorMessage(error));
     }
@@ -172,7 +175,7 @@ function TrackForm({ track }: { track: TrackDto | undefined }) {
               setValue(
                 'audio',
                 { publicId: asset.publicId, resourceType: asset.resourceType },
-                { shouldValidate: true },
+                { shouldDirty: true, shouldValidate: true },
               );
             }}
           />
@@ -266,6 +269,7 @@ function TrackForm({ track }: { track: TrackDto | undefined }) {
                       alt: getValues('cover.alt') ?? '',
                     }
                   : null,
+                { shouldDirty: true },
               );
             }}
           />
@@ -297,6 +301,7 @@ function TrackForm({ track }: { track: TrackDto | undefined }) {
           </Link>
         </div>
       </form>
+      {unsavedPrompt}
     </section>
   );
 }

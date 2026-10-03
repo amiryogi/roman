@@ -17,8 +17,13 @@ import { createAdminEventsRouter, createPublicEventsRouter } from './modules/eve
 import { createAdminGalleryRouter, createPublicGalleryRouter } from './modules/gallery/routes.js';
 import { createHealthRouter } from './modules/health/routes.js';
 import { createHomeRouter } from './modules/home/routes.js';
-import { createInquiriesRouter, type InquiryConfig } from './modules/inquiries/routes.js';
-import { createProfileRouter } from './modules/profile/routes.js';
+import {
+  createAdminInquiriesRouter,
+  createInquiriesRouter,
+  type InquiryConfig,
+} from './modules/inquiries/routes.js';
+import { createAdminProfileRouter, createProfileRouter } from './modules/profile/routes.js';
+import { createStatsRouter } from './modules/stats/routes.js';
 import { createAdminTracksRouter, createPublicTracksRouter } from './modules/tracks/routes.js';
 import { createUploadsRouter } from './modules/uploads/routes.js';
 import { createAdminVideosRouter, createPublicVideosRouter } from './modules/videos/routes.js';
@@ -86,6 +91,9 @@ export function createApp(options: AppOptions): Express {
   admin.use('/videos', createAdminVideosRouter(mediaDeps));
   admin.use('/gallery', createAdminGalleryRouter(mediaDeps));
   admin.use('/events', createAdminEventsRouter(mediaDeps));
+  admin.use('/profile', createAdminProfileRouter(mediaDeps));
+  admin.use('/inquiries', createAdminInquiriesRouter());
+  admin.use('/stats', createStatsRouter());
   app.use('/api/admin', noStore, createRequireAuth(options.auth), admin);
 
   app.use(notFound);
