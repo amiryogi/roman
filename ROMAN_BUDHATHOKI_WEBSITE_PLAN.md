@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–10 complete on 2026-10-03; Phase 10's lab LCP target (2.5 s) is not met (2.7–3.0 s, see its notes). The owner approved the visual direction (Phase 5 checkpoint) on 2026-10-03. Phase 11 complete on 2026-10-03, pending three consecutive green CI runs after the next push. Next: Phase 12 (production deployment).
+**Status:** Phases 1–11 complete; Phase 12 deployed on 2026-10-03 (https://romanviolin.vercel.app, API https://roman-budhathoki-api.onrender.com). Open: lab LCP on image pages (about 3.7 s live against 2.5 s), a database backup/restore test, a custom domain, and the manual screen-reader pass.
 **Plan date:** 2026-10-02
 
 ---
@@ -196,6 +196,15 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - **Fixes found by the suite:** none in the app. Test-side fixes: the browser names delete buttons "Delete : title" (a space before the screen-reader text), phones show the seek slider only in the full player, and sign-in on WebKit/Windows can take longer than 7 s.
 - **CI:** the check job runs server tests with coverage; a new `e2e` job installs Chromium and WebKit and runs the suite, uploading the report on failure. Lighthouse stays a manual pre-release step (`npm run lighthouse` against real content): with fake media the images don't load, so CI numbers wouldn't mean anything.
 - `npm run test:cloudinary` passed against the development folder (11 checks, test assets cleaned up).
+
+**Implementation notes (Phase 12):**
+
+- **Hosting:** website on Vercel (`romanviolin.vercel.app`, project root `client`, build settings in `client/vercel.json`), API on Render (`roman-budhathoki-api`, free plan, Singapore, defined by `render.yaml`), MongoDB Atlas database `roman-budhathoki-prod` on the existing cluster (separate from `roman-budhathoki-dev`), Cloudinary folder `roman-budhathoki/production`. Step-by-step guide: `docs/DEPLOYMENT.md`.
+- **Owner decisions (2026-10-03):** Render free plan to start (the API sleeps after 15 idle minutes; the next visit waits up to a minute); production admin `romanviolinktm@gmail.com`; site name `romanviolin`; the existing Atlas user for production. No custom domain yet.
+- **Seeding** ran from the development machine with `server/.env.production` (git-ignored): indexes, the admin account, the CV profile with media uploaded to the production folder, drafts. The owner's public phone number and social links were added to the production profile.
+- **Release checks (2026-10-03):** health green through the site's `/api` rewrite; sign-in sets a first-party `HttpOnly; Secure; SameSite=Strict` refresh cookie on `/api/auth`, a refresh keeps the session and sign-out revokes it; a test inquiry reached the inbox (then deleted); every public page renders with no CSP issue or console error; prerendered titles, canonical URLs, share images, JSON-LD, sitemap and `robots.txt` use the live address; security headers (CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy) on pages, immutable caching on assets, `noindex` on the admin. CI (check + E2E) green on `bbeaeab`.
+- **Lighthouse (live, mobile):** accessibility, best practices and SEO 100 and CLS 0 on Home, Music and Gallery; performance 92–94 on Music, 84–85 on Home and Gallery, where LCP (the first photo) is about 3.7 s. Options: Render Starter (no cold starts), smaller hero renditions, or build-time rendering of page bodies (owner decision, see Phase 10).
+- **Still open:** securityheaders.com grade (expected A: no `X-Frame-Options`, `frame-ancestors` covers it), a database backup and restore test (Atlas free clusters have no automatic backups), the custom domain, and confirming visitor IPs behind the two proxies (`TRUST_PROXY=2`).
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 

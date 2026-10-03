@@ -1,6 +1,6 @@
 # Session summary: Roman Budhathoki website
 
-Last updated: 2026-10-03. Covers plan phases 1–11 of 12. The full specification is
+Last updated: 2026-10-03. Covers plan phases 1–12 of 12. The full specification is
 [ROMAN_BUDHATHOKI_WEBSITE_PLAN.md](../ROMAN_BUDHATHOKI_WEBSITE_PLAN.md), and each phase's deviations are recorded in
 its "Implementation notes (Phase N)" in §0.4. Working rules are in [CLAUDE.md](../CLAUDE.md).
 
@@ -18,8 +18,8 @@ its "Implementation notes (Phase N)" in §0.4. Working rules are in [CLAUDE.md](
 | 8     | Events (Performances) and contact/booking form                  | Done, committed                                       |
 | 9     | Admin dashboard, full profile editor, inquiries inbox           | Done; final changes **not committed**                 |
 | 10    | SEO prerendering, structured data, a11y audit, bundle trimming  | Done, committed; LCP target open (see below)          |
-| 11    | Playwright E2E, coverage, CI hardening                          | Done, **not committed**; CI runs pending              |
-| 12    | Production deployment (Vercel, Render, Atlas, Cloudinary)       | Next                                                  |
+| 11    | Playwright E2E, coverage, CI hardening                          | Done, committed; CI green (check + E2E)               |
+| 12    | Production deployment (Vercel, Render, Atlas, Cloudinary)       | Live 2026-10-03; open items below                     |
 
 Quality gate at the end of Phase 11: `npm run check` passes with **427 tests** (41 shared, 221 server, 165 client), plus
 no-JS, lockfile, client-secrets, typecheck, lint and Prettier.
@@ -156,9 +156,12 @@ and management pages for tracks, albums, videos, the gallery (including bulk upl
   mobile menu cascade. All respect reduced motion. Conventions are in CLAUDE.md ("Design and motion").
 - The player bar now loads on first play, which paid for the extra markup: every public page is 156.5–159.1 KiB.
 
-## Phase 12 scope (next)
+## Phase 12 (live, 2026-10-03)
 
-- Production Atlas, the Cloudinary production folder, Vercel (client) and Render (API); domain, HTTPS, secrets, CORS,
-  the `/api` rewrite in `client/vercel.json`, uptime monitoring.
-- `seed:admin` and `seed:content` in production; the owner publishes; release checklist (§25 Phase 12).
-- Needs from the owner: the domain, host accounts, and the LCP decision.
+- Website: https://romanviolin.vercel.app (Vercel, root `client`). API: https://roman-budhathoki-api.onrender.com
+  (Render free plan, Singapore, `render.yaml`). Database `roman-budhathoki-prod`; media folder
+  `roman-budhathoki/production`. Guide: `docs/DEPLOYMENT.md`.
+- Production admin: `romanviolinktm@gmail.com` (password given to the owner, stored nowhere in the repo).
+- `server/.env.production` (git-ignored) runs seeds and index sync against production from this machine.
+- Release checks passed (see the plan's Phase 12 notes). Open: LCP about 3.7 s on photo pages, securityheaders.com
+  check, a backup/restore test, custom domain, `TRUST_PROXY` confirmation, CI green runs 2 and 3.
