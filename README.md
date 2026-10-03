@@ -65,6 +65,10 @@ npm run dev
 - `IP_HASH_SALT` in `server/.env` (16+ random characters) keys the hashed visitor IPs and the form's anti-spam token.
   It is required in production; development uses a built-in value when it is unset.
 
+## Deployment
+
+Vercel (website) and Render (API), step by step: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 ## End-to-end tests
 
 - Run `npx playwright install chromium webkit` once. `npm run test:e2e` then starts a test API (in-memory database,
