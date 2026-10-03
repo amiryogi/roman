@@ -19,7 +19,7 @@ import { adminPrimaryButton, adminSecondaryButton } from '@/features/admin/compo
 import { CheckboxField, SelectField, TextAreaField } from '@/features/admin/components/Fields';
 import { FormAlert } from '@/features/admin/components/FormAlert';
 import { FormField } from '@/features/admin/components/FormField';
-import { applyFieldErrors } from '@/features/admin/components/formErrors';
+import { applyFieldErrors } from '@/lib/forms';
 import { MediaUploader } from '@/features/admin/components/MediaUploader';
 import { PageSpinner } from '@/features/admin/components/PageSpinner';
 import { useInvalidate } from '@/features/admin/components/useAdminList';

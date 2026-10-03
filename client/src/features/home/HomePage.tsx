@@ -13,6 +13,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { Section } from '@/components/ui/Section';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StringsDivider } from '@/components/ui/StringsDivider';
+import { EventList } from '@/features/events/EventList';
 import { TrackList } from '@/features/music/TrackList';
 import { VideoGallery } from '@/features/videos/VideoGallery';
 import { getHome, queryKeys } from '@/lib/api/public';
@@ -48,26 +49,39 @@ export function HomePage() {
 const moreLink =
   'mt-10 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-(--accent) uppercase underline decoration-current/40 underline-offset-[6px] hover:decoration-current';
 
-type HomeSection = 'music' | 'biography' | 'videos' | 'gallery' | 'booking';
+type HomeSection = 'music' | 'biography' | 'videos' | 'gallery' | 'events' | 'booking';
+
+/** Stage (dark) or paper (light) per section; the closing band takes the opposite of the last. */
+const TONES: Record<Exclude<HomeSection, 'booking'>, 'dark' | 'light'> = {
+  music: 'dark',
+  biography: 'light',
+  videos: 'dark',
+  gallery: 'light',
+  events: 'dark',
+};
 
 /**
  * Order follows plan §6, except that videos come before the photo strip so stage and paper keep
  * alternating. Sections with no content are left out entirely (plan §12.5), and the movement
- * numbers follow the visible order. Upcoming events join in Phase 8.
+ * numbers follow the visible order.
  */
 function HomeContent({ home }: { home: HomeDto }) {
-  const { profile, featuredTracks, featuredVideos, featuredImages } = home;
+  const { profile, featuredTracks, featuredVideos, featuredImages, upcomingEvents } = home;
   const present: Record<HomeSection, boolean> = {
     music: featuredTracks.length > 0,
     biography: true,
     videos: featuredVideos.length > 0,
     gallery: featuredImages.length > 0,
+    events: upcomingEvents.length > 0,
     booking: true,
   };
-  const order = (['music', 'biography', 'videos', 'gallery', 'booking'] as const).filter(
+  const order = (['music', 'biography', 'videos', 'gallery', 'events', 'booking'] as const).filter(
     (key) => present[key],
   );
   const number = (key: HomeSection) => order.indexOf(key) + 1;
+  const lastSection = order.at(-2);
+  const bookingTone =
+    lastSection && lastSection !== 'booking' && TONES[lastSection] === 'dark' ? 'light' : 'dark';
 
   return (
     <>
@@ -109,7 +123,15 @@ function HomeContent({ home }: { home: HomeDto }) {
           </Link>
         </Section>
       )}
-      <BookingBand number={number('booking')} />
+      {present.events && (
+        <Section tone="dark" label="Performances" number={number('events')} title="Upcoming">
+          <EventList events={upcomingEvents} />
+          <Link to="/events" className={moreLink}>
+            All performances
+          </Link>
+        </Section>
+      )}
+      <BookingBand number={number('booking')} tone={bookingTone} />
     </>
   );
 }

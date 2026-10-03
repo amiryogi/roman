@@ -56,7 +56,7 @@ export const clearableIsoDate = z
   .optional();
 
 /** Instant with timezone, e.g. "2026-10-02T18:30:00+05:45" or "...Z". */
-export const isoDateTimeSchema = z.iso.datetime({ offset: true });
+export const isoDateTimeSchema = z.iso.datetime({ offset: true, error: 'Enter a date and time' });
 
 export const clearableIsoDateTime = z
   .union([z.literal(''), z.null(), isoDateTimeSchema])

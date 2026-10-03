@@ -30,6 +30,8 @@ export const inquiryCreateInputSchema = z
     message: text(5000, 10),
     /** Honeypot: hidden from people; bots fill it. Never stored. */
     website: z.string().max(200).optional(),
+    /** Signed time the form was shown (GET /api/inquiries/form-token), for the minimum fill time. */
+    formToken: z.string().min(1, 'Reload the page and try again').max(200),
   })
   .refine((value) => value.inquiryType !== 'booking' || value.eventType !== undefined, {
     path: ['eventType'],
@@ -41,6 +43,10 @@ export const inquiryCreateInputSchema = z
     { path: ['preferredDate'], error: 'Choose a date in the future' },
   );
 export type InquiryCreateInput = z.input<typeof inquiryCreateInputSchema>;
+
+/** GET /api/inquiries/form-token: a signed timestamp, sent back with the form. */
+export const inquiryFormTokenDtoSchema = z.strictObject({ token: z.string() });
+export type InquiryFormTokenDto = z.infer<typeof inquiryFormTokenDtoSchema>;
 
 export const inquiryUpdateInputSchema = z.strictObject({
   status: inquiryStatusSchema.optional(),

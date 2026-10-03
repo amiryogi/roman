@@ -1,11 +1,15 @@
 import {
   albumDtoSchema,
+  eventDtoSchema,
   galleryImageDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
   type AlbumCreateInput,
   type AlbumDto,
   type AlbumUpdateInput,
+  type EventCreateInput,
+  type EventDto,
+  type EventUpdateInput,
   type GalleryImageCreateInput,
   type GalleryImageDto,
   type GalleryImageUpdateInput,
@@ -45,6 +49,9 @@ export const adminKeys = {
   gallery: ['admin', 'gallery'] as const,
   galleryList: (params: AdminListParams) => ['admin', 'gallery', 'list', params] as const,
   galleryImage: (id: string) => ['admin', 'gallery', id] as const,
+  events: ['admin', 'events'] as const,
+  eventList: (params: AdminListParams) => ['admin', 'events', 'list', params] as const,
+  event: (id: string) => ['admin', 'events', id] as const,
 };
 
 function listQuery(params: AdminListParams): string {
@@ -185,4 +192,30 @@ export function deleteGalleryImage(id: string): Promise<void> {
 
 export function reorderGallery(ids: string[]): Promise<void> {
   return apiRequestNoContent('/admin/gallery/order', { ...auth, method: 'PATCH', body: { ids } });
+}
+
+// --- Events ---------------------------------------------------------------------------------
+
+export function listEvents(params: AdminListParams): Promise<Paginated<EventDto>> {
+  return apiRequestPage(`/admin/events?${listQuery(params)}`, eventDtoSchema, auth);
+}
+
+export function getEvent(id: string): Promise<EventDto> {
+  return apiRequest(`/admin/events/${id}`, eventDtoSchema, auth);
+}
+
+export function createEvent(input: EventCreateInput): Promise<EventDto> {
+  return apiRequest('/admin/events', eventDtoSchema, { ...auth, method: 'POST', body: input });
+}
+
+export function updateEvent(id: string, input: EventUpdateInput): Promise<EventDto> {
+  return apiRequest(`/admin/events/${id}`, eventDtoSchema, {
+    ...auth,
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export function deleteEvent(id: string): Promise<void> {
+  return apiRequestNoContent(`/admin/events/${id}`, { ...auth, method: 'DELETE' });
 }

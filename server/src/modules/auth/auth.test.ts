@@ -307,6 +307,8 @@ describe('auth', () => {
       '/api/admin/gallery',
       '/api/admin/gallery/order',
       '/api/admin/gallery/64b7f0c2a1b2c3d4e5f60718',
+      '/api/admin/events',
+      '/api/admin/events/64b7f0c2a1b2c3d4e5f60718',
       '/api/admin/uploads/signature',
       '/api/admin/uploads/verify',
       '/api/admin/anything/64b7f0c2a1b2c3d4e5f60718',

@@ -20,6 +20,7 @@ export const TEST_AUTH: AuthConfig = {
 };
 
 export const TEST_MEDIA_ROOT = 'roman-budhathoki/test';
+export const TEST_INQUIRY_SECRET = 'test-inquiry-secret-value';
 
 export function createTestMedia(): FakeMediaService {
   return createFakeMediaService({
@@ -38,5 +39,6 @@ export function createTestApp(media: FakeMediaService = createTestMedia()): Expr
     logger: silentLogger,
     auth: TEST_AUTH,
     media,
+    inquiries: { secret: TEST_INQUIRY_SECRET },
   });
 }

@@ -4,14 +4,7 @@ import { PageSpinner } from '@/features/admin/components/PageSpinner';
 import { NotFoundPage } from '@/features/errors/NotFoundPage';
 import { RouteErrorPage } from '@/features/errors/RouteErrorPage';
 import { HomePage } from '@/features/home/HomePage';
-import { ComingSoonPage } from '@/features/placeholder/ComingSoonPage';
 import { PublicLayout } from '@/layouts/PublicLayout';
-
-// Sections built in later phases; each placeholder is replaced by its real page (plan §25).
-const UPCOMING_SECTIONS = [
-  { path: 'events', title: 'Performances' },
-  { path: 'contact', title: 'Contact & Booking' },
-] as const;
 
 // Home is in the main chunk for a fast first paint (LCP); other pages load on demand (plan §12.1).
 const publicRoutes: RouteObject = {
@@ -41,10 +34,16 @@ const publicRoutes: RouteObject = {
         Component: (await import('@/features/gallery/GalleryPage')).GalleryPage,
       }),
     },
-    ...UPCOMING_SECTIONS.map(({ path, title }) => ({
-      path,
-      element: <ComingSoonPage title={title} path={`/${path}`} />,
-    })),
+    {
+      path: 'events',
+      lazy: async () => ({ Component: (await import('@/features/events/EventsPage')).EventsPage }),
+    },
+    {
+      path: 'contact',
+      lazy: async () => ({
+        Component: (await import('@/features/contact/ContactPage')).ContactPage,
+      }),
+    },
     { path: '*', Component: NotFoundPage },
   ],
 };
@@ -126,6 +125,18 @@ const adminRoutes: RouteObject = {
           lazy: async () => ({
             Component: (await import('@/features/admin/gallery/GalleryImageEditPage'))
               .GalleryImageEditPage,
+          }),
+        },
+        {
+          path: 'events',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/events/EventsAdminPage')).EventsAdminPage,
+          }),
+        },
+        {
+          path: 'events/:id',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/events/EventEditPage')).EventEditPage,
           }),
         },
         {

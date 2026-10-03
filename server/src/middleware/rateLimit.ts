@@ -9,6 +9,8 @@ interface LimiterOptions {
   keyGenerator?: Options['keyGenerator'];
   /** Count only failed requests (status >= 400). */
   skipSuccessfulRequests?: boolean;
+  /** Count only successful requests (status < 400). */
+  skipFailedRequests?: boolean;
 }
 
 /** Rate limiter that answers with the standard error envelope and a Retry-After header. */
@@ -19,6 +21,7 @@ export function createRateLimiter(options: LimiterOptions): RateLimitRequestHand
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     skipSuccessfulRequests: options.skipSuccessfulRequests ?? false,
+    skipFailedRequests: options.skipFailedRequests ?? false,
     ...(options.keyGenerator ? { keyGenerator: options.keyGenerator } : {}),
     handler: (_req, res, next) => {
       res.setHeader('Retry-After', String(Math.ceil(options.windowMs / 1000)));

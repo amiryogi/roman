@@ -1,9 +1,11 @@
 import {
+  eventDtoSchema,
   galleryImageDtoSchema,
   homeDtoSchema,
   profileDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
+  type EventDto,
   type GalleryImageDto,
   type HomeDto,
   type MediaAssetDto,
@@ -182,6 +184,25 @@ export function photoFixture(overrides: Partial<GalleryImageDto> = {}): GalleryI
     status: 'published',
     featured: false,
     sortOrder: 1,
+    createdAt: '2026-10-02T12:00:00.000Z',
+    updatedAt: '2026-10-02T12:00:00.000Z',
+    ...overrides,
+  });
+}
+
+export function eventFixture(overrides: Partial<EventDto> = {}): EventDto {
+  return eventDtoSchema.parse({
+    id: 'event-1',
+    title: 'Autumn Recital',
+    slug: 'autumn-recital',
+    startsAt: '2026-11-14T13:15:00.000Z',
+    endsAt: '2026-11-14T15:15:00.000Z',
+    timezone: 'Asia/Kathmandu',
+    venue: { name: 'City Hall', city: 'Kathmandu', country: 'Nepal' },
+    eventStatus: 'scheduled',
+    ticketUrl: 'https://tickets.example.com/autumn',
+    status: 'published',
+    featured: false,
     createdAt: '2026-10-02T12:00:00.000Z',
     updatedAt: '2026-10-02T12:00:00.000Z',
     ...overrides,

@@ -13,9 +13,11 @@ import { requireJsonBody } from './middleware/requireJsonBody.js';
 import type { AuthConfig } from './modules/auth/config.js';
 import { createAdminAlbumsRouter, createPublicAlbumsRouter } from './modules/albums/routes.js';
 import { createAuthRouter } from './modules/auth/routes.js';
+import { createAdminEventsRouter, createPublicEventsRouter } from './modules/events/routes.js';
 import { createAdminGalleryRouter, createPublicGalleryRouter } from './modules/gallery/routes.js';
 import { createHealthRouter } from './modules/health/routes.js';
 import { createHomeRouter } from './modules/home/routes.js';
+import { createInquiriesRouter, type InquiryConfig } from './modules/inquiries/routes.js';
 import { createProfileRouter } from './modules/profile/routes.js';
 import { createAdminTracksRouter, createPublicTracksRouter } from './modules/tracks/routes.js';
 import { createUploadsRouter } from './modules/uploads/routes.js';
@@ -30,6 +32,7 @@ export interface AppOptions {
   logger: Logger;
   auth: AuthConfig;
   media: MediaService;
+  inquiries: InquiryConfig;
 }
 
 export const JSON_BODY_LIMIT = '100kb';
@@ -69,6 +72,9 @@ export function createApp(options: AppOptions): Express {
   app.use('/api/albums', publicCache, createPublicAlbumsRouter());
   app.use('/api/videos', publicCache, createPublicVideosRouter());
   app.use('/api/gallery', publicCache, createPublicGalleryRouter());
+  app.use('/api/events', publicCache, createPublicEventsRouter());
+  // Visitor submissions and the per-visit form token must never be cached.
+  app.use('/api/inquiries', noStore, createInquiriesRouter(options.inquiries, options.logger));
 
   // Everything under /api/admin requires a valid access token. Authentication is enforced here,
   // at the mount point, so a resource router added later cannot forget it.
@@ -79,6 +85,7 @@ export function createApp(options: AppOptions): Express {
   admin.use('/albums', createAdminAlbumsRouter(mediaDeps));
   admin.use('/videos', createAdminVideosRouter(mediaDeps));
   admin.use('/gallery', createAdminGalleryRouter(mediaDeps));
+  admin.use('/events', createAdminEventsRouter(mediaDeps));
   app.use('/api/admin', noStore, createRequireAuth(options.auth), admin);
 
   app.use(notFound);

@@ -43,6 +43,7 @@ describe('colour tokens', () => {
     ['varnish', 'ebony-raised'],
     ['ebony', 'varnish'],
     ['ivory', 'varnish-deep'],
+    ['danger', 'ivory'],
   ])('%s on %s meets 4.5:1', (foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });

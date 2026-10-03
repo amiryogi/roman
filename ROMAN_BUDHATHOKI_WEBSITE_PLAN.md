@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–7 complete on 2026-10-03. The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 8 (events and contact/booking).
+**Status:** Phases 1–8 complete on 2026-10-03. The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 9 (admin dashboard, profile editor, inquiries).
 **Plan date:** 2026-10-02
 
 ---
@@ -134,6 +134,21 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - The admin lists for tracks, videos and photos share `ContentListPage`. Albums keep their own page because of the detach-before-delete rule.
 - Home puts videos (dark) before the photo strip (light), so stage and paper keep alternating. §6 lists the gallery first.
 - Initial JS for Home is now 156 KB gzipped (budget 160 KB). Zod alone is a 30 KB chunk, so Phase 10's bundle work should look at it first.
+
+**Implementation notes (Phase 8):**
+
+- §31 decisions 3–5 were left at their defaults: inquiries go to the admin inbox only (no email), there is no Turnstile captcha, and only the email address is public. All three can be added later without changing the data model.
+- Spam protection on `POST /api/inquiries`:
+  - A honeypot (`website`): when filled, the request gets a 201 but nothing is stored.
+  - A per-IP rate limit of 5 an hour. Only accepted submissions count, so someone fixing form errors isn't locked out.
+  - A minimum fill time: `GET /api/inquiries/form-token` returns `<issued-at>.<HMAC>`, and submissions under 3 s or over 24 h old are refused with 422. The form fetches a fresh token and the visitor can send again.
+- `IP_HASH_SALT` keys both the IP hashes (HMAC-SHA-256; the raw IP is never stored) and the form token. It is required in production; development falls back to a fixed value.
+- Event times are entered as wall time in the event's own zone (`datetime-local`) and converted to UTC before validation, using the Intl-only helpers in `shared/src/timezone.ts`. Visitors see dates in the event's zone with its name, e.g. "7:00 pm – 9:00 pm Nepal Time".
+- An event counts as upcoming while either its start or its end is still ahead, so a running festival stays listed. This is computed on every request, and the behaviour is covered by a test that moves the clock.
+- Cancelled events stay listed with a "Cancelled" label and no ticket link. Deleting an event unlinks its gallery photos rather than deleting them.
+- The contact form shows the error summary as an alert, with links to the fields, and moves focus to the first invalid field (§12.4). Success is announced with `role="status"`. There is no success toast on the public site, to keep `sonner` out of the public bundle; the inline message is the announcement.
+- The temporary "In preparation" placeholder pages are gone: every public section is real now.
+- Real-browser check: a submission 2 s after load was refused, the retry was stored with a hashed IP only, and the server log contains no visitor details. Initial JS for Home is 156.8 KiB gzipped (160,589 bytes; budget 160 KB), so Phase 10's bundle work is due.
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 

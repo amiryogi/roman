@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { to: '/admin/albums', label: 'Albums', end: false },
   { to: '/admin/videos', label: 'Videos', end: false },
   { to: '/admin/gallery', label: 'Gallery', end: false },
+  { to: '/admin/events', label: 'Events', end: false },
   { to: '/admin/account', label: 'Account', end: false },
 ] as const;
 

@@ -28,6 +28,8 @@ const rawEnvSchema = z.object({
   JWT_AUDIENCE: z.string().min(1).default('roman-budhathoki-admin'),
   ACCESS_TOKEN_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(30).default(7),
+  // Keys the inquiry IP hashes and the contact-form token (plan §15, §21.2). Required in production.
+  IP_HASH_SALT: z.string().min(16, 'must be at least 16 characters').optional(),
   // --- Media (plan §9, §21.2) ---
   MEDIA_DRIVER: z.enum(['cloudinary', 'fake']).default('cloudinary'),
   CLOUDINARY_CLOUD_NAME: z.string().trim().optional(),
@@ -85,6 +87,11 @@ const envSchema = rawEnvSchema.transform((raw, ctx) => {
   });
   if (!media) return z.NEVER;
 
+  if (raw.NODE_ENV === 'production' && !raw.IP_HASH_SALT) {
+    ctx.addIssue({ code: 'custom', path: ['IP_HASH_SALT'], message: 'is required in production' });
+    return z.NEVER;
+  }
+
   return {
     nodeEnv: raw.NODE_ENV,
     isProduction: raw.NODE_ENV === 'production',
@@ -103,6 +110,10 @@ const envSchema = rawEnvSchema.transform((raw, ctx) => {
       secureCookies: raw.NODE_ENV === 'production',
     },
     media,
+    inquiries: {
+      // A fixed value is fine outside production: there is nothing real to protect.
+      secret: raw.IP_HASH_SALT ?? 'development-only-inquiry-secret',
+    },
     version: raw.APP_VERSION ?? raw.RENDER_GIT_COMMIT?.slice(0, 7) ?? 'dev',
   };
 });

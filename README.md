@@ -56,6 +56,12 @@ npm run dev
   Cloudinary (removing Exif/GPS data from JPEGs first) and creates the profile from the CV, gallery images as drafts and
   a draft track. It is safe to re-run and never overwrites an edited profile.
 
+## Contact form
+
+- Inquiries are stored for the admin inbox; nothing is emailed.
+- `IP_HASH_SALT` in `server/.env` (16+ random characters) keys the hashed visitor IPs and the form's anti-spam token.
+  It is required in production; development uses a built-in value when it is unset.
+
 ## Media (Cloudinary)
 
 - Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` in `server/.env`, and

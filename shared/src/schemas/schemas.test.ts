@@ -14,6 +14,7 @@ const validInquiry = {
   email: 'sita@example.com',
   inquiryType: 'general',
   message: 'Hello, I would like to know more.',
+  formToken: 'token',
 };
 
 describe('text helpers', () => {

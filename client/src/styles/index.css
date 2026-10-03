@@ -17,6 +17,8 @@
   --color-ink: #1e1a16;
   --color-ink-muted: #5e554b;
   --color-mist: #b9b0a3;
+  /* Form errors on paper (7:1 on ivory). */
+  --color-danger: #9b1c1c;
 
   /* Display: Cormorant Garamond, only at >= 28px (thin strokes). Text and UI: Inter. */
   --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, serif;

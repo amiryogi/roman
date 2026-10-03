@@ -44,6 +44,7 @@ const app = createApp({
   logger,
   auth: env.auth,
   media: createMediaService(env.media),
+  inquiries: env.inquiries,
 });
 
 const server = app.listen(env.port, () => {

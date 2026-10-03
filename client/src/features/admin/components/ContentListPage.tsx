@@ -18,6 +18,8 @@ import { PageSpinner } from './PageSpinner';
 import { StatusBadge } from './StatusBadge';
 import { useAdminListParams, useInvalidate, useMove } from './useAdminList';
 
+const noReorder = () => Promise.resolve();
+
 interface ContentItem {
   id: string;
   status: PublicationStatus;
@@ -38,7 +40,8 @@ export interface ContentListConfig<T extends ContentItem> {
   invalidate: QueryKey[];
   update: (id: string, input: { status?: PublicationStatus; featured?: boolean }) => Promise<T>;
   remove: (id: string) => Promise<void>;
-  reorder: (ids: string[]) => Promise<void>;
+  /** Omit for content that has a natural order (events are sorted by date). */
+  reorder?: (ids: string[]) => Promise<void>;
   /** A short name for an item, for messages and screen-reader labels. */
   label: (item: T) => string;
   editPath: (item: T) => string;
@@ -92,7 +95,7 @@ export function ContentListPage<T extends ContentItem>({
     },
   });
 
-  const { move, busy } = useMove(list.data?.items, config.reorder, invalidate);
+  const { move, busy } = useMove(list.data?.items, config.reorder ?? noReorder, invalidate);
 
   const columns: AdminColumn<T>[] = [
     ...config.columns,
@@ -154,7 +157,7 @@ export function ContentListPage<T extends ContentItem>({
             items={list.data.items}
             columns={columns}
             getKey={(item) => item.id}
-            onMove={move}
+            onMove={config.reorder ? move : undefined}
             moveLabel={config.label}
             busy={busy}
             actions={(item) => (

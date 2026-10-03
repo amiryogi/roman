@@ -20,6 +20,7 @@ const PRODUCTION = {
   NODE_ENV: 'production',
   CLIENT_ORIGINS: 'https://example.com',
   CLOUDINARY_ROOT_FOLDER: 'roman-budhathoki/production',
+  IP_HASH_SALT: 'a-production-salt-value',
 };
 
 describe('loadEnv', () => {
@@ -81,6 +82,12 @@ describe('loadEnv', () => {
   it('derives the version from the Render commit when APP_VERSION is unset', () => {
     expect(loadEnv({ ...MINIMAL, RENDER_GIT_COMMIT: 'abcdef1234567' }).version).toBe('abcdef1');
     expect(loadEnv({ ...MINIMAL, APP_VERSION: '1.2.3' }).version).toBe('1.2.3');
+  });
+
+  it('requires the inquiry salt in production only', () => {
+    expect(() => loadEnv(without(PRODUCTION, 'IP_HASH_SALT'))).toThrow(/IP_HASH_SALT/);
+    expect(loadEnv(MINIMAL).inquiries.secret.length).toBeGreaterThanOrEqual(16);
+    expect(() => loadEnv({ ...MINIMAL, IP_HASH_SALT: 'short' })).toThrow(/IP_HASH_SALT/);
   });
 
   describe('media', () => {

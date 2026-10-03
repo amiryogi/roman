@@ -1,16 +1,23 @@
 import {
   albumDetailDtoSchema,
   albumDtoSchema,
+  eventDtoSchema,
   galleryImageDtoSchema,
   homeDtoSchema,
+  inquiryFormTokenDtoSchema,
+  inquiryReceiptDtoSchema,
   profileDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
   type AlbumDetailDto,
   type AlbumDto,
+  type EventDto,
+  type EventTimeframe,
   type GalleryCategory,
   type GalleryImageDto,
   type HomeDto,
+  type InquiryCreateInput,
+  type InquiryReceiptDto,
   type Paginated,
   type ProfileDto,
   type TrackDto,
@@ -29,6 +36,7 @@ export const queryKeys = {
   album: (slug: string) => ['albums', slug] as const,
   videos: (category?: VideoCategory) => ['videos', category ?? 'all'] as const,
   gallery: (category?: GalleryCategory) => ['gallery', category ?? 'all'] as const,
+  events: (when: EventTimeframe) => ['events', when] as const,
 };
 
 export const TRACKS_PAGE_SIZE = 50;
@@ -80,4 +88,26 @@ export function getGallery(
     `/gallery?${pageQuery(page, GALLERY_PAGE_SIZE, category)}`,
     galleryImageDtoSchema,
   );
+}
+
+export const EVENTS_PAGE_SIZE = 10;
+
+/** Published events; upcoming soonest first, past most recent first. */
+export function getEvents(page: number, when: EventTimeframe): Promise<Paginated<EventDto>> {
+  const search = new URLSearchParams({
+    page: String(page),
+    limit: String(EVENTS_PAGE_SIZE),
+    when,
+  });
+  return apiRequestPage(`/events?${search.toString()}`, eventDtoSchema);
+}
+
+/** A signed timestamp for the contact form (minimum fill time, plan §15). */
+export async function getInquiryFormToken(): Promise<string> {
+  const { token } = await apiRequest('/inquiries/form-token', inquiryFormTokenDtoSchema);
+  return token;
+}
+
+export function sendInquiry(input: InquiryCreateInput): Promise<InquiryReceiptDto> {
+  return apiRequest('/inquiries', inquiryReceiptDtoSchema, { method: 'POST', body: input });
 }
