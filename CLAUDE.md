@@ -39,6 +39,10 @@ working on a phase. Owner decisions are in §0.4 and override defaults elsewhere
   (`services/media/verify.ts`). After the DB write succeeds, delete replaced or removed assets with `destroyQuietly`.
   Add any new media field to `services/media/references.ts`, or `cleanup:media` treats its assets as orphans
   (a test enforces this). Tests use `createTestMedia()` (fake driver) and `media.simulateUpload(kind)`.
+- Image slots (cover, poster…) and required media use `resolveImageSlot` / `resolveMediaRef` in
+  `services/media/slots.ts`, then `destroyAll(obsolete)` after saving. Content routes use `idParam(req.params)`
+  (bad id → 404), `titleSearch(q)` and `reorder(Model, ids)` from `lib/query.ts`. Tests sign in with
+  `adminAccessToken(app)` from `test/auth.ts`.
 - Admin routers mount under the `/api/admin` router in `app.ts`, which already applies `requireAuth`. Use
   `currentAdmin(req)` in handlers. Add new admin paths to the 401 sweep test in `modules/auth/auth.test.ts`.
 
@@ -52,7 +56,12 @@ working on a phase. Owner decisions are in §0.4 and override defaults elsewhere
 - Call the API through `apiRequest(path, sharedDtoSchema, options)` / `apiRequestNoContent` in `client/src/lib/api/`.
   Responses are validated against the shared schema. Use `{ auth: true }` for admin endpoints; expired tokens are
   refreshed and retried automatically.
-- Show errors with `getErrorMessage(error)`. Forms use React Hook Form with `zodResolver(sharedSchema)`.
+- Show errors with `getErrorMessage(error)`. Forms use React Hook Form with `zodResolver(sharedSchema)`; pass
+  `useForm<z.input, unknown, z.output>` explicitly and map server 422s with `applyFieldErrors`.
+- Admin: TanStack Query keys from `adminKeys` (start with `"admin"`, never cached). Lists use `useAdminListParams`
+  (filters in the URL), `AdminTable`, `useMove` and `ConfirmDialog`; confirm saves with `sonner` toasts. Public pages
+  use `queryKeys` from `lib/api/public.ts`; invalidate them after admin changes.
+- Audio: play through `useAudioPlayer()` (`playTrack`, `pause`…). Video players must call `pause()` before playing.
 
 ## Commands
 

@@ -29,11 +29,14 @@ export type TrackCreateInput = z.input<typeof trackCreateInputSchema>;
 export const trackUpdateInputSchema = trackCreateInputSchema.partial();
 export type TrackUpdateInput = z.input<typeof trackUpdateInputSchema>;
 
+/** The album a track belongs to, with its cover as fallback artwork. Only published albums. */
 export const trackAlbumRefSchema = z.strictObject({
   id: z.string(),
   title: z.string(),
   slug: z.string(),
+  cover: imageDtoSchema.optional(),
 });
+export type TrackAlbumRef = z.infer<typeof trackAlbumRefSchema>;
 
 export const trackDtoSchema = z.strictObject({
   id: z.string(),

@@ -1,4 +1,5 @@
-import type { Response } from 'supertest';
+import type { Express } from 'express';
+import request, { type Response } from 'supertest';
 
 import { apiSuccessSchema, authResponseDtoSchema, type AuthResponseDto } from '@roman/shared';
 
@@ -38,4 +39,13 @@ export function refreshTokenFrom(res: Response): string {
 
 export function refreshCookieHeader(token: string): string {
   return `${REFRESH_COOKIE_NAME}=${token}`;
+}
+
+/** Creates the admin and signs in; returns an access token for `Authorization: Bearer`. */
+export async function adminAccessToken(app: Express): Promise<string> {
+  await createAdminUser();
+  const res = await request(app)
+    .post('/api/auth/login')
+    .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  return parseAuthResponse(res).accessToken;
 }

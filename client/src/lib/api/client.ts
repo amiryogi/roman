@@ -7,6 +7,7 @@ import {
   type ApiErrorDetail,
   type AuthResponseDto,
   type ErrorCode,
+  type Paginated,
 } from '@roman/shared';
 
 import { env } from '@/lib/env';
@@ -153,6 +154,25 @@ export async function apiRequest<S extends z.ZodType>(
     );
   }
   return data.data;
+}
+
+/** For paginated lists: validates each item and requires the pagination `meta`. */
+export async function apiRequestPage<S extends z.ZodType>(
+  path: string,
+  itemSchema: S,
+  options: RequestOptions = {},
+): Promise<Paginated<z.output<S>>> {
+  const res = await execute(path, options);
+  const envelope = successEnvelopeSchema.safeParse(await readJson(res));
+  const items = envelope.success ? z.array(itemSchema).safeParse(envelope.data.data) : undefined;
+  if (!envelope.success || !envelope.data.meta || !items?.success) {
+    throw new ApiClientError(
+      res.status,
+      'INVALID_RESPONSE',
+      'Unexpected response from the server.',
+    );
+  }
+  return { items: items.data, meta: envelope.data.meta };
 }
 
 /** For endpoints that answer 204 No Content. */

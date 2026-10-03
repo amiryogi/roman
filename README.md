@@ -65,4 +65,3 @@ npm run dev
 - Uploads go from the browser straight to Cloudinary with a short-lived signature from
   `POST /api/admin/uploads/signature`; the server then verifies each upload before storing it.
 - Tests use `MEDIA_DRIVER=fake` and never contact Cloudinary. Run `npm run test:cloudinary` before a release.
-- `/admin/media-test` is a temporary page for trying uploads until the content editors exist (Phases 6–7).

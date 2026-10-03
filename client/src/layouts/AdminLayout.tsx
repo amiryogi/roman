@@ -6,7 +6,8 @@ import { RequireAuth } from '@/features/admin/auth/RequireAuth';
 // Sections are added as their phases land (plan §25).
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', end: true },
-  { to: '/admin/media-test', label: 'Media test', end: false },
+  { to: '/admin/tracks', label: 'Tracks', end: false },
+  { to: '/admin/albums', label: 'Albums', end: false },
   { to: '/admin/account', label: 'Account', end: false },
 ] as const;
 

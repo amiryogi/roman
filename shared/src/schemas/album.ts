@@ -6,6 +6,7 @@ import { publicationStatusSchema } from '../enums.js';
 import { imageDtoSchema, imageInputSchema } from '../media.js';
 import { slugSchema } from '../slug.js';
 import { adminListQuerySchema, publishingFieldsSchema } from './admin.js';
+import { trackDtoSchema } from './track.js';
 
 export const externalLinkSchema = z.strictObject({
   label: text(60),
@@ -42,6 +43,10 @@ export const albumDtoSchema = z.strictObject({
   updatedAt: z.iso.datetime(),
 });
 export type AlbumDto = z.infer<typeof albumDtoSchema>;
+
+/** `GET /api/albums/:slug`: an album with its published tracks in track order. */
+export const albumDetailDtoSchema = albumDtoSchema.extend({ tracks: z.array(trackDtoSchema) });
+export type AlbumDetailDto = z.infer<typeof albumDetailDtoSchema>;
 
 export const albumAdminListQuerySchema = adminListQuerySchema(20);
 

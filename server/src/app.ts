@@ -11,10 +11,12 @@ import { createRequestLogger } from './middleware/requestLogger.js';
 import { createRequireAuth } from './middleware/requireAuth.js';
 import { requireJsonBody } from './middleware/requireJsonBody.js';
 import type { AuthConfig } from './modules/auth/config.js';
+import { createAdminAlbumsRouter, createPublicAlbumsRouter } from './modules/albums/routes.js';
 import { createAuthRouter } from './modules/auth/routes.js';
 import { createHealthRouter } from './modules/health/routes.js';
 import { createHomeRouter } from './modules/home/routes.js';
 import { createProfileRouter } from './modules/profile/routes.js';
+import { createAdminTracksRouter, createPublicTracksRouter } from './modules/tracks/routes.js';
 import { createUploadsRouter } from './modules/uploads/routes.js';
 import type { MediaService } from './services/media/MediaService.js';
 
@@ -61,11 +63,16 @@ export function createApp(options: AppOptions): Express {
   // Public content (plan §10.2): short cache plus Express's weak ETag.
   app.use('/api/profile', publicCache, createProfileRouter());
   app.use('/api/home', publicCache, createHomeRouter());
+  app.use('/api/tracks', publicCache, createPublicTracksRouter());
+  app.use('/api/albums', publicCache, createPublicAlbumsRouter());
 
   // Everything under /api/admin requires a valid access token. Authentication is enforced here,
   // at the mount point, so a resource router added later cannot forget it.
   const admin = Router();
+  const mediaDeps = { media: options.media, logger: options.logger };
   admin.use('/uploads', createUploadsRouter(options.media, options.logger));
+  admin.use('/tracks', createAdminTracksRouter(mediaDeps));
+  admin.use('/albums', createAdminAlbumsRouter(mediaDeps));
   app.use('/api/admin', noStore, createRequireAuth(options.auth), admin);
 
   app.use(notFound);

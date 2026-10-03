@@ -10,7 +10,7 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
 
 /** Public defaults (plan §12.3): the content is mostly static, so fetch rarely. */
 export function createQueryClient(): QueryClient {
-  return new QueryClient({
+  const client = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 5 * 60 * 1000,
@@ -22,4 +22,7 @@ export function createQueryClient(): QueryClient {
       mutations: { retry: false },
     },
   });
+  // Admin data is always fetched fresh (plan §12.3); admin keys start with "admin".
+  client.setQueryDefaults(['admin'], { staleTime: 0, gcTime: 5 * 60 * 1000 });
+  return client;
 }

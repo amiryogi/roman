@@ -1,4 +1,4 @@
-import type { TrackDto } from '@roman/shared';
+import type { TrackAlbumRef, TrackDto } from '@roman/shared';
 
 import {
   toImageDto,
@@ -9,11 +9,7 @@ import {
 } from '../../lib/mongo.js';
 import type { TrackDoc } from './model.js';
 
-export interface TrackAlbumRef {
-  id: string;
-  title: string;
-  slug: string;
-}
+export type { TrackAlbumRef };
 
 export function toTrackDto(doc: WithId<TrackDoc>, album?: TrackAlbumRef): TrackDto {
   return {

@@ -2,7 +2,7 @@
 
 **Project:** Personal portfolio and booking website for Roman Budhathoki, violinist (Kathmandu, Nepal)
 **Stack:** MongoDB · Express · React · Node.js · TypeScript (only) · Cloudinary
-**Status:** Phases 1–5 complete on 2026-10-02, pending the owner's review of the visual direction (Phase 5 checkpoint). Next: Phase 6 (music and audio system).
+**Status:** Phases 1–6 complete on 2026-10-03. The owner's review of the visual direction (Phase 5 checkpoint) is still open. Next: Phase 7 (video and gallery system).
 **Plan date:** 2026-10-02
 
 ---
@@ -111,6 +111,18 @@ The CV does **not** contain awards, albums, named recordings, named clients, rev
 - `VITE_CLOUDINARY_CLOUD_NAME` is required in production builds: the app refuses to start without it.
 - Font preloading is deferred to Phase 10, because it needs the hashed font file names from the build.
 - Preliminary Lighthouse (mobile, production build via `vite preview`): Home 91 performance / 100 accessibility / 100 best practices / 100 SEO, About 95/100/100/100, CLS 0. Initial JS is 147 KB gzipped (budget 160 KB), mostly React, React Router and Zod. Home LCP is 3.3 s; Phase 10's hero preload targets it.
+
+**Implementation notes (Phase 6):**
+
+- Reordering keeps each list's existing `sortOrder` values and swaps them into the new order, instead of setting them from the array index (§10.4). Moving items on one admin page then never disturbs items on other pages. Unknown or repeated ids give 422.
+- Public responses name a track's album only when that album is published, so a draft album's title never leaks. `TrackDto.album` now also carries the album cover, used as fallback artwork. `GET /api/albums/:slug` returns `AlbumDetailDto` (album + published tracks in track order).
+- Deleting an album with `?detachTracks=true` also clears the tracks' track numbers.
+- Media fields go through `services/media/slots.ts`: re-sending the current asset skips a new Cloudinary check, a new asset is verified, and replaced assets are deleted only after the database write succeeds.
+- Track play buttons change their label ("Play X" / "Pause X") rather than also setting `aria-pressed` (§12.6). Doing both makes screen readers announce contradictory states.
+- The player keeps one `HTMLAudioElement` in a controller created once per layout. The controller mirrors every reducer action, so its state is never stale and no refs are read during render. The queue, track, position and volume are kept in `sessionStorage` (validated with the shared schema on read) and restored paused.
+- The Home page shows featured tracks first after the hero (§6 order); its section numbers follow the visible sections.
+- Admin pages use TanStack Query with `staleTime: 0` for `["admin", …]` keys, `sonner` toasts (only in the admin chunk), and the generic `AdminTable`, `ConfirmDialog`, `StatusBadge` and form fields. List filters live in the URL. The temporary `/admin/media-test` page from Phase 4 is gone.
+- Real-browser check (headless Chrome, Cloudinary audio from the development folder): playback started on a real click, then continued while navigating from Music to About (3 s → 7 s → 10 s). Initial JS is 150 KB gzipped (budget 160 KB).
 
 **Render free-tier note:** free web services sleep when idle, and the first request after sleeping can take tens of seconds. Use a paid instance for production, or accept the cold starts. This is to be decided by Phase 12.
 

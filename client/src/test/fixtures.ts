@@ -1,9 +1,11 @@
 import {
   homeDtoSchema,
   profileDtoSchema,
+  trackDtoSchema,
   type HomeDto,
   type MediaAssetDto,
   type ProfileDto,
+  type TrackDto,
 } from '@roman/shared';
 
 // Test fixtures only: neutral placeholder data, not facts about Roman. Parsed with the shared
@@ -94,6 +96,31 @@ export function homeFixture(overrides: Partial<HomeDto> = {}): HomeDto {
     featuredVideos: [],
     featuredImages: [],
     upcomingEvents: [],
+    ...overrides,
+  });
+}
+
+export function trackFixture(overrides: Partial<TrackDto> = {}): TrackDto {
+  return trackDtoSchema.parse({
+    id: 'track-1',
+    title: 'Test track',
+    slug: 'test-track',
+    artistCredit: 'Test Artist',
+    audio: {
+      publicId: 'root/music/audio/test-track',
+      resourceType: 'video',
+      version: 1,
+      format: 'mp3',
+      bytes: 1000,
+      duration: 225,
+    },
+    duration: 225,
+    tags: [],
+    status: 'published',
+    featured: false,
+    sortOrder: 1,
+    createdAt: '2026-10-02T12:00:00.000Z',
+    updatedAt: '2026-10-02T12:00:00.000Z',
     ...overrides,
   });
 }

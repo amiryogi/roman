@@ -27,6 +27,18 @@
   --radius-sm: 2px;
 
   --animate-rise: rise 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-string: string 900ms ease-in-out infinite;
+
+  /* The playing indicator: bars move like a bowed string. */
+  @keyframes string {
+    0%,
+    100% {
+      transform: scaleY(0.35);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
 
   @keyframes rise {
     from {
@@ -66,6 +78,49 @@
   --muted: var(--color-ink-muted);
   --accent: var(--color-varnish-deep);
   --on-accent: var(--color-ivory);
+}
+
+/*
+ * Range input drawn as a single violin string (plan §7.1): accent up to --progress, lighter up
+ * to --buffered, faint after. The thumb is the "finger" on the string.
+ */
+@utility string-range {
+  appearance: none;
+  width: 100%;
+  height: 1.5rem;
+  background: transparent;
+  cursor: pointer;
+  --string-track: linear-gradient(
+    to right,
+    var(--accent) var(--progress, 0%),
+    color-mix(in srgb, currentColor 55%, transparent) var(--progress, 0%),
+    color-mix(in srgb, currentColor 55%, transparent) var(--buffered, 0%),
+    color-mix(in srgb, currentColor 25%, transparent) var(--buffered, 0%)
+  );
+
+  &::-webkit-slider-runnable-track {
+    height: 2px;
+    background: var(--string-track);
+  }
+  &::-moz-range-track {
+    height: 2px;
+    background: var(--string-track);
+  }
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    margin-top: -6px;
+    border-radius: 9999px;
+    background: var(--accent);
+  }
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--accent);
+  }
 }
 
 /* Small letter-spaced capitals, e.g. section labels "I. — Biography". */

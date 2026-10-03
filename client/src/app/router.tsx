@@ -9,7 +9,6 @@ import { PublicLayout } from '@/layouts/PublicLayout';
 
 // Sections built in later phases; each placeholder is replaced by its real page (plan §25).
 const UPCOMING_SECTIONS = [
-  { path: 'music', title: 'Music' },
   { path: 'videos', title: 'Videos' },
   { path: 'gallery', title: 'Gallery' },
   { path: 'events', title: 'Performances' },
@@ -21,11 +20,18 @@ const publicRoutes: RouteObject = {
   path: '/',
   Component: PublicLayout,
   errorElement: <RouteErrorPage />,
+  // Shown for a moment when a lazily loaded page is opened directly: the site's dark ground,
+  // so nothing flashes.
+  hydrateFallbackElement: <div role="status" aria-label="Loading" className="min-h-dvh bg-ebony" />,
   children: [
     { index: true, Component: HomePage },
     {
       path: 'about',
       lazy: async () => ({ Component: (await import('@/features/about/AboutPage')).AboutPage }),
+    },
+    {
+      path: 'music',
+      lazy: async () => ({ Component: (await import('@/features/music/MusicPage')).MusicPage }),
     },
     ...UPCOMING_SECTIONS.map(({ path, title }) => ({
       path,
@@ -58,10 +64,28 @@ const adminRoutes: RouteObject = {
           }),
         },
         {
-          // Temporary (Phase 4): see MediaTestPage.
-          path: 'media-test',
+          path: 'tracks',
           lazy: async () => ({
-            Component: (await import('@/features/admin/media-test/MediaTestPage')).MediaTestPage,
+            Component: (await import('@/features/admin/tracks/TracksPage')).TracksPage,
+          }),
+        },
+        {
+          // "new" or an id
+          path: 'tracks/:id',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/tracks/TrackEditPage')).TrackEditPage,
+          }),
+        },
+        {
+          path: 'albums',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/albums/AlbumsPage')).AlbumsPage,
+          }),
+        },
+        {
+          path: 'albums/:id',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/albums/AlbumEditPage')).AlbumEditPage,
           }),
         },
         {

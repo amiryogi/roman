@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router';
+import { Toaster } from 'sonner';
 
 import { AuthProvider } from './auth/AuthProvider';
 
@@ -8,6 +9,8 @@ export function AdminRoot() {
     <AuthProvider>
       <meta name="robots" content="noindex, nofollow" />
       <Outlet />
+      {/* Toasts confirm saves; errors are also shown inline (plan §12.5). */}
+      <Toaster position="bottom-right" richColors closeButton />
     </AuthProvider>
   );
 }

@@ -13,6 +13,7 @@ import { ErrorState } from '@/components/ui/ErrorState';
 import { Section } from '@/components/ui/Section';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StringsDivider } from '@/components/ui/StringsDivider';
+import { TrackList } from '@/features/music/TrackList';
 import { getHome, queryKeys } from '@/lib/api/public';
 
 import { BookingBand } from './BookingBand';
@@ -44,16 +45,29 @@ export function HomePage() {
 }
 
 /**
- * Sections with no content are left out entirely (plan §12.5); featured music, videos, photos and
- * events join as their phases land. Section numbers follow the visible order.
+ * Order follows plan §6. Sections with no content are left out entirely (plan §12.5), and the
+ * movement numbers follow the visible order. Videos, photos and events join in Phases 7–8.
  */
 function HomeContent({ home }: { home: HomeDto }) {
-  const { profile } = home;
+  const { profile, featuredTracks } = home;
+  const hasMusic = featuredTracks.length > 0;
+  const biographyNumber = hasMusic ? 2 : 1;
   return (
     <>
       <Hero profile={profile} />
-      <BiographyTeaser profile={profile} number={1} />
-      <BookingBand number={2} />
+      {hasMusic && (
+        <Section tone="dark" label="Music" number={1} title="Listen">
+          <TrackList tracks={featuredTracks} />
+          <Link
+            to="/music"
+            className="mt-8 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-varnish uppercase underline decoration-varnish/40 underline-offset-[6px] hover:decoration-varnish"
+          >
+            All music
+          </Link>
+        </Section>
+      )}
+      <BiographyTeaser profile={profile} number={biographyNumber} />
+      <BookingBand number={biographyNumber + 1} />
     </>
   );
 }
