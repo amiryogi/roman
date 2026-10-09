@@ -90,6 +90,14 @@ phases, decisions and open items is in [context/sessions.md](context/sessions.md
   `features/gallery/galleryLayout.ts`, `lib/api/publicPaths.ts`).
 - The client build fails when a public page fetches more than 160 KiB of gzipped JS up front (`scripts/check-bundle.ts`);
   the margin is small, so check the numbers when public pages grow.
+- Cold starts (free Render instance, §0.4): `sendAwaitingServer` in `lib/api/client.ts` marks a request slow after 3.5 s
+  and, for reads that time out or get a proxy 502–504, loads `lib/api/wake.ts`, which retries for up to 100 s and shows
+  the "Tuning up…" notice (`wakeNotice.tsx`, its own React root). Writes are never retried. Both modules load only when
+  needed: keep `wake.ts` free of static imports (its preload list ships in the client chunk) and never import it, or
+  `PageSpinner`, from up-front code. A lazy chunk that uses JSX but no React API splits React out of the shared
+  chunk and costs every page ~0.25 KiB: give such components a home in an existing chunk instead.
+- Loading mark: `ViolinLoader` (the header's violin, bowed, notes rising; CSS `violin-loader*` utilities). Admin
+  `PageSpinner` uses it (`fullPage` before the admin layout exists) and steps aside while the wake notice shows.
 - Audio: play through `useAudioPlayer()` (`playTrack`, `pause`…). Video players must call `pause()` before playing.
   The `PlayerBar` UI is lazy-loaded on first play; its height constant lives in `features/audio/playerLayout.ts`.
 

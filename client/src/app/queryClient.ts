@@ -2,10 +2,14 @@ import { QueryClient } from '@tanstack/react-query';
 
 import { ApiClientError } from '@/lib/api/client';
 
-/** Retrying a 4xx answer (not found, validation) can't help; network and server errors can. */
+/**
+ * Only a one-off server error (500) is worth one more try. A 4xx answer can't improve; a timeout,
+ * a sleeping server (status 0, 502–504) was already waited out for up to 100 s by the API client
+ * (lib/api/wake.ts); and offline is retried when the connection returns (`refetchOnReconnect`).
+ */
 function shouldRetry(failureCount: number, error: unknown): boolean {
-  const clientError = error instanceof ApiClientError && error.status >= 400 && error.status < 500;
-  return failureCount < 1 && !clientError;
+  const status = error instanceof ApiClientError ? error.status : 500;
+  return failureCount < 1 && (status === 500 || status === 501);
 }
 
 /**

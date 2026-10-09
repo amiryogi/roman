@@ -37,3 +37,6 @@ Object.defineProperty(window, 'scrollTo', { value: () => undefined, writable: tr
 // The app loads response validation lazily (lib/api/client.ts). Loading it once here keeps that
 // first dynamic import, which transforms Zod and every schema, out of each test's waiting time.
 await import('@/lib/api/validation');
+// Likewise the modules that wait out a sleeping API and show its notice, which some tests reach.
+await import('@/lib/api/wake');
+await import('@/lib/api/wakeNotice');

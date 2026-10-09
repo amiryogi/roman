@@ -9,7 +9,9 @@ export function getErrorMessage(error: unknown): string {
     case 'NETWORK_ERROR':
       return 'You appear to be offline. Check your connection and try again.';
     case 'TIMEOUT':
-      return 'The server is taking too long to respond. Please try again.';
+    case 'SERVER_UNAVAILABLE':
+      // Usually the free hosting still waking up after a quiet spell (plan §0.4).
+      return 'The server is still waking up. Please try again in a moment.';
     case 'RATE_LIMITED':
     case 'UNAUTHENTICATED':
     case 'VALIDATION_ERROR':

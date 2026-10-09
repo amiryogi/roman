@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ApiClientError } from '@/lib/api/client';
 import { getHome, getProfile } from '@/lib/api/public';
+import { setWaiting } from '@/lib/api/wake';
 import type * as PublicApi from '@/lib/api/public';
 import { homeFixture, profileFixture } from '@/test/fixtures';
 
@@ -64,9 +65,8 @@ describe('home page', () => {
   });
 
   it('shows an error with a working retry', async () => {
-    vi.mocked(getHome)
-      .mockRejectedValueOnce(new ApiClientError(0, 'NETWORK_ERROR', 'offline'))
-      .mockRejectedValueOnce(new ApiClientError(0, 'NETWORK_ERROR', 'offline'));
+    // Not retried again by the page: the API client already waited for the server.
+    vi.mocked(getHome).mockRejectedValueOnce(new ApiClientError(0, 'NETWORK_ERROR', 'offline'));
     renderSite('/');
 
     const alert = await screen.findByRole('alert', {}, { timeout: 3000 });
@@ -80,6 +80,22 @@ describe('home page', () => {
 });
 
 describe('layout and navigation', () => {
+  it('says the site is tuning up while the server wakes, and stops when it answers', async () => {
+    renderSite('/');
+    await screen.findByRole('heading', { level: 1 });
+    const slowRequest = Symbol('slow request');
+
+    // The notice has its own React root, updated when its module is ready: wait for it.
+    setWaiting(slowRequest, true);
+    expect(await screen.findByText('Tuning up…')).toBeInTheDocument();
+    expect(screen.getByText(/waking up/)).toBeInTheDocument();
+
+    setWaiting(slowRequest, false);
+    await waitFor(() => {
+      expect(screen.queryByText('Tuning up…')).not.toBeInTheDocument();
+    });
+  });
+
   it('starts with a skip link to the main content', async () => {
     renderSite('/');
     await screen.findByRole('heading', { level: 1 });

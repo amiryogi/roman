@@ -29,7 +29,8 @@ function loadValidation() {
   return loading;
 }
 
-export type ClientErrorCode = ErrorCode | 'NETWORK_ERROR' | 'TIMEOUT' | 'INVALID_RESPONSE';
+export type ClientErrorCode =
+  ErrorCode | 'NETWORK_ERROR' | 'TIMEOUT' | 'SERVER_UNAVAILABLE' | 'INVALID_RESPONSE';
 
 /** Every failure from the API layer is one of these (plan §22). */
 export class ApiClientError extends Error {
@@ -54,6 +55,13 @@ export interface RequestOptions {
 }
 
 const REQUEST_TIMEOUT_MS = 15_000;
+
+/** A request unanswered for this long is probably waiting for the API to wake (see wake.ts). */
+const SLOW_REQUEST_MS = 3500;
+/** 502–504: a proxy's answer (Vercel, Render) while the API is still starting. */
+function isGateway(status: number): boolean {
+  return status > 501 && status < 505;
+}
 
 // --- Admin session: the access token lives in memory only (plan §11.2) ---------------------------
 
@@ -108,6 +116,57 @@ async function send(
   }
 }
 
+const importWake = () => import('./wake');
+/** Loaded on first need only: ordinary visits never download it. */
+let wakeModule: ReturnType<typeof importWake> | undefined;
+
+/**
+ * `send`, showing the "tuning up" notice while a request seems to wait for the API to wake, and
+ * retrying reads until it answers (wake.ts). Writes are never retried: they may have happened.
+ */
+async function sendAwaitingServer(
+  path: string,
+  options: RequestOptions,
+  token: string | null,
+): Promise<Response> {
+  const request = Symbol(path);
+  // Marking "done" never loads the module: only a request that waited has anything to clear.
+  // Same promise, so "done" always runs after the slow timer's "waiting".
+  const mark = (waiting: boolean) => {
+    const module = waiting ? (wakeModule ??= importWake()) : wakeModule;
+    module?.then(
+      (wake) => {
+        wake.setWaiting(request, waiting);
+      },
+      () => undefined,
+    );
+  };
+  const slow = setTimeout(mark, SLOW_REQUEST_MS, true);
+  const attempt = () =>
+    send(path, options, token).catch((error: unknown) => {
+      if (error instanceof ApiClientError) return error;
+      throw error;
+    });
+
+  try {
+    let outcome = await attempt();
+    // A read that timed out, failed or met a proxy's 502–504: the API may be asleep (wake.ts
+    // decides, then retries).
+    if (
+      (options.method ?? 'GET') === 'GET' &&
+      !(outcome instanceof Response && !isGateway(outcome.status))
+    ) {
+      const wake = await (wakeModule ??= importWake());
+      outcome = await wake.retryWhileAsleep(request, outcome, attempt, options.signal);
+    }
+    if (outcome instanceof ApiClientError) throw outcome;
+    return outcome;
+  } finally {
+    clearTimeout(slow);
+    mark(false);
+  }
+}
+
 async function readJson(res: Response): Promise<unknown> {
   try {
     const value: unknown = await res.json();
@@ -121,11 +180,15 @@ async function toApiError(res: Response): Promise<ApiClientError> {
   const [body, { parseErrorBody }] = await Promise.all([readJson(res), loadValidation()]);
   const error = parseErrorBody(body);
   if (error) return new ApiClientError(res.status, error.code, error.message, error.details);
+  // A proxy's answer (e.g. Vercel or Render while the API is still starting), not the API's.
+  if (isGateway(res.status)) {
+    return new ApiClientError(res.status, 'SERVER_UNAVAILABLE', 'The server is unavailable.');
+  }
   return new ApiClientError(res.status, 'INVALID_RESPONSE', 'Unexpected response from the server.');
 }
 
 async function execute(path: string, options: RequestOptions): Promise<Response> {
-  const res = await send(path, options, options.auth ? accessToken : null);
+  const res = await sendAwaitingServer(path, options, options.auth ? accessToken : null);
   if (res.ok) return res;
 
   const error = await toApiError(res);

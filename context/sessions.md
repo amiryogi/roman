@@ -165,3 +165,15 @@ and management pages for tracks, albums, videos, the gallery (including bulk upl
 - `server/.env.production` (git-ignored) runs seeds and index sync against production from this machine.
 - Release checks passed (see the plan's Phase 12 notes). Open: LCP about 3.7 s on photo pages, securityheaders.com
   check, a backup/restore test, custom domain, `TRUST_PROXY` confirmation, CI green runs 2 and 3.
+
+## Cold starts (2026-10-09)
+
+- Problem: on Render's free plan the API sleeps after 15 idle minutes. Pages gave up after ~30 s (15 s timeout,
+  one retry) and showed "Try again" while the API was still waking.
+- Server: `render.yaml` ran the index sync in the start command, so every wake booted Node twice, connected to Atlas
+  twice and made the index round-trips before the port opened. The sync now runs at the end of the build (once per
+  deploy) and the start command is `node server/dist/server.js`.
+- Client: reads that time out or get a 502–504 are retried for up to 100 s (`lib/api/wake.ts`); a request still
+  unanswered after 3.5 s shows a "Tuning up…" notice with the new `ViolinLoader` (violin bowed, notes rising). Both
+  load on demand: public pages are 157.4–159.9 KiB of the 160 KiB budget. Admin `PageSpinner` uses the violin too.
+- Open: whether to keep the API warm (paid instance, or an uptime ping; see `docs/DEPLOYMENT.md`, 750 free hours).

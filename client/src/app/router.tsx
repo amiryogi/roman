@@ -1,6 +1,5 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 
-import { PageSpinner } from '@/features/admin/components/PageSpinner';
 import { NotFoundPage } from '@/features/errors/NotFoundPage';
 import { RouteErrorPage } from '@/features/errors/RouteErrorPage';
 import { HomePage } from '@/features/home/HomePage';
@@ -52,7 +51,11 @@ const publicRoutes: RouteObject = {
 const adminRoutes: RouteObject = {
   path: '/admin',
   lazy: async () => ({ Component: (await import('@/features/admin/AdminRoot')).AdminRoot }),
-  hydrateFallbackElement: <PageSpinner label="Loading…" />,
+  // Shown only while the admin chunk downloads. Not PageSpinner: that would put the spinner (and
+  // the API wake-up code it watches) into every public page's initial JavaScript.
+  hydrateFallbackElement: (
+    <div role="status" aria-label="Loading" className="min-h-dvh bg-stone-100" />
+  ),
   errorElement: <RouteErrorPage />,
   children: [
     {

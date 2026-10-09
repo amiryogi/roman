@@ -3,11 +3,17 @@ import { z } from 'zod';
 
 import {
   apiRequest,
+  apiRequestNoContent,
   ApiClientError,
   onSessionExpired,
   refreshSession,
   setAccessToken,
 } from './client';
+import { isServerWaking } from './wake';
+
+// While requests wait, the "tuning up" notice renders in its own React root. These tests are about
+// the API client, not that UI (publicSite.test.tsx covers it), so React's act() checks are off.
+Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', false);
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -85,13 +91,145 @@ describe('apiRequest', () => {
       code: 'INVALID_RESPONSE',
     });
   });
+});
 
-  it('reports network failures', async () => {
+// The free Render instance sleeps when idle and takes up to a minute to wake (plan §0.4).
+describe('a server waking from sleep', () => {
+  const awake = () => jsonResponse(200, { success: true, data: { title: 'Awake' } });
+
+  /** One real turn of the event loop (MessageChannel isn't faked). */
+  function realTurn(): Promise<void> {
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      channel.port1.onmessage = () => {
+        channel.port1.close();
+        resolve();
+      };
+      channel.port2.postMessage(null);
+    });
+  }
+
+  /**
+   * Runs fake timers one at a time until `promise` settles, with a real event-loop turn between
+   * them so the on-demand wake module can load (module loading isn't driven by fake timers).
+   */
+  async function settle<T>(promise: Promise<T>): Promise<T> {
+    const done = promise.then(
+      () => true,
+      () => true,
+    );
+    for (let turn = 0; turn < 500; turn += 1) {
+      if (await Promise.race([done, realTurn().then(() => false)])) break;
+      await vi.advanceTimersToNextTimerAsync();
+    }
+    return promise;
+  }
+
+  beforeEach(() => {
+    // Only the clock and timeouts are faked, so module loading still progresses in settle().
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('retries reads through gateway errors and timeouts until the server answers', async () => {
+    fetchMock
+      .mockResolvedValueOnce(new Response('Bad gateway', { status: 502 }))
+      .mockRejectedValueOnce(new DOMException('Timed out', 'TimeoutError'))
+      .mockResolvedValueOnce(new Response('', { status: 503 }))
+      .mockResolvedValueOnce(awake());
+    await expect(settle(apiRequest('/home', itemSchema))).resolves.toEqual({ title: 'Awake' });
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    await vi.waitFor(() => {
+      expect(isServerWaking()).toBe(false);
+    });
+  });
+
+  it('marks a slow request as waiting until its answer arrives', async () => {
+    const pending: { answer?: (res: Response) => void } = {};
+    fetchMock.mockReturnValue(
+      new Promise((resolve) => {
+        pending.answer = resolve;
+      }),
+    );
+
+    const request = apiRequest('/home', itemSchema);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(isServerWaking()).toBe(false);
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.waitFor(() => {
+      expect(isServerWaking()).toBe(true);
+    });
+
+    pending.answer?.(awake());
+    await expect(request).resolves.toEqual({ title: 'Awake' });
+    await vi.waitFor(() => {
+      expect(isServerWaking()).toBe(false);
+    });
+  });
+
+  it('gives up after about 100 seconds with a clear error', async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(new Response('', { status: 504 })));
+
+    const start = Date.now();
+    const error = await settle(apiRequest('/home', itemSchema).catch((e: unknown) => e));
+
+    expect(error).toMatchObject({ code: 'SERVER_UNAVAILABLE', status: 504 });
+    expect(Date.now() - start).toBeGreaterThan(90_000);
+    expect(Date.now() - start).toBeLessThanOrEqual(100_000);
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(15);
+    await vi.waitFor(() => {
+      expect(isServerWaking()).toBe(false);
+    });
+  });
+
+  it('never retries writes, which may already have happened', async () => {
+    fetchMock.mockResolvedValue(new Response('', { status: 502 }));
+
+    await expect(
+      apiRequestNoContent('/inquiries', { method: 'POST', body: {} }),
+    ).rejects.toMatchObject({ code: 'SERVER_UNAVAILABLE' });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('does not retry real answers from the API', async () => {
+    fetchMock.mockResolvedValue(errorResponse(404, 'NOT_FOUND'));
+
+    await expect(apiRequest('/videos/x', itemSchema)).rejects.toMatchObject({ code: 'NOT_FOUND' });
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('reports being offline at once instead of waiting', async () => {
+    const onLine = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
 
     await expect(apiRequest('/things', itemSchema)).rejects.toMatchObject({
       code: 'NETWORK_ERROR',
     });
+    expect(fetchMock).toHaveBeenCalledOnce();
+    onLine.mockRestore();
+  });
+
+  it('stops waiting when the caller cancels', async () => {
+    fetchMock.mockImplementation(() => Promise.resolve(new Response('', { status: 503 })));
+    const controller = new AbortController();
+
+    const request = apiRequest('/home', itemSchema, { signal: controller.signal }).catch(
+      (error: unknown) => error,
+    );
+    // Wait until the client is pausing before its first retry, then cancel.
+    await vi.waitFor(() => {
+      expect(vi.getTimerCount()).toBeGreaterThan(1);
+    });
+    controller.abort();
+
+    expect(await request).toMatchObject({ name: 'AbortError' });
+    await vi.waitFor(() => {
+      expect(isServerWaking()).toBe(false);
+    });
+    expect(fetchMock).toHaveBeenCalledOnce();
   });
 });
 

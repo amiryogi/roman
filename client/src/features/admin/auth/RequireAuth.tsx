@@ -10,7 +10,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const { state } = useAuth();
   const location = useLocation();
 
-  if (state.status === 'loading') return <PageSpinner label="Checking your session…" />;
+  if (state.status === 'loading') return <PageSpinner label="Checking your session…" fullPage />;
 
   if (state.status === 'anonymous') {
     const next = encodeURIComponent(`${location.pathname}${location.search}`);

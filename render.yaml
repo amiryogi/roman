@@ -14,11 +14,17 @@ services:
     autoDeploy: true
     # Dev dependencies are needed to compile TypeScript (NODE_ENV=production would skip them).
     # MONGOMS_DISABLE_POSTINSTALL skips the test database download (780 MB).
+    # autoIndex is off in production, so indexes are synced once per deploy, at the end of the build
+    # (idempotent; environment variables are available to builds). Not in the start command: a free
+    # instance starts on every wake-up, and the sync's second Node boot, second Atlas connection and
+    # index round-trips all ran before the port opened, lengthening every wake.
     buildCommand: >-
       MONGOMS_DISABLE_POSTINSTALL=1 npm ci --include=dev &&
-      npm run build -w @roman/shared && npm run build -w @roman/server
-    # autoIndex is off in production, so indexes are synced on every start (idempotent).
-    startCommand: npm run db:sync-indexes:prod -w @roman/server && npm run start -w @roman/server
+      npm run build -w @roman/shared && npm run build -w @roman/server &&
+      npm run db:sync-indexes:prod -w @roman/server
+    # Node directly, not through npm: one process less to start, and SIGTERM reaches the server's
+    # graceful shutdown.
+    startCommand: node server/dist/server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
