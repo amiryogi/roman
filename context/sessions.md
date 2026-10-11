@@ -177,3 +177,18 @@ and management pages for tracks, albums, videos, the gallery (including bulk upl
   unanswered after 3.5 s shows a "Tuning up…" notice with the new `ViolinLoader` (violin bowed, notes rising). Both
   load on demand: public pages are 157.4–159.9 KiB of the 160 KiB budget. Admin `PageSpinner` uses the violin too.
 - Open: whether to keep the API warm (paid instance, or an uptime ping; see `docs/DEPLOYMENT.md`, 750 free hours).
+
+## Live site fix (2026-10-11)
+
+- The Vercel builds for `2d13be2` and `dc6834d` failed the JS budget on Linux (/music 160.0, /gallery 160.1 KiB;
+  Linux builds come out ~0.2 KiB larger than Windows ones), so the live site still ran the old client, which showed
+  "Something went wrong on our side" for the sleeping API's 502.
+- Budget: React, React Router and TanStack Query now share one `core` chunk (`CORE` group in `vite.config.ts`;
+  several small chunks compressed worse), and the modulepreload polyfill is off (Safari < 17 just skips the hints).
+  Public pages: 156.9–159.1 KiB locally.
+- Found while testing: Render never wakes for requests forwarded by Vercel (instant 502, `X-Render-Routing:
+no-deploy`, for minutes); one direct request woke it and Vercel answered 20 s later. `wake.ts` now knocks on
+  Render directly (no-cors GET of `/api/health`, every 20 s while waiting). The URL comes from vercel.json's `/api`
+  rewrite at build time; its origin is in the CSP's `connect-src`.
+- `npm audit` (CI) failed on `shell-quote` via `concurrently`; upgraded to `concurrently` 10.0.6 (commit `dc6834d`).
+- Open: keeping the API warm is still the owner's choice (paid instance or an uptime ping on the Render URL).

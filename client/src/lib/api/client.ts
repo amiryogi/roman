@@ -157,7 +157,13 @@ async function sendAwaitingServer(
       !(outcome instanceof Response && !isGateway(outcome.status))
     ) {
       const wake = await (wakeModule ??= importWake());
-      outcome = await wake.retryWhileAsleep(request, outcome, attempt, options.signal);
+      outcome = await wake.retryWhileAsleep(
+        request,
+        outcome,
+        attempt,
+        options.signal,
+        env.apiWakeUrl,
+      );
     }
     if (outcome instanceof ApiClientError) throw outcome;
     return outcome;

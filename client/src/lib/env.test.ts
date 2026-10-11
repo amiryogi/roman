@@ -10,6 +10,7 @@ describe('client env', () => {
       apiBaseUrl: '/api',
       siteUrl: 'https://example.test',
       cloudinaryCloudName: undefined,
+      apiWakeUrl: undefined,
     });
     expect(parseEnv({}, false).siteUrl).toBe('http://localhost:5173');
   });
@@ -20,6 +21,9 @@ describe('client env', () => {
       'not a valid cloud name',
     );
     expect(() => parseEnv({ VITE_SITE_URL: 'example.test' }, false)).toThrow('absolute URL');
+    expect(() => parseEnv({ VITE_API_WAKE_URL: 'api.example.test' }, false)).toThrow(
+      'VITE_API_WAKE_URL must be an absolute URL',
+    );
     expect(parseEnv({ VITE_CLOUDINARY_CLOUD_NAME: 'demo-cloud' }, true).cloudinaryCloudName).toBe(
       'demo-cloud',
     );

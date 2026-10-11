@@ -71,8 +71,8 @@ CV, with gallery photos and the track as drafts.
    starts with `node server/dist/server.js`. If the service was set up by hand rather than from the Blueprint,
    copy the **Build Command** and **Start Command** from `render.yaml` into Settings.
 
-4. If the service address isn't `https://roman-budhathoki-api.onrender.com`, update the `/api` rewrite in
-   `client/vercel.json` and push.
+4. If the service address isn't `https://roman-budhathoki-api.onrender.com`, update the `/api` rewrite **and** the
+   CSP's `connect-src` in `client/vercel.json` and push (the client build checks that they match).
 
 ## 4. Website (Vercel)
 
@@ -93,8 +93,11 @@ CV, with gallery photos and the track as drafts.
 ### Cold starts on the free plan
 
 A free Render instance sleeps after 15 minutes without requests, and the next request waits while it starts (often
-30–60 s). The website handles this: after 3.5 s it shows a "Tuning up…" notice, and it keeps retrying page data for
-up to 100 s before offering "Try again". To avoid the wait entirely:
+20–60 s). Requests that come through Vercel's `/api` rewrite do **not** wake it: Render answers them at once with a
+502 (`X-Render-Routing: no-deploy`). So when the website sees the API asleep, the browser also sends a request
+straight to `https://<service>.onrender.com/api/health` (allowed by the CSP), which starts it. Meanwhile the site
+shows a "Tuning up…" notice and keeps retrying page data through Vercel for up to 100 s before offering
+"Try again". To avoid the wait entirely:
 
 - **Paid instance** (`plan: starter` in `render.yaml`): never sleeps.
 - **Keep-warm ping**: an uptime monitor (e.g. UptimeRobot, every 5–10 minutes) on `https://<site>/api/health`. Free

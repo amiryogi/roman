@@ -82,6 +82,8 @@ export const test = base.extend<{ stubbedNetwork: undefined }>({
           body: '<!doctype html><title>Video</title><p>Video player</p>',
         }),
       );
+      // The production build knocks on the real API to wake it (src/lib/api/wake.ts).
+      await page.route('https://*.onrender.com/**', (route) => route.fulfill({ status: 204 }));
       await use(undefined);
     },
     { auto: true },

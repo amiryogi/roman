@@ -9,7 +9,7 @@ import {
   refreshSession,
   setAccessToken,
 } from './client';
-import { isServerWaking } from './wake';
+import { isServerWaking, retryWhileAsleep, setWaiting } from './wake';
 
 // While requests wait, the "tuning up" notice renders in its own React root. These tests are about
 // the API client, not that UI (publicSite.test.tsx covers it), so React's act() checks are off.
@@ -145,6 +145,28 @@ describe('a server waking from sleep', () => {
     await vi.waitFor(() => {
       expect(isServerWaking()).toBe(false);
     });
+  });
+
+  it('knocks on the API directly while it sleeps, every 20 seconds', async () => {
+    // Render ignores requests forwarded by Vercel while it sleeps; a direct one wakes it.
+    const wakeUrl = 'https://api.example.test/api/health';
+    fetchMock.mockResolvedValue(new Response(null, { status: 200 }));
+    const start = Date.now();
+    const attempt = () =>
+      Promise.resolve(
+        Date.now() - start > 45_000 ? awake() : new Response('Bad gateway', { status: 502 }),
+      );
+    const request = Symbol('home');
+
+    const outcome = await settle(
+      retryWhileAsleep(request, new Response('', { status: 502 }), attempt, undefined, wakeUrl),
+    );
+    setWaiting(request, false);
+
+    expect(outcome.status).toBe(200);
+    const knocks = fetchMock.mock.calls.filter(([input]) => urlOf(input) === wakeUrl);
+    expect(knocks).toHaveLength(3);
+    expect(knocks[0]?.[1]).toMatchObject({ mode: 'no-cors', credentials: 'omit' });
   });
 
   it('marks a slow request as waiting until its answer arrives', async () => {

@@ -10,6 +10,23 @@
 const WAKE_BUDGET_MS = 100_000;
 /** Pauses between attempts; the last one repeats. */
 const RETRY_DELAYS_MS = [1000, 2000, 3000, 5000];
+/** How often to knock on the API directly while it sleeps, in case a knock is lost. */
+const KNOCK_INTERVAL_MS = 20_000;
+
+/**
+ * Wakes the API. Render answers requests forwarded by Vercel with an instant 502 while the instance
+ * sleeps, without starting it; only a request sent to Render directly does. The response is opaque
+ * (no-cors) and ignored: only the request matters.
+ */
+function knock(wakeUrl: string | undefined): void {
+  if (wakeUrl === undefined) return;
+  fetch(wakeUrl, {
+    mode: 'no-cors',
+    cache: 'no-store',
+    credentials: 'omit',
+    referrerPolicy: 'no-referrer',
+  }).catch(() => undefined);
+}
 
 function wait(ms: number, signal: AbortSignal | undefined): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -37,25 +54,33 @@ function isAsleep(outcome: Outcome): boolean {
 }
 
 /**
- * If `first` looks like a sleeping API, shows the notice for `request` and repeats `attempt` until
- * the API answers or the budget runs out; returns the last outcome. Rejects with an AbortError if
- * `signal` is aborted while waiting. The caller clears the notice for `request` when it is done.
+ * If `first` looks like a sleeping API, shows the notice for `request`, knocks on `wakeUrl` and
+ * repeats `attempt` until the API answers or the budget runs out; returns the last outcome. Rejects
+ * with an AbortError if `signal` is aborted while waiting. The caller clears the notice for
+ * `request` when it is done.
  */
 export async function retryWhileAsleep<T extends Outcome>(
   request: symbol,
   first: T,
   attempt: () => Promise<T>,
   signal: AbortSignal | undefined,
+  wakeUrl: string | undefined,
 ): Promise<T> {
   let outcome = first;
   if (!isAsleep(outcome)) return outcome;
   setWaiting(request, true);
 
   const deadline = Date.now() + WAKE_BUDGET_MS;
+  let knockedAt = Date.now();
+  knock(wakeUrl);
   for (let retry = 0; isAsleep(outcome); retry += 1) {
     const delay = RETRY_DELAYS_MS[Math.min(retry, RETRY_DELAYS_MS.length - 1)] ?? 0;
     if (Date.now() + delay > deadline) break;
     await wait(delay, signal);
+    if (Date.now() - knockedAt >= KNOCK_INTERVAL_MS) {
+      knockedAt = Date.now();
+      knock(wakeUrl);
+    }
     outcome = await attempt();
   }
   return outcome;

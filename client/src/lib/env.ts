@@ -12,11 +12,19 @@ interface ClientEnv {
   apiBaseUrl: string;
   siteUrl: string;
   cloudinaryCloudName: string | undefined;
+  /**
+   * The API's own health address, bypassing Vercel: a sleeping Render instance wakes only for
+   * requests sent to it directly (lib/api/wake.ts). Unset in development.
+   */
+  apiWakeUrl: string | undefined;
 }
 
 /** Reads the VITE_* variables. Exported for tests; the app uses `env`. */
 export function parseEnv(
-  source: Pick<ImportMetaEnv, 'VITE_API_BASE_URL' | 'VITE_SITE_URL' | 'VITE_CLOUDINARY_CLOUD_NAME'>,
+  source: Pick<
+    ImportMetaEnv,
+    'VITE_API_BASE_URL' | 'VITE_SITE_URL' | 'VITE_CLOUDINARY_CLOUD_NAME' | 'VITE_API_WAKE_URL'
+  >,
   production: boolean,
 ): ClientEnv {
   // Relative by default: Vite proxies /api in development and Vercel rewrites it in production.
@@ -34,10 +42,16 @@ export function parseEnv(
     throw new Error('VITE_CLOUDINARY_CLOUD_NAME is not a valid cloud name');
   }
 
+  const apiWakeUrl = nonEmpty(source.VITE_API_WAKE_URL);
+  if (apiWakeUrl !== undefined && !URL.canParse(apiWakeUrl)) {
+    throw new Error('VITE_API_WAKE_URL must be an absolute URL');
+  }
+
   return {
     apiBaseUrl: apiBaseUrl.replace(/\/+$/, ''),
     siteUrl: siteUrl.replace(/\/+$/, ''),
     cloudinaryCloudName: cloudName,
+    apiWakeUrl,
   };
 }
 

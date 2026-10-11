@@ -21,8 +21,14 @@ const SHARED_LITE = /[\\/]shared[\\/]dist[\\/](?:constants|timezone|lite)\.js$/;
  */
 const SCHEMAS =
   /[\\/]node_modules[\\/]zod[\\/]|[\\/]shared[\\/]dist[\\/](?!schemas[\\/]upload\.js$)/;
+/**
+ * React, React Router and TanStack Query. The entry needs them on every page; without a group,
+ * the parts the admin also uses become several small chunks, which compress worse than one.
+ */
+const CORE = /[\\/]node_modules[\\/](?:react|react-dom|scheduler|react-router|@tanstack)[\\/]/;
 
 const vercelConfigSchema = z.object({
+  rewrites: z.array(z.object({ source: z.string(), destination: z.string() })),
   headers: z.array(
     z.object({
       source: z.string(),
@@ -31,21 +37,51 @@ const vercelConfigSchema = z.object({
   ),
 });
 
+function readVercelConfig(): z.infer<typeof vercelConfigSchema> {
+  return vercelConfigSchema.parse(
+    JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8')),
+  );
+}
+
 /**
  * The site-wide response headers from vercel.json (CSP and friends), so `vite preview` behaves
  * like production and CSP problems show up locally.
  */
 function productionHeaders(): Record<string, string> {
-  const config = vercelConfigSchema.parse(
-    JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8')),
-  );
-  const siteWide = config.headers.find((rule) => rule.source === '/(.*)')?.headers ?? [];
+  const siteWide =
+    readVercelConfig().headers.find((rule) => rule.source === '/(.*)')?.headers ?? [];
   return Object.fromEntries(
     siteWide
       // HSTS and upgrade-insecure-requests only make sense over HTTPS.
       .filter((header) => header.key !== 'Strict-Transport-Security')
       .map((header) => [header.key, header.value.replace(/;\s*upgrade-insecure-requests/, '')]),
   );
+}
+
+/**
+ * Production builds get VITE_API_WAKE_URL: the API's health address on Render, from the /api
+ * rewrite in vercel.json. A sleeping Render instance ignores requests forwarded by Vercel, so the
+ * client knocks there directly to wake it (src/lib/api/wake.ts). The CSP must allow it.
+ */
+function apiWakeUrl(): Plugin {
+  return {
+    name: 'api-wake-url',
+    config(_config, { command }) {
+      if (command !== 'build' || process.env.VITE_API_WAKE_URL !== undefined) return;
+      const config = readVercelConfig();
+      const rewrite = config.rewrites.find((rule) => rule.source === '/api/:path*');
+      if (!rewrite) throw new Error('vercel.json has no /api/:path* rewrite');
+      const { origin } = new URL(rewrite.destination);
+      const csp = config.headers
+        .flatMap((rule) => rule.headers)
+        .find((header) => header.key === 'Content-Security-Policy')?.value;
+      const connectSrc = csp?.split(';').find((part) => part.trim().startsWith('connect-src'));
+      if (!connectSrc?.split(/\s+/).includes(origin)) {
+        throw new Error(`vercel.json: the CSP's connect-src must include ${origin}`);
+      }
+      process.env.VITE_API_WAKE_URL = `${origin}/api/health`;
+    },
+  };
 }
 
 /**
@@ -76,7 +112,7 @@ function productionRouting(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), productionRouting()],
+  plugins: [react(), tailwindcss(), productionRouting(), apiWakeUrl()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
@@ -90,6 +126,10 @@ export default defineConfig({
   },
   build: {
     target: 'es2022',
+    // Every current browser supports <link rel="modulepreload"> (Safari since 17). Older ones
+    // ignore the hints and fetch the same files a moment later; the polyfill would cost every
+    // visitor 0.5 KiB of the JS budget (plan §16).
+    modulePreload: { polyfill: false },
     // Read by scripts/check-bundle.ts (the JS budget), which then deletes it.
     manifest: true,
     rolldownOptions: {
@@ -102,6 +142,7 @@ export default defineConfig({
           groups: [
             { name: 'shared-lite', test: SHARED_LITE, priority: 2 },
             { name: 'schemas', test: SCHEMAS, priority: 1 },
+            { name: 'core', test: CORE, priority: 0 },
           ],
         },
       },
