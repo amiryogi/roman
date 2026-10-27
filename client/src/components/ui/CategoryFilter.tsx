@@ -18,7 +18,7 @@ export function CategoryFilter<T extends string>({
   current,
 }: CategoryFilterProps<T>) {
   const chip =
-    'inline-flex min-h-11 items-center rounded-full border px-4 text-sm transition-colors aria-[current=true]:border-(--accent) aria-[current=true]:bg-(--accent) aria-[current=true]:text-(--on-accent) border-current/30 hover:border-current';
+    'inline-flex min-h-11 items-center rounded-full border px-4 text-sm transition-colors aria-[current=true]:border-(--accent) aria-[current=true]:bg-(--accent-fill) aria-[current=true]:text-(--on-accent) border-current/30 hover:border-current';
   return (
     <nav aria-label={label}>
       <ul className="flex flex-wrap gap-2">

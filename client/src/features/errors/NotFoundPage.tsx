@@ -8,11 +8,11 @@ export function NotFoundPage() {
     <div className="surface-dark">
       <Seo title="Page not found" path="/404" noindex />
       <Container className="py-24 sm:py-32">
-        <p className="label-caps text-varnish">404</p>
+        <p className="label-caps text-crimson">404</p>
         <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
           Page not found
         </h1>
-        <p className="mt-6 max-w-xl text-lg text-mist">This page doesn’t exist, or it has moved.</p>
+        <p className="mt-6 max-w-xl text-lg text-fog">This page doesn’t exist, or it has moved.</p>
         <div className="mt-10 flex flex-wrap gap-3">
           <ButtonLink to="/">Home</ButtonLink>
           <ButtonLink to="/music" variant="outline">

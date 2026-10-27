@@ -27,7 +27,12 @@ import {
   type ProfileDto,
 } from '@roman/shared';
 
-import { HERO_MOBILE_QUERY, HERO_SIZES } from '../src/components/media/hero';
+import {
+  HERO_DESKTOP_CROP,
+  HERO_MOBILE_CROP,
+  HERO_MOBILE_QUERY,
+  HERO_SIZES,
+} from '../src/components/media/hero';
 import { imageAttributes } from '../src/components/media/imageAttributes';
 import { GALLERY_IMAGE_SIZES } from '../src/features/gallery/galleryLayout';
 import { PAGE_SEO, type PageKey } from '../src/components/seo/pages';
@@ -68,7 +73,7 @@ const distDir = join(clientDir, 'dist');
 const FETCH_TIMEOUT_MS = 60_000; // a sleeping Render instance can take this long to wake
 const FETCH_ATTEMPTS = 3;
 /** The critical font files: body text (Inter) and headings (Cormorant), Latin subset. */
-const CRITICAL_FONTS = /^(inter|cormorant-garamond)-latin-wght-normal-[\w-]+\.woff2$/;
+const CRITICAL_FONTS = /^(dm-sans|playfair-display)-latin-wght-normal-[\w-]+\.woff2$/;
 
 /** Unset and empty (`NAME=`) both mean "not configured". */
 function setting(name: string): string | undefined {
@@ -142,16 +147,18 @@ async function loadSiteData(): Promise<SiteData> {
 function heroPreloads(profile: ProfileDto, ctx: SeoContext): ImagePreload[] {
   const { heroDesktop, heroMobile } = profile;
   if (!heroDesktop) return [];
-  const desktop = imageAttributes(ctx.urls, heroDesktop.asset).srcSet;
-  if (!heroMobile) return [{ srcSet: desktop, sizes: HERO_SIZES }];
-  // Mirrors <HeroPicture>'s <source media>: each screen size preloads only its own image.
+  // Mirrors <HeroPicture>'s <source media>: each screen size preloads only its own crop.
   return [
     {
-      srcSet: imageAttributes(ctx.urls, heroMobile.asset).srcSet,
+      srcSet: imageAttributes(ctx.urls, (heroMobile ?? heroDesktop).asset, HERO_MOBILE_CROP).srcSet,
       sizes: HERO_SIZES,
       media: HERO_MOBILE_QUERY,
     },
-    { srcSet: desktop, sizes: HERO_SIZES, media: '(min-width: 768px)' },
+    {
+      srcSet: imageAttributes(ctx.urls, heroDesktop.asset, HERO_DESKTOP_CROP).srcSet,
+      sizes: HERO_SIZES,
+      media: '(min-width: 768px)',
+    },
   ];
 }
 

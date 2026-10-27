@@ -8,8 +8,8 @@ import { App } from '@/app/App';
 
 // Self-hosted variable fonts (plan §7.2). Each subset is a separate file selected by
 // unicode-range, so English pages only download the Latin files.
-import '@fontsource-variable/cormorant-garamond/wght.css';
-import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/playfair-display/wght.css';
+import '@fontsource-variable/dm-sans/wght.css';
 import '@/styles/index.css';
 
 // The prerendered HTML (scripts/postbuild-seo.ts) carries head tags and structured data for crawlers

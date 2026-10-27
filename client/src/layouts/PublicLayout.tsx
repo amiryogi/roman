@@ -40,7 +40,7 @@ function Frame() {
     // While the player is open the page gets matching bottom padding, so the bar never covers
     // content such as a form's submit button (plan §7.4).
     <div
-      className={['flex min-h-dvh flex-col bg-ebony', state.visible ? PLAYER_BAR_PADDING : '']
+      className={['flex min-h-dvh flex-col bg-night', state.visible ? PLAYER_BAR_PADDING : '']
         .filter(Boolean)
         .join(' ')}
     >

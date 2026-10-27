@@ -58,7 +58,10 @@ describe('gallery', () => {
     // The first photo is the page's largest image (LCP); the rest load as they scroll into view.
     expect(image).toHaveAttribute('loading', 'eager');
     expect(image).toHaveAttribute('fetchpriority', 'high');
-    const rest = screen.getAllByRole('img').filter((img) => img !== image);
+    // Photos only: the header's logo is not part of the gallery.
+    const rest = screen
+      .getAllByRole('img')
+      .filter((img) => img !== image && img.closest('main') !== null);
     expect(rest.length).toBeGreaterThan(0);
     for (const img of rest) expect(img).toHaveAttribute('loading', 'lazy');
     expect(screen.getByText(/Evening concert/)).toHaveTextContent('Photo: A. Photographer');

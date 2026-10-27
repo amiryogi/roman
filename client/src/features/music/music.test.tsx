@@ -154,6 +154,7 @@ describe('music page and player', () => {
     renderSite('/');
 
     expect(await screen.findByRole('heading', { level: 2, name: 'Listen' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Play First' })).toBeInTheDocument();
+    // The home page loads its track list after the first paint.
+    expect(await screen.findByRole('button', { name: 'Play First' })).toBeInTheDocument();
   });
 });

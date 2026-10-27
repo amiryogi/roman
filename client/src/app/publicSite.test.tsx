@@ -9,7 +9,7 @@ import { ApiClientError } from '@/lib/api/client';
 import { getHome, getProfile } from '@/lib/api/public';
 import { setWaiting } from '@/lib/api/wake';
 import type * as PublicApi from '@/lib/api/public';
-import { homeFixture, profileFixture } from '@/test/fixtures';
+import { homeFixture, profileFixture, youtubeVideoFixture } from '@/test/fixtures';
 
 import { createQueryClient } from './queryClient';
 import { routes } from './router';
@@ -51,8 +51,8 @@ describe('home page', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Test Artist' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Listen' })).toHaveAttribute('href', '/music');
-    expect(screen.getByRole('link', { name: 'Book Roman' })).toHaveAttribute('href', '/contact');
+    const hero = screen.getByRole('region', { name: 'Test Artist' });
+    expect(within(hero).getByRole('link', { name: 'Book me' })).toHaveAttribute('href', '/contact');
     expect(screen.getByRole('img', { name: 'Artist on stage' })).toHaveAttribute(
       'fetchpriority',
       'high',
@@ -61,6 +61,97 @@ describe('home page', () => {
     expect(document.querySelector('link[rel=canonical]')).toHaveAttribute(
       'href',
       'https://example.test',
+    );
+  });
+
+  it('uses the owner’s headline and introduction in the hero', async () => {
+    const { profile } = homeFixture();
+    vi.mocked(getHome).mockResolvedValue(
+      homeFixture({
+        profile: { ...profile, heroHeadline: 'Played with care.', heroIntro: 'An introduction.' },
+      }),
+    );
+    renderSite('/');
+
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Played with care.' }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('An introduction.')).toBeInTheDocument();
+  });
+
+  it('leaves out the sections the owner has not filled in', async () => {
+    renderSite('/');
+    await screen.findByRole('heading', { level: 1 });
+
+    expect(screen.queryByRole('region', { name: 'At a glance' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'What I do' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Songs I’ve played on' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Browse sheet music' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /WhatsApp/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Read my story' })).toHaveAttribute('href', '/about');
+  });
+
+  it('shows stats, what I do, songs, sheet music and WhatsApp when there is content', async () => {
+    const { profile } = homeFixture();
+    vi.mocked(getHome).mockResolvedValue(
+      homeFixture({
+        profile: {
+          ...profile,
+          stats: [{ value: '10 years', label: 'of teaching' }],
+          services: [
+            {
+              title: 'Performer',
+              kicker: 'On stage',
+              summary: 'Live sets.',
+              details: [{ label: 'Where', value: 'Concerts' }],
+              cta: { label: 'Send a request', inquiryType: 'booking' },
+            },
+            { title: 'Teacher', summary: 'Lessons.', details: [] },
+          ],
+        },
+        showcaseVideos: [
+          youtubeVideoFixture({ id: 'song-1', title: 'First song', showcase: true }),
+          youtubeVideoFixture({
+            id: 'song-2',
+            title: 'Second song',
+            youtubeId: 'abcdefghijk',
+            showcase: true,
+          }),
+        ],
+        sheetMusicCount: 2,
+      }),
+    );
+    vi.mocked(getProfile).mockResolvedValue(
+      profileFixture({ contact: { publicEmail: 'artist@example.com', phone: '+977 980-0000000' } }),
+    );
+    renderSite('/');
+    await screen.findByRole('heading', { level: 1 });
+
+    const stats = screen.getByRole('region', { name: 'At a glance' });
+    expect(within(stats).getByText('10 years')).toBeInTheDocument();
+
+    const carousel = await screen.findByRole('region', { name: 'Services' });
+    expect(within(carousel).getByRole('heading', { name: 'Performer' })).toBeInTheDocument();
+    expect(within(carousel).getByRole('link', { name: 'Send a request' })).toHaveAttribute(
+      'href',
+      '/contact?type=booking',
+    );
+    await userEvent.click(within(carousel).getByRole('button', { name: 'Next' }));
+    expect(within(carousel).getByRole('heading', { name: 'Teacher' })).toBeInTheDocument();
+
+    await userEvent.click(await screen.findByRole('button', { name: /Second song/ }));
+    expect(screen.getByTitle('YouTube video: Second song')).toHaveAttribute(
+      'src',
+      expect.stringContaining('/embed/abcdefghijk?autoplay=1&mute=0'),
+    );
+
+    expect(screen.getByRole('link', { name: 'Browse sheet music' })).toHaveAttribute(
+      'href',
+      '/sheet-music',
+    );
+    expect(await screen.findByRole('link', { name: /WhatsApp/ })).toHaveAttribute(
+      'href',
+      'https://wa.me/9779800000000',
     );
   });
 

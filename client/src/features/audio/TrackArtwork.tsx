@@ -21,7 +21,7 @@ export function TrackArtwork({ track, size, className = '' }: TrackArtworkProps)
     return (
       <span
         aria-hidden="true"
-        className={`${box} flex items-center justify-center bg-ebony-raised text-varnish`}
+        className={`${box} flex items-center justify-center bg-night-raised text-crimson`}
         style={{ width: size, height: size }}
       >
         <svg viewBox="0 0 24 24" className="w-1/2" fill="none" stroke="currentColor">

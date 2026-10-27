@@ -51,7 +51,7 @@ export function EventsPage() {
       )}
       <div className="surface-dark">
         <Container className="pt-16 pb-24 sm:pt-24">
-          <p className="label-caps text-varnish">Concerts and events</p>
+          <p className="label-caps text-crimson">Concerts and events</p>
           <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
             Performances
           </h1>
@@ -64,7 +64,7 @@ export function EventsPage() {
                     to={{ search: tab.when === 'past' ? '?when=past' : '' }}
                     replace
                     aria-current={when === tab.when ? 'page' : undefined}
-                    className="-mb-px inline-flex min-h-11 items-center border-b-2 border-transparent label-caps text-mist hover:text-ivory aria-[current=page]:border-varnish aria-[current=page]:text-ivory"
+                    className="-mb-px inline-flex min-h-11 items-center border-b-2 border-transparent label-caps text-fog hover:text-snow aria-[current=page]:border-crimson aria-[current=page]:text-snow"
                   >
                     {tab.label}
                   </Link>
@@ -91,13 +91,13 @@ export function EventsPage() {
             ) : items.length === 0 ? (
               when === 'upcoming' ? (
                 <div className="flex max-w-xl flex-col items-start gap-6 py-8">
-                  <p className="text-lg text-mist">New performances will be announced soon.</p>
+                  <p className="text-lg text-fog">New performances will be announced soon.</p>
                   <ButtonLink to={BOOK_PATH} variant="outline">
                     Book Roman for your event
                   </ButtonLink>
                 </div>
               ) : (
-                <p className="py-8 text-lg text-mist">No past performances listed yet.</p>
+                <p className="py-8 text-lg text-fog">No past performances listed yet.</p>
               )
             ) : (
               <>
@@ -109,7 +109,7 @@ export function EventsPage() {
                       void events.fetchNextPage();
                     }}
                     disabled={events.isFetchingNextPage}
-                    className="mt-10 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent) hover:text-(--on-accent) disabled:opacity-60"
+                    className="mt-10 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent) disabled:opacity-60"
                   >
                     {events.isFetchingNextPage ? 'Loading…' : 'Load more'}
                   </button>

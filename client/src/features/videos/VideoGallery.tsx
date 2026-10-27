@@ -75,7 +75,7 @@ function VideoCard({
         type="button"
         onClick={onPlay}
         aria-label={`Play video: ${video.title}`}
-        className="group relative aspect-video w-full overflow-hidden rounded-sm bg-ebony-raised"
+        className="group relative aspect-video w-full overflow-hidden rounded-sm bg-night-raised"
       >
         <img
           src={videoPosterUrl(video, urls, 800)}
@@ -90,13 +90,13 @@ function VideoCard({
           height={450}
           className="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] motion-reduce:transition-none"
         />
-        <span className="absolute inset-0 flex items-center justify-center bg-ebony/20 transition-colors duration-500 group-hover:bg-ebony/40">
-          <span className="flex size-16 items-center justify-center rounded-full bg-varnish text-ebony shadow-lg ring-0 ring-varnish/40 transition-[scale,box-shadow] duration-500 group-hover:scale-110 group-hover:ring-8 motion-reduce:transition-none">
+        <span className="absolute inset-0 flex items-center justify-center bg-night/20 transition-colors duration-500 group-hover:bg-night/40">
+          <span className="flex size-16 items-center justify-center rounded-full bg-crimson text-night shadow-lg ring-0 ring-crimson/40 transition-[scale,box-shadow] duration-500 group-hover:scale-110 group-hover:ring-8 motion-reduce:transition-none">
             <PlayIcon className="size-7 translate-x-0.5" />
           </span>
         </span>
         {video.duration !== undefined && (
-          <span className="absolute right-3 bottom-3 rounded-sm bg-ebony/80 px-2 py-0.5 text-xs text-ivory tabular-nums">
+          <span className="absolute right-3 bottom-3 rounded-sm bg-night/80 px-2 py-0.5 text-xs text-snow tabular-nums">
             {formatDuration(video.duration)}
           </span>
         )}
@@ -128,7 +128,7 @@ function VideoDialog({ video, onClose }: { video: VideoDto; onClose: () => void 
       ref={ref}
       aria-labelledby={titleId}
       onClose={onClose}
-      className="m-auto w-[min(72rem,calc(100%-2rem))] max-w-none overflow-visible bg-transparent p-0 text-ivory backdrop:bg-ebony/90"
+      className="m-auto w-[min(72rem,calc(100%-2rem))] max-w-none overflow-visible bg-transparent p-0 text-snow backdrop:bg-night/90"
     >
       <div className="mb-3 flex items-center justify-between gap-4">
         <h2 id={titleId} className="truncate text-lg font-medium">
@@ -138,12 +138,12 @@ function VideoDialog({ video, onClose }: { video: VideoDto; onClose: () => void 
           type="button"
           onClick={() => ref.current?.close()}
           aria-label="Close video"
-          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full hover:text-varnish"
+          className="inline-flex size-11 shrink-0 items-center justify-center rounded-full hover:text-crimson"
         >
           <CloseIcon />
         </button>
       </div>
-      <div className="aspect-video w-full overflow-hidden rounded-sm bg-ebony">
+      <div className="aspect-video w-full overflow-hidden rounded-sm bg-night">
         {video.source === 'cloudinary' ? (
           <CloudinaryVideo video={video} onPlay={pauseAudio} />
         ) : (
@@ -158,7 +158,7 @@ function VideoDialog({ video, onClose }: { video: VideoDto; onClose: () => void 
         )}
       </div>
       {video.description && (
-        <p className="mt-4 max-w-3xl leading-relaxed text-mist">{video.description}</p>
+        <p className="mt-4 max-w-3xl leading-relaxed text-fog">{video.description}</p>
       )}
     </dialog>
   );

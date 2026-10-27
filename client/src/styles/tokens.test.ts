@@ -29,30 +29,29 @@ function contrast(foreground: string, background: string): number {
 describe('colour tokens', () => {
   // Body text, links and form text: 4.5:1 (WCAG 1.4.3).
   it.each([
-    ['ink', 'ivory'],
-    ['ink', 'rosin'],
-    ['ink-muted', 'ivory'],
-    ['ink-muted', 'rosin'],
-    ['varnish-deep', 'ivory'],
-    ['varnish-deep', 'rosin'],
-    ['ivory', 'ebony'],
-    ['ivory', 'ebony-raised'],
-    ['mist', 'ebony'],
-    ['mist', 'ebony-raised'],
-    ['varnish', 'ebony'],
-    ['varnish', 'ebony-raised'],
-    ['ebony', 'varnish'],
-    ['ivory', 'varnish-deep'],
-    ['danger', 'ivory'],
+    ['snow', 'night'],
+    ['snow', 'night-raised'],
+    ['fog', 'night'],
+    ['fog', 'night-raised'],
+    ['crimson', 'night'],
+    ['crimson', 'night-raised'],
+    ['snow', 'crimson-deep'],
+    ['danger', 'night'],
+    ['danger', 'night-raised'],
   ])('%s on %s meets 4.5:1', (foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
   });
 
   // Focus rings and large display text: 3:1 (WCAG 1.4.11, 1.4.3 large text).
   it.each([
-    ['varnish', 'ivory'],
-    ['varnish-deep', 'ivory'],
+    ['crimson', 'night'],
+    ['crimson-deep', 'night'],
   ])('%s on %s meets 3:1', (foreground, background) => {
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(3);
+  });
+
+  it('keeps bright crimson out of fills behind white text', () => {
+    // The reason solid buttons use crimson-deep: white on bright crimson is about 3.6:1.
+    expect(contrast('snow', 'crimson')).toBeLessThan(4.5);
   });
 });

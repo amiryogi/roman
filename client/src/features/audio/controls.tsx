@@ -40,13 +40,13 @@ export function PlayPauseButton({ size = 'md' }: { size?: 'md' | 'lg' }) {
       type="button"
       onClick={toggle}
       aria-label={`${active ? 'Pause' : 'Play'} ${title}`}
-      className={`relative inline-flex ${dimensions} shrink-0 items-center justify-center rounded-full bg-(--accent) text-(--on-accent) transition hover:brightness-110`}
+      className={`relative inline-flex ${dimensions} shrink-0 items-center justify-center rounded-full bg-(--accent-fill) text-(--on-accent) transition hover:brightness-110`}
     >
       {active ? <PauseIcon /> : <PlayIcon className="size-5 translate-x-px" />}
       {state.status === 'loading' && (
         <span
           aria-hidden="true"
-          className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-ivory motion-reduce:animate-none"
+          className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-snow motion-reduce:animate-none"
         />
       )}
     </button>
@@ -115,7 +115,7 @@ export function SeekSlider({ tall = false }: { tall?: boolean }) {
           seek(Number(event.currentTarget.value));
         }}
         onKeyDown={handleKeyDown}
-        className={`string-range flex-1 text-ivory ${tall ? 'h-11' : ''}`}
+        className={`string-range flex-1 text-snow ${tall ? 'h-11' : ''}`}
         style={{ '--progress': percent(value, max), '--buffered': percent(buffered, max) }}
       />
       <span className="w-10" aria-hidden="true">
@@ -153,7 +153,7 @@ export function VolumeControl() {
           onChange={(event) => {
             setVolume(Number(event.currentTarget.value));
           }}
-          className="string-range w-24 text-ivory"
+          className="string-range w-24 text-snow"
           style={{ '--progress': percent(shown, 1), '--buffered': '0%' }}
         />
       )}
@@ -165,8 +165,11 @@ export function VolumeControl() {
 export function ProgressLine() {
   const { currentTime, duration } = useAudioTime();
   return (
-    <div aria-hidden="true" className="h-0.5 w-full bg-ivory/15">
-      <div className="h-full bg-(--accent)" style={{ width: percent(currentTime, duration) }} />
+    <div aria-hidden="true" className="h-0.5 w-full bg-snow/15">
+      <div
+        className="h-full bg-(--accent-fill)"
+        style={{ width: percent(currentTime, duration) }}
+      />
     </div>
   );
 }

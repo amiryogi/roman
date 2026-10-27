@@ -2,7 +2,7 @@ import type { ImageDto } from '@roman/shared';
 
 import { getMediaUrls, type MediaUrls } from '@/lib/cloudinary';
 
-import { HERO_MOBILE_QUERY, HERO_SIZES } from './hero';
+import { HERO_DESKTOP_CROP, HERO_MOBILE_CROP, HERO_MOBILE_QUERY, HERO_SIZES } from './hero';
 import { clearPlaceholder, imageAttributes, placeholderStyle } from './imageAttributes';
 
 interface HeroPictureProps {
@@ -14,8 +14,8 @@ interface HeroPictureProps {
 
 /**
  * The page's main image (LCP): art-directed with <picture> (plan §7.3), loaded eagerly at high
- * priority. Both images keep their natural shape (`c_limit`), so a wordmark baked into the photo
- * is never cropped (plan §0.4).
+ * priority. Phones get a tall crop (of the mobile image if there is one, otherwise of the same
+ * photo), wider screens a landscape one; see `hero.ts`.
  */
 export function HeroPicture({
   desktop,
@@ -23,20 +23,18 @@ export function HeroPicture({
   className,
   urls = getMediaUrls(),
 }: HeroPictureProps) {
-  const main = imageAttributes(urls, desktop.asset);
-  const small = mobile ? imageAttributes(urls, mobile.asset) : undefined;
+  const main = imageAttributes(urls, desktop.asset, HERO_DESKTOP_CROP);
+  const small = imageAttributes(urls, (mobile ?? desktop).asset, HERO_MOBILE_CROP);
 
   return (
     <picture>
-      {small && (
-        <source
-          media={HERO_MOBILE_QUERY}
-          srcSet={small.srcSet}
-          sizes={HERO_SIZES}
-          width={small.width}
-          height={small.height}
-        />
-      )}
+      <source
+        media={HERO_MOBILE_QUERY}
+        srcSet={small.srcSet}
+        sizes={HERO_SIZES}
+        width={small.width}
+        height={small.height}
+      />
       <img
         src={main.src}
         srcSet={main.srcSet}

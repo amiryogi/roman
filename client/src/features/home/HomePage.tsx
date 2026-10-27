@@ -1,28 +1,42 @@
 import { useQuery } from '@tanstack/react-query';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import type { HomeDto, ProfileSummaryDto } from '@roman/shared';
 
-import { BOOK_PATH } from '@/components/layout/navigation';
-import { HeroPicture } from '@/components/media/HeroPicture';
 import { ResponsiveImage } from '@/components/media/ResponsiveImage';
 import { seoContext } from '@/components/seo/context';
 import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
 import { shareImage } from '@/components/seo/structuredData';
 import { ArrowLink } from '@/components/ui/ArrowLink';
+import { buttonClass } from '@/components/ui/buttonClass';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Container } from '@/components/ui/Container';
 import { ErrorState } from '@/components/ui/ErrorState';
 import { Section } from '@/components/ui/Section';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { StringsDivider } from '@/components/ui/StringsDivider';
-import { EventList } from '@/features/events/EventList';
-import { TrackList } from '@/features/music/TrackList';
-import { VideoGallery } from '@/features/videos/VideoGallery';
-import { getHome, queryKeys } from '@/lib/api/public';
+import { useReveal } from '@/hooks/useReveal';
+import { getHome, getProfile, queryKeys } from '@/lib/api/public';
 
-import { BookingBand } from './BookingBand';
+import { HomeHero, HomeHeroSkeleton } from './HomeHero';
+import { MakeMusicBand } from './MakeMusicBand';
+
+// Below the fold, and some shared with their own pages: loaded after the first paint, so they don't
+// count against the home page's initial JavaScript (plan §16 budget).
+const TrackList = lazy(() =>
+  import('@/features/music/TrackList').then((module) => ({ default: module.TrackList })),
+);
+const VideoGallery = lazy(() =>
+  import('@/features/videos/VideoGallery').then((module) => ({ default: module.VideoGallery })),
+);
+const EventList = lazy(() =>
+  import('@/features/events/EventList').then((module) => ({ default: module.EventList })),
+);
+const ServicesCarousel = lazy(() =>
+  import('./ServicesCarousel').then((module) => ({ default: module.ServicesCarousel })),
+);
+const Showcase = lazy(() => import('./Showcase').then((module) => ({ default: module.Showcase })));
 
 export function HomePage() {
   const home = useQuery({ queryKey: queryKeys.home, queryFn: getHome });
@@ -37,7 +51,7 @@ export function HomePage() {
         image={profile && shareImage(profile, seoContext())}
       />
       {home.isPending ? (
-        <HeroSkeleton />
+        <HomeHeroSkeleton />
       ) : home.isError ? (
         <div className="surface-dark">
           <Container>
@@ -56,66 +70,111 @@ export function HomePage() {
   );
 }
 
-type HomeSection = 'music' | 'biography' | 'videos' | 'gallery' | 'events' | 'booking';
-
-/** Stage (dark) or paper (light) per section; the closing band takes the opposite of the last. */
-const TONES: Record<Exclude<HomeSection, 'booking'>, 'dark' | 'light'> = {
-  music: 'dark',
-  biography: 'light',
-  videos: 'dark',
-  gallery: 'light',
-  events: 'dark',
-};
+type Tone = 'dark' | 'dark-raised';
 
 /**
- * Order follows plan §6, except that videos come before the photo strip so stage and paper keep
- * alternating. Sections with no content are left out entirely (plan §12.5), and the movement
- * numbers follow the visible order.
+ * Order follows the reference design: hero, stats, about, what I do, songs I've played on, recent
+ * videos, then the rest of the site's content and the closing invitation. Sections with no content
+ * are left out entirely (plan §12.5), and the rest alternate between the two dark depths.
  */
 function HomeContent({ home }: { home: HomeDto }) {
   const { profile, featuredTracks, featuredVideos, featuredImages, upcomingEvents } = home;
-  const present: Record<HomeSection, boolean> = {
-    music: featuredTracks.length > 0,
-    biography: true,
-    videos: featuredVideos.length > 0,
-    gallery: featuredImages.length > 0,
-    events: upcomingEvents.length > 0,
-    booking: true,
-  };
-  const order = (['music', 'biography', 'videos', 'gallery', 'events', 'booking'] as const).filter(
-    (key) => present[key],
-  );
-  const number = (key: HomeSection) => order.indexOf(key) + 1;
-  const lastSection = order.at(-2);
-  const bookingTone =
-    lastSection && lastSection !== 'booking' && TONES[lastSection] === 'dark' ? 'light' : 'dark';
+  // The full profile (socials, public phone) is shared with the footer, so this adds no request.
+  const fullProfile = useQuery({ queryKey: queryKeys.profile, queryFn: getProfile }).data;
+  const instagram = fullProfile?.socials.find((link) => link.platform === 'instagram');
 
-  return (
-    <>
-      <Hero profile={profile} />
-      {present.music && (
-        <Section tone="dark" label="Music" number={number('music')} title="Listen">
-          <TrackList tracks={featuredTracks} />
+  const sections: [boolean, (tone: Tone) => ReactNode][] = [
+    [true, (tone) => <AboutTeaser key="about" profile={profile} tone={tone} />],
+    [
+      profile.services.length > 0,
+      (tone) => (
+        <Section
+          key="services"
+          tone={tone}
+          id="what-i-do"
+          label={profile.tagline}
+          title="What I do"
+        >
+          <Suspense fallback={<Skeleton className="h-[32rem] rounded-3xl" />}>
+            <ServicesCarousel services={profile.services} />
+          </Suspense>
+        </Section>
+      ),
+    ],
+    [
+      home.showcaseVideos.length > 0,
+      (tone) => (
+        <Section
+          key="songs"
+          tone={tone}
+          id="songs"
+          label="Featured work"
+          title="Songs I’ve played on"
+          intro="Choose a song to play it with sound."
+        >
+          <Suspense fallback={<Skeleton className="aspect-video rounded-2xl" />}>
+            <Showcase videos={home.showcaseVideos} />
+          </Suspense>
+        </Section>
+      ),
+    ],
+    [
+      featuredVideos.length > 0,
+      (tone) => (
+        <Section key="videos" tone={tone} label="Videos" title="Recent videos">
+          <Suspense fallback={<Skeleton className="aspect-video" />}>
+            <VideoGallery videos={featuredVideos} />
+          </Suspense>
+          <div className="mt-12 flex flex-wrap gap-4">
+            <ButtonLink to="/videos">See all my work</ButtonLink>
+            {instagram && (
+              <a
+                href={instagram.url}
+                target="_blank"
+                rel="me noopener noreferrer"
+                className={buttonClass('outline')}
+              >
+                Follow me on Instagram<span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            )}
+          </div>
+        </Section>
+      ),
+    ],
+    [
+      featuredTracks.length > 0,
+      (tone) => (
+        <Section key="music" tone={tone} label="Music" title="Listen">
+          <Suspense fallback={<Skeleton className="h-48" />}>
+            <TrackList tracks={featuredTracks} />
+          </Suspense>
           <ArrowLink to="/music" className="mt-10">
             All music
           </ArrowLink>
         </Section>
-      )}
-      <BiographyTeaser profile={profile} number={number('biography')} />
-      {present.videos && (
-        <Section tone="dark" label="Videos" number={number('videos')} title="Watch">
-          <VideoGallery videos={featuredVideos} />
-          <ArrowLink to="/videos" className="mt-10">
-            All videos
+      ),
+    ],
+    [
+      upcomingEvents.length > 0,
+      (tone) => (
+        <Section key="events" tone={tone} label="Performances" title="Upcoming">
+          <Suspense fallback={<Skeleton className="h-48" />}>
+            <EventList events={upcomingEvents} />
+          </Suspense>
+          <ArrowLink to="/events" className="mt-10">
+            All performances
           </ArrowLink>
         </Section>
-      )}
-      {present.gallery && (
-        <Section tone="light" label="Gallery" number={number('gallery')} title="Photographs">
+      ),
+    ],
+    [
+      featuredImages.length > 0,
+      (tone) => (
+        <Section key="gallery" tone={tone} label="Gallery" title="Photographs">
           <ul className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
             {featuredImages.map((photo) => (
               <li key={photo.id}>
-                <Link to="/gallery" className="group block overflow-hidden rounded-sm">
+                <Link to="/gallery" className="group block overflow-hidden rounded-xl">
                   <ResponsiveImage
                     asset={photo.image}
                     alt={photo.alt}
@@ -131,105 +190,99 @@ function HomeContent({ home }: { home: HomeDto }) {
             Open the gallery
           </ArrowLink>
         </Section>
-      )}
-      {present.events && (
-        <Section tone="dark" label="Performances" number={number('events')} title="Upcoming">
-          <EventList events={upcomingEvents} />
-          <ArrowLink to="/events" className="mt-10">
-            All performances
-          </ArrowLink>
+      ),
+    ],
+    [
+      home.sheetMusicCount > 0,
+      (tone) => (
+        <Section key="sheet-music" tone={tone} label="Sheet music" title="Scores for violin">
+          <p className="max-w-2xl text-lg leading-relaxed text-(--muted)">
+            Violin scores of songs I play. Browse them, or ask for the one you’d like.
+          </p>
+          <div className="mt-10 flex flex-wrap gap-4">
+            <ButtonLink to="/sheet-music">Browse sheet music</ButtonLink>
+            <ButtonLink to="/contact?type=sheet-music" variant="outline">
+              Request a score
+            </ButtonLink>
+          </div>
         </Section>
-      )}
-      <BookingBand number={number('booking')} tone={bookingTone} />
+      ),
+    ],
+  ];
+  const visible = sections.filter(([present]) => present).map(([, render]) => render);
+  const toneAt = (position: number): Tone => (position % 2 === 0 ? 'dark-raised' : 'dark');
+
+  return (
+    <>
+      <HomeHero profile={profile} />
+      <StatsRow stats={profile.stats} />
+      {visible.map((render, position) => render(toneAt(position)))}
+      <MakeMusicBand tone={toneAt(visible.length)} phone={fullProfile?.contact.phone} />
     </>
   );
 }
 
-function Hero({ profile }: { profile: ProfileSummaryDto }) {
+/** The owner's figures under the hero ("15+ years · as a violinist"). Hidden when there are none. */
+function StatsRow({ stats }: { stats: ProfileSummaryDto['stats'] }) {
+  if (stats.length === 0) return null;
   return (
-    <section aria-labelledby="hero-title" className="relative isolate surface-dark">
-      {profile.heroDesktop && (
-        // The photograph carries the large wordmark; the HTML heading stays smaller beside it
-        // (plan §0.4). Never cropped: tall screens letterbox it, and the slow settle ends at the
-        // natural size. Its lower edge fades into the stage, only as far as stays clear of the
-        // baked-in wordmark at each size.
-        <div className="relative overflow-hidden">
-          <HeroPicture
-            desktop={profile.heroDesktop}
-            mobile={profile.heroMobile}
-            className="block h-auto max-h-[85svh] w-full object-contain motion-safe:animate-kenburns"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-ebony to-transparent sm:h-10 lg:h-16"
-          />
-        </div>
-      )}
-      {/* A spotlight on the name, as on a stage. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-72 bg-[radial-gradient(ellipse_55%_80%_at_18%_100%,rgb(192_122_53/0.16),transparent_70%)]"
-      />
-      <Container className="grid gap-8 py-12 sm:py-16 lg:grid-cols-12 lg:items-end">
-        <div className="lg:col-span-8">
-          <p className="label-caps text-varnish motion-safe:animate-rise motion-safe:[animation-delay:100ms]">
-            {profile.tagline}
-          </p>
-          <h1
-            id="hero-title"
-            className="mt-4 font-display text-[2.25rem] leading-[1.05] font-medium tracking-[0.08em] uppercase motion-safe:animate-rise motion-safe:[animation-delay:220ms] sm:text-[3rem]"
-          >
-            {profile.displayName}
-          </h1>
-        </div>
-        <div className="flex flex-wrap gap-3 motion-safe:animate-rise motion-safe:[animation-delay:360ms] lg:col-span-4 lg:justify-end">
-          <ButtonLink to="/music">Listen</ButtonLink>
-          <ButtonLink to={BOOK_PATH} variant="outline">
-            Book Roman
-          </ButtonLink>
-        </div>
+    <section aria-label="At a glance" className="surface-dark">
+      <Container className="pt-4 pb-16 sm:pb-20">
+        <ul className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <li key={`${stat.value}-${stat.label}`} className="border-t border-snow/20 pt-6">
+              <p className="font-display text-[2rem] leading-tight font-semibold">{stat.value}</p>
+              <p className="mt-2 label-caps text-fog">{stat.label}</p>
+            </li>
+          ))}
+        </ul>
       </Container>
-      <StringsDivider />
     </section>
   );
 }
 
-function BiographyTeaser({ profile, number }: { profile: ProfileSummaryDto; number: number }) {
+/** Portrait beside the short biography, with a link to the full story. */
+function AboutTeaser({ profile, tone }: { profile: ProfileSummaryDto; tone: Tone }) {
+  const [revealRef, revealState] = useReveal();
   return (
-    <Section tone="light" label="Biography" number={number} hideTitle>
-      <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
-        <div className={profile.portrait ? 'lg:col-span-7' : 'lg:col-span-10'}>
-          <p className="font-display text-[1.75rem] leading-[1.3] sm:text-[2rem]">
-            {profile.shortBio}
-          </p>
-          <ArrowLink to="/about" className="mt-8">
-            Read the full biography
-          </ArrowLink>
-        </div>
-        {profile.portrait && (
-          <div className="lg:col-span-5">
-            <ResponsiveImage
-              asset={profile.portrait.asset}
-              alt={profile.portrait.alt}
-              aspect={4 / 5}
-              sizes="(min-width: 1280px) 30rem, (min-width: 1024px) 40vw, 100vw"
-              className="h-auto w-full rounded-sm"
-            />
+    <section
+      aria-labelledby="about-teaser-title"
+      className={`${tone === 'dark' ? 'surface-dark' : 'surface-dark-raised'} stage-light`}
+    >
+      <Container className="py-20 sm:py-24 lg:py-28">
+        <div
+          ref={revealRef}
+          data-reveal={revealState}
+          className="grid gap-12 lg:grid-cols-12 lg:items-center lg:gap-16"
+        >
+          {profile.portrait && (
+            <div className="lg:col-span-5">
+              <ResponsiveImage
+                asset={profile.portrait.asset}
+                alt={profile.portrait.alt}
+                aspect={4 / 5}
+                sizes="(min-width: 1280px) 30rem, (min-width: 1024px) 40vw, 100vw"
+                className="h-auto w-full rounded-2xl"
+              />
+            </div>
+          )}
+          <div className={profile.portrait ? 'lg:col-span-7' : 'lg:col-span-10'}>
+            <p className="eyebrow" aria-hidden="true">
+              {profile.displayName}
+            </p>
+            <h2
+              id="about-teaser-title"
+              className="mt-4 font-display text-[2.25rem] leading-[1.1] sm:text-[3.25rem]"
+            >
+              About me
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-(--muted)">{profile.shortBio}</p>
+            <ButtonLink to="/about" variant="outline" className="mt-9">
+              Read my story
+            </ButtonLink>
           </div>
-        )}
-      </div>
-    </Section>
-  );
-}
-
-function HeroSkeleton() {
-  return (
-    <div role="status" aria-label="Loading" className="surface-dark">
-      <Skeleton className="aspect-[2048/1215] max-h-[85svh] w-full rounded-none" />
-      <Container className="py-12 sm:py-16">
-        <Skeleton className="h-4 w-64" />
-        <Skeleton className="mt-6 h-12 w-full max-w-xl" />
+        </div>
       </Container>
-    </div>
+    </section>
   );
 }

@@ -5,9 +5,12 @@ import { z } from 'zod';
 /** 160 KB, counted in KiB as every measurement since Phase 5 has been. */
 export const BUDGET_BYTES = 160 * 1024;
 
-/** Each public page and the module the router loads for it (Home is part of the entry). */
+/**
+ * Each public page and the module the router loads for it. Home has been lazy too since the
+ * 2026-10 revamp, so its code no longer counts against every other page.
+ */
 export const PUBLIC_PAGES: Record<string, string | undefined> = {
-  '/': undefined,
+  '/': 'src/features/home/HomePage.tsx',
   '/about': 'src/features/about/AboutPage.tsx',
   '/music': 'src/features/music/MusicPage.tsx',
   '/videos': 'src/features/videos/VideosPage.tsx',

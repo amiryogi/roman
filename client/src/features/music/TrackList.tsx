@@ -42,7 +42,7 @@ function TrackRow({ track, queue }: { track: TrackDto; queue: TrackDto[] }) {
         className="group relative size-14 shrink-0 rounded-sm"
       >
         <TrackArtwork track={track} size={56} />
-        <span className="absolute inset-0 flex items-center justify-center rounded-sm bg-ebony/45 text-ivory opacity-90 transition-[background-color,scale] duration-300 group-hover:scale-105 group-hover:bg-ebony/60 motion-reduce:transition-none">
+        <span className="absolute inset-0 flex items-center justify-center rounded-sm bg-night/45 text-snow opacity-90 transition-[background-color,scale] duration-300 group-hover:scale-105 group-hover:bg-night/60 motion-reduce:transition-none">
           {playing ? <PauseIcon /> : <PlayIcon className="size-5 translate-x-px" />}
         </span>
       </button>

@@ -19,7 +19,7 @@ export function ErrorState({
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent) hover:text-(--on-accent)"
+        className="inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent)"
       >
         Try again
       </button>

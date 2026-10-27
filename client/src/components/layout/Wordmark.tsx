@@ -4,40 +4,29 @@ import { SITE_NAME } from '@/components/seo/site';
 
 interface WordmarkProps {
   onClick?: () => void;
-  /** The violin mark before the name (header and footer). */
-  withViolin?: boolean;
+  className?: string;
 }
 
 /**
- * The name as a link home, set like the serif lockup in Roman's photographs. On load the violin
- * is lifted into place and the name is written in; on hover the violin sways like a bow stroke and
- * a varnish highlight glides across the name. All motion is skipped for reduced-motion users.
+ * The "ROMAN · violinist" logo as a link home (2026-10 revamp). The image's alt text gives the
+ * link its name. A 1× and 2× WebP, trimmed from the owner's logo (public/images/logo-roman.png).
  */
-export function Wordmark({ onClick, withViolin = false }: WordmarkProps) {
+export function Wordmark({ onClick, className }: WordmarkProps) {
   return (
     <Link
       to="/"
       onClick={onClick}
-      className="group inline-flex min-h-11 items-center gap-2.5 font-display text-[1.75rem] leading-none font-medium tracking-[0.06em] whitespace-nowrap"
+      className={['inline-flex min-h-11 shrink-0 items-center', className].join(' ')}
     >
-      {withViolin && (
-        // The wrapper is lifted in once; the image itself rests tilted and sways on hover, so the
-        // two animations never replace each other.
-        <span aria-hidden="true" className="inline-flex shrink-0 motion-safe:animate-swing-in">
-          <img
-            src="/images/violin.png"
-            alt=""
-            width={63}
-            height={168}
-            decoding="async"
-            className="h-11 w-auto rotate-12 [mask-image:radial-gradient(ellipse_at_center,black_55%,transparent_72%)] group-hover:motion-safe:animate-rock sm:h-14"
-          />
-        </span>
-      )}
-      {/* Written in once (outer); the hover highlight is a separate animation (inner). */}
-      <span className="motion-safe:animate-write motion-safe:[animation-delay:200ms]">
-        <span className="sheen-text">{SITE_NAME}</span>
-      </span>
+      <img
+        src="/images/logo-roman.webp"
+        srcSet="/images/logo-roman.webp 1x, /images/logo-roman@2x.webp 2x"
+        alt={SITE_NAME}
+        width={186}
+        height={48}
+        decoding="async"
+        className="h-9 w-auto sm:h-11"
+      />
     </Link>
   );
 }

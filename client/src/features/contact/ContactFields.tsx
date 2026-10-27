@@ -1,6 +1,6 @@
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 
-// Form controls for the public site's paper surface: visible labels, hints and errors wired to the
+// Form controls for the public site's dark surface: visible labels, hints and errors wired to the
 // control with aria-describedby (plan §18).
 
 interface FieldProps {
@@ -12,7 +12,7 @@ interface FieldProps {
 }
 
 const control =
-  'w-full rounded-sm border bg-white px-3 py-2.5 text-ink shadow-xs placeholder:text-ink-muted/70';
+  'w-full rounded-lg border bg-night px-4 py-3 text-snow [color-scheme:dark] placeholder:text-fog/70';
 
 function describedBy({ id, hint, error }: FieldProps): string | undefined {
   return (
@@ -33,14 +33,14 @@ function Frame({
       <label htmlFor={id} className="text-sm font-medium">
         {label}
         {required ? (
-          <span className="font-normal text-ink-muted"> (required)</span>
+          <span className="font-normal text-fog"> (required)</span>
         ) : (
-          <span className="font-normal text-ink-muted"> (optional)</span>
+          <span className="font-normal text-fog"> (optional)</span>
         )}
       </label>
       {children}
       {hint && (
-        <p id={`${id}-hint`} className="text-sm text-ink-muted">
+        <p id={`${id}-hint`} className="text-sm text-fog">
           {hint}
         </p>
       )}
@@ -68,7 +68,7 @@ export function InputField({
         aria-required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy({ id, label, hint, error })}
-        className={`${control} ${error ? 'border-danger' : 'border-ink/25'}`}
+        className={`${control} ${error ? 'border-danger' : 'border-snow/25'}`}
         {...props}
       />
     </Frame>
@@ -90,7 +90,7 @@ export function TextareaField({
         aria-required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy({ id, label, hint, error })}
-        className={`${control} ${error ? 'border-danger' : 'border-ink/25'}`}
+        className={`${control} ${error ? 'border-danger' : 'border-snow/25'}`}
         {...props}
       />
     </Frame>
@@ -113,7 +113,7 @@ export function SelectField({
         aria-required={required}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy({ id, label, hint, error })}
-        className={`${control} ${error ? 'border-danger' : 'border-ink/25'}`}
+        className={`${control} ${error ? 'border-danger' : 'border-snow/25'}`}
         {...props}
       >
         {children}

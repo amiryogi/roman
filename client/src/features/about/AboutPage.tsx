@@ -200,7 +200,10 @@ function Journey({ profile }: { profile: ProfileDto }) {
               <ul className="mt-4 space-y-2 text-(--muted)">
                 {entry.highlights.map((highlight, j) => (
                   <li key={j} className="flex gap-3">
-                    <span aria-hidden="true" className="mt-3 h-px w-4 shrink-0 bg-(--accent)" />
+                    <span
+                      aria-hidden="true"
+                      className="mt-3 h-px w-4 shrink-0 bg-(--accent-fill)"
+                    />
                     {highlight}
                   </li>
                 ))}
@@ -228,7 +231,10 @@ function Teaching({ profile }: { profile: ProfileDto }) {
               <ul className="mt-4 space-y-2">
                 {item.highlights.map((highlight, j) => (
                   <li key={j} className="flex gap-3">
-                    <span aria-hidden="true" className="mt-3 h-px w-4 shrink-0 bg-(--accent)" />
+                    <span
+                      aria-hidden="true"
+                      className="mt-3 h-px w-4 shrink-0 bg-(--accent-fill)"
+                    />
                     {highlight}
                   </li>
                 ))}

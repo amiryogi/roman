@@ -87,7 +87,7 @@ export function LoginPage() {
         aria-hidden="true"
         className="pointer-events-none absolute top-[12rem] left-1/2 -z-10 size-[min(140vh,140vw)] -translate-x-1/2 -translate-y-1/2 sm:top-[14rem] lg:top-1/2 lg:left-[35%]"
       >
-        <div className="size-full animate-breathe rounded-full bg-[radial-gradient(circle_at_center,rgb(192_122_53/0.32),rgb(138_75_28/0.12)_35%,transparent_62%)] motion-reduce:animate-none" />
+        <div className="size-full animate-breathe rounded-full bg-[radial-gradient(circle_at_center,rgb(255_45_85/0.28),rgb(214_25_74/0.1)_35%,transparent_62%)] motion-reduce:animate-none" />
       </div>
 
       <div className="grid w-full max-w-5xl items-center justify-items-center gap-8 lg:grid-cols-[1fr_minmax(0,26rem)] lg:gap-16">
@@ -100,7 +100,7 @@ export function LoginPage() {
           className="h-40 w-auto animate-sway [mask-image:radial-gradient(ellipse_at_center,black_48%,transparent_70%)] motion-reduce:rotate-[11deg] motion-reduce:animate-none sm:h-52 lg:h-[min(72vh,640px)]"
         />
 
-        <div className="w-full max-w-sm animate-rise rounded-sm surface-light p-8 shadow-2xl ring-1 shadow-black/50 ring-varnish/25 motion-reduce:animate-none">
+        <div className="w-full max-w-sm animate-rise rounded-sm surface-light p-8 shadow-2xl ring-1 shadow-black/50 ring-crimson/25 motion-reduce:animate-none">
           <p className="label-caps text-(--accent)">Backstage</p>
           <h1 className="mt-2 font-display text-[2.5rem] leading-none font-medium">
             Admin sign in
@@ -117,7 +117,7 @@ export function LoginPage() {
                     // A new key restarts the vibration on every pluck.
                     key={count}
                     className={[
-                      'flex-1 rounded-full bg-gradient-to-r from-varnish-deep via-varnish to-varnish-deep',
+                      'flex-1 rounded-full bg-gradient-to-r from-crimson-deep via-crimson to-crimson-deep',
                       string.thickness,
                       count > 0 ? 'animate-pluck motion-reduce:animate-none' : '',
                     ].join(' ')}
@@ -152,7 +152,7 @@ export function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting || state.status === 'loading'}
-              className="mt-2 inline-flex min-h-11 items-center justify-center rounded-sm bg-ink px-4 font-medium text-ivory transition-colors hover:bg-varnish-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) disabled:opacity-60"
+              className="mt-2 inline-flex min-h-11 items-center justify-center rounded-sm bg-snow px-4 font-medium text-snow transition-colors hover:bg-crimson-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--focus-ring) disabled:opacity-60"
             >
               {isSubmitting ? 'Signing in…' : 'Sign in'}
             </button>

@@ -132,9 +132,9 @@ export function ContactForm() {
 
   if (sentTo) {
     return (
-      <div role="status" className="rounded-sm border border-ink/15 bg-white p-8">
+      <div role="status" className="rounded-2xl border border-snow/10 bg-night-raised p-8">
         <p className="font-display text-[2rem] leading-tight font-medium">Thank you</p>
-        <p className="mt-3 leading-relaxed text-ink-muted">
+        <p className="mt-3 leading-relaxed text-fog">
           Your message has been sent. The reply will come to <strong>{sentTo}</strong>.
         </p>
         <button
@@ -143,7 +143,7 @@ export function ContactForm() {
             setSentTo(null);
             void token.refetch();
           }}
-          className="mt-6 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-varnish-deep uppercase underline underline-offset-[6px]"
+          className="mt-6 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-crimson uppercase underline underline-offset-[6px]"
         >
           Send another message
         </button>
@@ -161,14 +161,14 @@ export function ContactForm() {
       noValidate
       aria-labelledby="contact-form-title"
       onSubmit={(event) => void onSubmit(event)}
-      className="flex flex-col gap-5 rounded-sm border border-ink/15 bg-white/60 p-6 sm:p-8"
+      className="flex flex-col gap-5 rounded-2xl border border-snow/10 bg-night-raised p-6 sm:p-8"
     >
       <h2 id="contact-form-title" className="font-display text-[2rem] leading-tight font-medium">
         Send an enquiry
       </h2>
 
       {submitCount > 0 && summary.length > 0 && (
-        <div role="alert" className="rounded-sm border border-danger/40 bg-white p-4 text-sm">
+        <div role="alert" className="rounded-lg border border-danger/40 bg-night p-4 text-sm">
           <p className="font-medium text-danger">Please check the following:</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {summary.map((item) => (
@@ -184,7 +184,7 @@ export function ContactForm() {
       {formError && (
         <p
           role="alert"
-          className="rounded-sm border border-danger/40 bg-white p-4 text-sm text-danger"
+          className="rounded-lg border border-danger/40 bg-night p-4 text-sm text-danger"
         >
           {formError}
         </p>
@@ -299,7 +299,7 @@ export function ContactForm() {
         <button
           type="submit"
           disabled={isSubmitting || !token.data}
-          className="inline-flex min-h-11 items-center rounded-sm bg-varnish-deep px-6 text-sm font-medium tracking-[0.14em] text-ivory uppercase hover:brightness-110 disabled:opacity-60"
+          className="inline-flex min-h-12 items-center self-start rounded-full bg-crimson-deep px-7 font-semibold text-snow hover:brightness-110 disabled:opacity-60"
         >
           {isSubmitting ? 'Sending…' : 'Send enquiry'}
         </button>

@@ -26,7 +26,7 @@ async function secondsPlayed(page: Page): Promise<number> {
 
 test('every public page opens from the navigation', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1, name: SEEDED.artist })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: SEEDED.heroHeadline })).toBeVisible();
 
   for (const [link, heading] of [
     ['About', 'About'],
@@ -39,6 +39,20 @@ test('every public page opens from the navigation', async ({ page }) => {
     await navigate(page, link);
     await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
   }
+});
+
+test('the home page shows what the owner entered for it', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1, name: SEEDED.heroHeadline })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'At a glance' })).toContainText(SEEDED.stat.value);
+  await expect(
+    page.getByRole('region', { name: 'Services' }).getByRole('heading', { name: SEEDED.service }),
+  ).toBeVisible();
+  await expect(page.getByRole('heading', { name: SEEDED.showcaseVideo })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Browse sheet music' })).toHaveAttribute(
+    'href',
+    '/sheet-music',
+  );
 });
 
 test('music keeps playing while the visitor moves between pages', async ({ page, browserName }) => {

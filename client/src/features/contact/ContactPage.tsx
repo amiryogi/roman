@@ -91,9 +91,9 @@ export function ContactPage() {
           )}
 
           <p className="mt-10 text-sm leading-relaxed text-(--muted)">
-            <strong className="font-medium text-ink">Privacy.</strong> The details you send are used
-            only to reply to your enquiry. They aren’t shared, and they aren’t used for newsletters
-            or marketing. Ask at any time to have your message deleted.
+            <strong className="font-medium text-snow">Privacy.</strong> The details you send are
+            used only to reply to your enquiry. They aren’t shared, and they aren’t used for
+            newsletters or marketing. Ask at any time to have your message deleted.
           </p>
         </div>
 

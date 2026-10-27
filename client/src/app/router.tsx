@@ -2,19 +2,22 @@ import { createBrowserRouter, type RouteObject } from 'react-router';
 
 import { NotFoundPage } from '@/features/errors/NotFoundPage';
 import { RouteErrorPage } from '@/features/errors/RouteErrorPage';
-import { HomePage } from '@/features/home/HomePage';
 import { PublicLayout } from '@/layouts/PublicLayout';
 
-// Home is in the main chunk for a fast first paint (LCP); other pages load on demand (plan §12.1).
+// Every page loads on demand. The build preloads each page's chunk in its HTML (postbuild-seo.ts),
+// so the home page's first paint doesn't wait for the entry to request it.
 const publicRoutes: RouteObject = {
   path: '/',
   Component: PublicLayout,
   errorElement: <RouteErrorPage />,
   // Shown for a moment when a lazily loaded page is opened directly: the site's dark ground,
   // so nothing flashes.
-  hydrateFallbackElement: <div role="status" aria-label="Loading" className="min-h-dvh bg-ebony" />,
+  hydrateFallbackElement: <div role="status" aria-label="Loading" className="min-h-dvh bg-night" />,
   children: [
-    { index: true, Component: HomePage },
+    {
+      index: true,
+      lazy: async () => ({ Component: (await import('@/features/home/HomePage')).HomePage }),
+    },
     {
       path: 'about',
       lazy: async () => ({ Component: (await import('@/features/about/AboutPage')).AboutPage }),

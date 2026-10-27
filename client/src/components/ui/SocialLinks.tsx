@@ -49,7 +49,7 @@ export function SocialLinks({ links, variant = 'icons', className }: SocialLinks
                 rel="me noopener noreferrer"
                 aria-label={`${SITE_NAME} on ${name} (opens in a new tab)`}
                 title={name}
-                className="inline-flex size-11 items-center justify-center rounded-full border border-current/20 text-mist transition-[color,border-color,translate] duration-300 hover:-translate-y-0.5 hover:border-varnish hover:text-varnish motion-reduce:transition-none"
+                className="inline-flex size-11 items-center justify-center rounded-full border border-current/20 text-fog transition-[color,border-color,translate] duration-300 hover:-translate-y-0.5 hover:border-crimson hover:text-crimson motion-reduce:transition-none"
               >
                 {icon}
               </a>

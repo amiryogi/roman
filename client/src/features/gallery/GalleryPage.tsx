@@ -79,7 +79,7 @@ export function GalleryPage() {
                     void gallery.fetchNextPage();
                   }}
                   disabled={gallery.isFetchingNextPage}
-                  className="mt-12 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent) hover:text-(--on-accent) disabled:opacity-60"
+                  className="mt-12 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent) disabled:opacity-60"
                 >
                   {gallery.isFetchingNextPage ? 'Loading…' : 'Load more photos'}
                 </button>

@@ -220,3 +220,42 @@ still to come from the owner).
   - Neon logo saved from the reference page as `client/public/images/logo-roman.png` (1506×462,
     40 KB), at the owner's request; it goes into the header in R3.
   - Public pages are now 157.4-159.5 KiB (labels ship with them). R3 makes Home lazy to free room.
+- R3 done (design foundation, every public page):
+  - Home is a lazy route (`/` in `PUBLIC_PAGES`); its below-the-fold lists (tracks, videos, events) load
+    lazily. Budget after R3: / 156.6, /about 156.1, /music 158.4, /videos 157.9, /gallery 153.5,
+    /events 156.1, /contact 151.3 KiB.
+  - Fonts: Playfair Display + DM Sans (variable fontsource packages; `CRITICAL_FONTS` preloads updated).
+  - Palette tokens `night`, `night-raised`, `snow`, `fog`, `crimson` (#ff2d55, accent text and
+    decoration), `crimson-deep` (#d6194a, behind white text, via `--accent-fill`), `glow-blue`,
+    `danger`. Old class names renamed across the public site. `surface-light` is now a dark alias.
+    White on `crimson` fails 4.5:1, which the token test asserts, so filled buttons use `--accent-fill`.
+  - New utilities `eyebrow` and `header-glass` (transparent at the top, solid once scrolled, CSS
+    scroll-driven). `stage-light` is now crimson and blue corner glows.
+  - Header: logo (`logo-roman.webp` 1×/2×, trimmed from the PNG), nav from 1280 px, "Book me" pill,
+    hamburger menu (still named "Menu"/"Site menu"). Footer: name, tagline, socials, "Explore",
+    "Get in touch", © line. `Section` lost the Roman-numeral numbers; `ButtonLink` and `ArrowLink`
+    are pills.
+  - Contact form restyled dark (inputs `bg-night`, card `night-raised`, pill submit).
+  - Left for R5: the About timeline's boxed look, the `bg-crimson text-night` buttons in
+    `RouteErrorPage` and `VideoGallery` (they pass contrast but don't match). Home is still the old
+    layout until R4.
+- R4 done (home page):
+  - Full-bleed hero under the transparent header (`-mt-16 sm:-mt-20`): tagline with a crimson rule,
+    h1 `heroHeadline ?? displayName`, intro `heroIntro ?? shortBio`, "Book me →". The photo is
+    cropped by Cloudinary around the subject (`hero.ts`: 16:9 from 768 px, 1:2 below, from the
+    mobile image if set, else the same photo); the build preload uses the same crops. Motion: photo
+    settles (`kenburns` 1.06→1), rule draws, text rises; `hero-shade` keeps text legible.
+  - Then: stats row ("At a glance", hidden when empty), About teaser (portrait, "About me",
+    "Read my story"), "What I do" carousel (lazy `ServicesCarousel`: region "Services", autoplay
+    7 s that stops on hover/focus/pause and never runs under reduced motion; stave and equaliser
+    decoration), "Songs I've played on" (lazy `Showcase`: muted autoplay once half in view, except
+    under reduced motion, Save-Data or while site music plays; choosing a song plays it with sound
+    and pauses the music), recent videos (+ "See all my work", Instagram if in socials), music,
+    upcoming performances, gallery, sheet-music teaser (when `sheetMusicCount > 0`; links to
+    `/sheet-music`, which R5 builds), "Let's make music" band (WhatsApp only for a public phone in
+    +country form). Sections alternate `dark-raised` / `dark`.
+  - New CSS utilities: `hero-shade`, `glass-card`, `service-stage`, `showcase-frame`, `eq-bar`,
+    `note-twinkle`. New hook `useMediaQuery`; `buttonClass()` styles external links as buttons.
+  - Budget: / 157.4, /about 156.2, /music 158.5, /videos 158.1, /gallery 153.5, /events 156.2,
+    /contact 151.4 KiB. E2E (Chromium) 22 passed; Playwright's Chromium had to be reinstalled
+    (`npx playwright install chromium`) after the R3 lockfile regeneration.

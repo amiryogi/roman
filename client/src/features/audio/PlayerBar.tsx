@@ -38,7 +38,7 @@ export function PlayerBar() {
   return (
     <section
       aria-label="Audio player"
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-ivory/10 surface-dark-raised pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-snow/10 surface-dark-raised pb-[env(safe-area-inset-bottom)]"
     >
       {/* Announces track changes, not play/pause (plan §18). */}
       <p className="sr-only" aria-live="polite">
@@ -58,7 +58,7 @@ export function PlayerBar() {
             <TrackArtwork track={current} size={40} />
             <span className="min-w-0">
               <span className="block truncate text-sm font-medium">{current.title}</span>
-              <span className="block truncate text-xs text-mist">
+              <span className="block truncate text-xs text-fog">
                 {error ? 'Couldn’t play this track' : meta}
               </span>
               <span className="sr-only">, open the player</span>
@@ -74,7 +74,7 @@ export function PlayerBar() {
           <TrackArtwork track={current} size={48} />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{current.title}</p>
-            <p className="truncate text-xs text-mist">{meta}</p>
+            <p className="truncate text-xs text-fog">{meta}</p>
           </div>
         </div>
         <TransportControls />
@@ -96,11 +96,11 @@ export function PlayerBar() {
       <dialog
         ref={sheetRef}
         aria-label="Player"
-        className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-sm surface-dark-raised p-0 backdrop:bg-ebony/80 md:hidden"
+        className="fixed inset-x-0 top-auto bottom-0 m-0 max-h-[92dvh] w-full max-w-none overflow-y-auto rounded-t-sm surface-dark-raised p-0 backdrop:bg-night/80 md:hidden"
       >
         <div className="flex flex-col gap-6 px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center justify-between">
-            <p className="label-caps text-mist">Now playing</p>
+            <p className="label-caps text-fog">Now playing</p>
             <button
               type="button"
               onClick={closeSheet}
@@ -113,7 +113,7 @@ export function PlayerBar() {
           <TrackArtwork track={current} size={240} className="mx-auto" />
           <div className="text-center">
             <p className="font-display text-[1.75rem] leading-tight font-medium">{current.title}</p>
-            <p className="mt-1 text-sm text-mist">{meta}</p>
+            <p className="mt-1 text-sm text-fog">{meta}</p>
           </div>
           {error ? <PlaybackError /> : <SeekSlider tall />}
           <div className="flex justify-center">

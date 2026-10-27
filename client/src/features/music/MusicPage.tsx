@@ -47,17 +47,17 @@ export function MusicPage() {
       />
       <header className="surface-dark">
         <Container className="pt-16 pb-4 sm:pt-24">
-          <p className="label-caps text-varnish">Listen</p>
+          <p className="label-caps text-crimson">Listen</p>
           <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
             Music
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-mist">
+          <p className="mt-6 max-w-xl text-lg text-fog">
             Press play on any track. The music keeps playing while you explore the rest of the site.
           </p>
         </Container>
       </header>
 
-      <Section tone="dark" label="Recordings" number={1}>
+      <Section tone="dark" label="Recordings">
         {tracks.isPending ? (
           <div role="status" aria-label="Loading" className="space-y-4">
             {[0, 1, 2].map((i) => (
@@ -73,7 +73,7 @@ export function MusicPage() {
             }}
           />
         ) : allTracks.length === 0 ? (
-          <p className="max-w-xl text-lg text-mist">New recordings will be shared here soon.</p>
+          <p className="max-w-xl text-lg text-fog">New recordings will be shared here soon.</p>
         ) : (
           <>
             <TrackList tracks={allTracks} />
@@ -84,7 +84,7 @@ export function MusicPage() {
                   void tracks.fetchNextPage();
                 }}
                 disabled={tracks.isFetchingNextPage}
-                className="mt-10 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent) hover:text-(--on-accent) disabled:opacity-60"
+                className="mt-10 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent) disabled:opacity-60"
               >
                 {tracks.isFetchingNextPage ? 'Loading…' : 'Load more'}
               </button>
@@ -94,7 +94,7 @@ export function MusicPage() {
       </Section>
 
       {albumList.length > 0 && (
-        <Section tone="light" label="Albums" number={2}>
+        <Section tone="light" label="Albums">
           <ul className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
             {albumList.map((album) => (
               <li key={album.id}>
@@ -163,7 +163,7 @@ function AlbumCard({ album }: { album: AlbumDto }) {
           type="button"
           onClick={() => void playAlbum()}
           disabled={loading}
-          className="inline-flex min-h-11 items-center rounded-sm bg-(--accent) px-5 text-sm font-medium tracking-[0.14em] text-(--on-accent) uppercase hover:brightness-110 disabled:opacity-60"
+          className="inline-flex min-h-11 items-center rounded-sm bg-(--accent-fill) px-5 text-sm font-medium tracking-[0.14em] text-(--on-accent) uppercase hover:brightness-110 disabled:opacity-60"
         >
           {loading ? 'Loading…' : 'Play album'}
           <span className="sr-only">: {album.title}</span>

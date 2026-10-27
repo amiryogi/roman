@@ -58,9 +58,15 @@ export function MobileNav({ className }: { className?: string }) {
         aria-expanded={open}
         aria-controls={dialogId}
         onClick={openMenu}
-        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm px-3 label-caps"
+        aria-label="Menu"
+        className="inline-flex size-11 items-center justify-center rounded-full"
       >
-        Menu
+        {/* Three lines; the button's name is "Menu". */}
+        <span aria-hidden="true" className="flex w-5 flex-col gap-1.5">
+          <span className="h-0.5 rounded-full bg-current" />
+          <span className="h-0.5 rounded-full bg-current" />
+          <span className="h-0.5 rounded-full bg-current" />
+        </span>
       </button>
 
       <dialog
@@ -68,7 +74,7 @@ export function MobileNav({ className }: { className?: string }) {
         id={dialogId}
         aria-label="Site menu"
         onClose={handleClose}
-        className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none overflow-y-auto surface-dark p-0 backdrop:bg-ebony"
+        className="fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none overflow-y-auto surface-dark p-0 backdrop:bg-night"
       >
         <Container className="flex min-h-full flex-col">
           <div className="flex h-16 items-center justify-between gap-6 sm:h-20">
@@ -82,7 +88,7 @@ export function MobileNav({ className }: { className?: string }) {
               onClick={() => {
                 closeMenu(false);
               }}
-              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-sm px-3 label-caps"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-4 text-sm font-medium"
             >
               Close
             </button>
@@ -103,7 +109,7 @@ export function MobileNav({ className }: { className?: string }) {
                     onClick={() => {
                       closeFor(item.to);
                     }}
-                    className="group inline-flex min-h-14 items-center gap-4 font-display text-[2.25rem] leading-none text-(--muted) transition-colors hover:text-ivory aria-[current=page]:text-ivory"
+                    className="group inline-flex min-h-14 items-center gap-4 font-display text-[2.25rem] leading-none text-(--muted) transition-colors hover:text-snow aria-[current=page]:text-snow"
                   >
                     {item.label}
                   </NavLink>
@@ -120,7 +126,7 @@ export function MobileNav({ className }: { className?: string }) {
               }}
               className="w-full sm:w-auto"
             >
-              Book Roman
+              Book me
             </ButtonLink>
           </div>
         </Container>

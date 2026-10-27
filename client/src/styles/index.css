@@ -1,29 +1,29 @@
 @import 'tailwindcss';
 
 /*
- * Design tokens: "The Concert Programme" (plan §7).
- * Contrast is checked by src/styles/tokens.test.ts. Verified pairs (WCAG 2.2):
- *   ink on ivory 15.4:1 · ink-muted on ivory 6.5:1 · varnish-deep on ivory 6.0:1
- *   ivory on ebony 17.2:1 · mist on ebony 9.1:1 · varnish on ebony 5.6:1 · ebony on varnish 5.6:1
- * Varnish on ivory is only 3.1:1: large text and decoration only, never body text.
+ * Design tokens (2026-10 revamp, after the reference design): a near-black stage, crimson accents
+ * and faint red and blue light at the edges. Contrast is checked by src/styles/tokens.test.ts.
+ * Verified pairs (WCAG 2.2):
+ *   snow on night 19:1 · fog on night 9:1 · crimson on night 5.6:1 (text and focus rings)
+ *   snow on crimson-deep 4.8:1 (solid buttons) · danger on night 7:1
+ * Bright crimson behind white text is only 3.6:1: fills use crimson-deep.
  */
 @theme {
-  --color-ebony: #0f0d0b;
-  --color-ebony-raised: #1a1714;
-  --color-ivory: #f6f1e7;
-  --color-rosin: #e9dfcc;
-  --color-varnish: #c07a35;
-  --color-varnish-deep: #8a4b1c;
-  --color-ink: #1e1a16;
-  --color-ink-muted: #5e554b;
-  --color-mist: #b9b0a3;
-  /* Form errors on paper (7:1 on ivory). */
-  --color-danger: #9b1c1c;
+  --color-night: #050506;
+  --color-night-raised: #0e0e12;
+  --color-snow: #f5f5f7;
+  --color-fog: #b4b4bd;
+  --color-crimson: #ff2d55;
+  --color-crimson-deep: #d6194a;
+  /* Decoration only (glows, staff notes): never text. */
+  --color-glow-blue: #1e6fd9;
+  /* Form errors on the dark ground. */
+  --color-danger: #ff8a8a;
 
-  /* Display: Cormorant Garamond, only at >= 28px (thin strokes). Text and UI: Inter. */
-  --font-display: 'Cormorant Garamond Variable', 'Cormorant Garamond', Georgia, serif;
+  /* Display: Playfair Display. Text and UI: DM Sans. */
+  --font-display: 'Playfair Display Variable', 'Playfair Display', Georgia, serif;
   --font-sans:
-    'Inter Variable', Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+    'DM Sans Variable', 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Near-square corners: programme print, not app cards. */
   --radius-sm: 2px;
@@ -40,7 +40,7 @@
   --animate-write: write 1.1s cubic-bezier(0.65, 0, 0.35, 1) both;
   --animate-sheen: sheen 1.2s ease-out;
   --animate-draw: draw 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-kenburns: kenburns 22s ease-out both;
+  --animate-kenburns: kenburns 18s ease-out both;
   --animate-page: page-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
 
   /* The violin mark is lifted into place (it rests tilted by `rotate-12`). */
@@ -106,10 +106,10 @@
     }
   }
 
-  /* The hero photograph settles slowly. Ends at its natural size, so nothing stays cropped. */
+  /* The hero photograph settles slowly from a slight zoom to its resting size. */
   @keyframes kenburns {
     from {
-      transform: scale(1.04);
+      transform: scale(1.06);
     }
     to {
       transform: scale(1);
@@ -202,32 +202,43 @@
   }
 }
 
-/* Surfaces set the colours and the focus-ring colour of everything inside them (plan §18). */
+/*
+ * Surfaces set the colours and the focus-ring colour of everything inside them (plan §18).
+ * `--accent` is for text, rules and rings; `--accent-fill` for solid backgrounds, with
+ * `--on-accent` text on top.
+ */
 @utility surface-dark {
-  background-color: var(--color-ebony);
-  color: var(--color-ivory);
-  --focus-ring: var(--color-varnish);
-  --muted: var(--color-mist);
-  --accent: var(--color-varnish);
-  --on-accent: var(--color-ebony);
+  background-color: var(--color-night);
+  color: var(--color-snow);
+  --focus-ring: var(--color-crimson);
+  --muted: var(--color-fog);
+  --accent: var(--color-crimson);
+  --accent-fill: var(--color-crimson-deep);
+  --on-accent: var(--color-snow);
 }
 
 @utility surface-dark-raised {
-  background-color: var(--color-ebony-raised);
-  color: var(--color-ivory);
-  --focus-ring: var(--color-varnish);
-  --muted: var(--color-mist);
-  --accent: var(--color-varnish);
-  --on-accent: var(--color-ebony);
+  background-color: var(--color-night-raised);
+  color: var(--color-snow);
+  --focus-ring: var(--color-crimson);
+  --muted: var(--color-fog);
+  --accent: var(--color-crimson);
+  --accent-fill: var(--color-crimson-deep);
+  --on-accent: var(--color-snow);
 }
 
+/*
+ * Formerly the ivory "paper" surface. Since the 2026-10 revamp the whole public site is dark;
+ * this is now the raised dark surface, so sections that used it stay readable.
+ */
 @utility surface-light {
-  background-color: var(--color-ivory);
-  color: var(--color-ink);
-  --focus-ring: var(--color-varnish-deep);
-  --muted: var(--color-ink-muted);
-  --accent: var(--color-varnish-deep);
-  --on-accent: var(--color-ivory);
+  background-color: var(--color-night-raised);
+  color: var(--color-snow);
+  --focus-ring: var(--color-crimson);
+  --muted: var(--color-fog);
+  --accent: var(--color-crimson);
+  --accent-fill: var(--color-crimson-deep);
+  --on-accent: var(--color-snow);
 }
 
 /*
@@ -274,15 +285,15 @@
 }
 
 /*
- * Text that a varnish highlight can glide across on hover (the wordmark). The text keeps its
+ * Text that a crimson highlight can glide across on hover. The text keeps its
  * colour through `--sheen-base`; Windows high-contrast mode gets plain system text instead.
  */
 @utility sheen-text {
-  --sheen-base: var(--color-ivory);
+  --sheen-base: var(--color-snow);
   background-image: linear-gradient(
     100deg,
     var(--sheen-base) 42%,
-    var(--color-varnish) 50%,
+    var(--color-crimson) 50%,
     var(--sheen-base) 58%
   );
   background-size: 260% 100%;
@@ -297,15 +308,18 @@
   }
 }
 
-/* Warm stage lighting from above-left on dark sections: atmosphere only, no contrast change. */
+/*
+ * Faint crimson light from the top left and blue from the bottom right, as on the reference
+ * design's dark sections: atmosphere only, no contrast change.
+ */
 @utility stage-light {
   background-image:
-    radial-gradient(ellipse 60% 50% at 12% 0%, rgb(192 122 53 / 0.1), transparent 70%),
-    radial-gradient(ellipse 50% 40% at 100% 100%, rgb(138 75 28 / 0.08), transparent 70%);
+    radial-gradient(ellipse 55% 45% at 0% 0%, rgb(255 45 85 / 0.12), transparent 70%),
+    radial-gradient(ellipse 45% 40% at 100% 100%, rgb(30 111 217 / 0.1), transparent 70%);
 }
 
 /*
- * A varnish string along the bottom of the header that fills as the page scrolls. Pure CSS
+ * A crimson string along the bottom of the header that fills as the page scrolls. Pure CSS
  * (scroll-driven animation); browsers without support simply don't show it.
  */
 @utility scroll-string {
@@ -321,7 +335,7 @@
 }
 
 /*
- * Header navigation link with a "string" beneath it: drawn from the left on hover, held in varnish
+ * Header navigation link with a "string" beneath it: drawn from the left on hover, held in crimson
  * on the current page (aria-current) and plucked when that page is chosen.
  */
 @utility nav-string {
@@ -334,7 +348,7 @@
     inset-inline: 0;
     bottom: 0.5rem;
     height: 1px;
-    background-color: rgb(246 241 231 / 0.7);
+    background-color: rgb(245 245 247 / 0.7);
     transform-origin: left;
     scale: 0 1;
   }
@@ -343,7 +357,7 @@
     scale: 1 1;
   }
   &[aria-current='page']::after {
-    background-color: var(--color-varnish);
+    background-color: var(--color-crimson);
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -384,14 +398,14 @@
 
 /* Outlined button: the accent fills in from the left on hover, like a bow stroke. */
 @utility btn-fill {
-  border: 1px solid currentColor;
-  background-image: linear-gradient(var(--accent), var(--accent));
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  background-image: linear-gradient(var(--accent-fill), var(--accent-fill));
   background-position: left;
   background-repeat: no-repeat;
   background-size: 0% 100%;
 
   &:hover {
-    border-color: var(--accent);
+    border-color: var(--accent-fill);
     background-size: 100% 100%;
     color: var(--on-accent);
   }
@@ -400,7 +414,7 @@
   }
 }
 
-/* A timeline entry hung on a vertical "string", with a varnish dot that brightens on hover. */
+/* A timeline entry hung on a vertical "string", with a crimson dot that brightens on hover. */
 @utility timeline-string {
   position: relative;
   padding-left: 2rem;
@@ -483,7 +497,7 @@
   width: calc(var(--violin-loader-size, 6.5rem) * 0.9);
   height: var(--violin-loader-size, 6.5rem);
   /* A soft pool of stage light behind the instrument. */
-  background: radial-gradient(ellipse 50% 45% at 50% 58%, rgb(192 122 53 / 0.22), transparent 70%);
+  background: radial-gradient(ellipse 50% 45% at 50% 58%, rgb(255 45 85 / 0.2), transparent 70%);
 
   &::before,
   &::after {
@@ -491,7 +505,7 @@
     top: 28%;
     font-size: calc(var(--violin-loader-size, 6.5rem) * 0.2);
     line-height: 1;
-    color: var(--color-varnish);
+    color: var(--color-crimson);
     opacity: 0;
   }
   &::before {
@@ -536,8 +550,8 @@
   border-radius: 1px;
   /* The stick above, the hair below (slightly shorter, between the tip and the frog). */
   background:
-    linear-gradient(var(--color-varnish), var(--color-varnish)) top / 100% 2px no-repeat,
-    linear-gradient(rgb(246 241 231 / 0.85), rgb(246 241 231 / 0.85)) bottom / 92% 1px no-repeat;
+    linear-gradient(var(--color-crimson), var(--color-crimson)) top / 100% 2px no-repeat,
+    linear-gradient(rgb(245 245 247 / 0.85), rgb(245 245 247 / 0.85)) bottom / 92% 1px no-repeat;
   @media (prefers-reduced-motion: no-preference) {
     /* Down-bow, up-bow: twice per sway of the violin. */
     animation: bow-stroke 1.6s ease-in-out infinite;
@@ -562,8 +576,8 @@
   max-width: 22rem;
   padding: 2rem 2.25rem 1.75rem;
   text-align: center;
-  border: 1px solid rgb(192 122 53 / 0.3);
-  border-radius: var(--radius-sm);
+  border: 1px solid rgb(255 45 85 / 0.3);
+  border-radius: 1rem;
   box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.7);
 }
 
@@ -599,6 +613,145 @@
   }
 }
 
+/* Crimson uppercase eyebrow over section headings ("ABOUT ME"), as on the reference design. */
+@utility eyebrow {
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+/*
+ * Header background: transparent at the top of the page (over the home page photo), solid black
+ * once scrolled. CSS scroll-driven; browsers without support, and people who prefer less motion,
+ * get the solid version throughout.
+ */
+@utility header-glass {
+  background-color: rgb(5 5 6 / 0.92);
+  border-bottom: 1px solid rgb(245 245 247 / 0.08);
+  /* The dark surface's colours, without its solid background. */
+  color: var(--color-snow);
+  --focus-ring: var(--color-crimson);
+  --muted: var(--color-fog);
+  --accent: var(--color-crimson);
+  --accent-fill: var(--color-crimson-deep);
+  --on-accent: var(--color-snow);
+
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: header-solidify linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 10rem;
+    }
+  }
+}
+
+@keyframes header-solidify {
+  from {
+    background-color: rgb(5 5 6 / 0);
+    border-bottom-color: rgb(245 245 247 / 0);
+  }
+  to {
+    background-color: rgb(5 5 6 / 0.92);
+    border-bottom-color: rgb(245 245 247 / 0.08);
+  }
+}
+
+/*
+ * Home page (2026-10 revamp). The hero's photo is darkened from the left and from the bottom so the
+ * headline over it stays legible whatever the photo.
+ */
+@utility hero-shade {
+  background:
+    linear-gradient(to top, var(--color-night) 0%, rgb(5 5 6 / 0.55) 35%, transparent 70%),
+    linear-gradient(to right, rgb(5 5 6 / 0.7) 0%, rgb(5 5 6 / 0.2) 55%, transparent 80%);
+}
+
+/* A frosted card over a glow, e.g. the details beside a "What I do" card. */
+@utility glass-card {
+  border: 1px solid rgb(245 245 247 / 0.1);
+  border-radius: 1rem;
+  background-color: rgb(14 14 18 / 0.78);
+  backdrop-filter: blur(14px);
+}
+
+/* The "What I do" panel: a deep red light from the upper left. */
+@utility service-stage {
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(ellipse 70% 80% at 15% 10%, rgb(214 25 74 / 0.3), transparent 65%),
+    radial-gradient(ellipse 50% 60% at 95% 100%, rgb(30 111 217 / 0.12), transparent 70%), #0a0a0d;
+}
+
+/* The "Songs I've played on" player: a crimson frame lit red on one side and blue on the other. */
+@utility showcase-frame {
+  border: 1px solid rgb(255 45 85 / 0.55);
+  border-radius: 1.25rem;
+  background-color: #0a0508;
+  box-shadow:
+    -28px 0 70px -30px rgb(255 45 85 / 0.55),
+    28px 0 70px -30px rgb(30 111 217 / 0.55);
+}
+
+/*
+ * "Now playing" equaliser: give each bar `eq-bar` and a different `animation-delay`. Bars rest at
+ * mixed heights, so without motion they still read as an equaliser.
+ */
+@utility eq-bar {
+  display: inline-block;
+  width: 3px;
+  height: 100%;
+  border-radius: 1px;
+  background-color: currentColor;
+  transform-origin: bottom;
+  transform: scaleY(0.55);
+
+  &:nth-child(2n) {
+    transform: scaleY(0.9);
+  }
+  &:nth-child(3n) {
+    transform: scaleY(0.4);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: eq 1.1s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes eq {
+  from {
+    transform: scaleY(0.25);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Notes on the decorative staff glow softly in turn. */
+@utility note-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: twinkle 3.2s ease-in-out infinite;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
 /* Small letter-spaced capitals, e.g. section labels "I. — Biography". */
 @utility label-caps {
   font-family: var(--font-sans);
@@ -611,8 +764,8 @@
 
 @layer base {
   html {
-    background-color: var(--color-ebony);
-    color: var(--color-ink);
+    background-color: var(--color-night);
+    color: var(--color-snow);
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
   }
@@ -638,14 +791,14 @@
     overflow: hidden;
   }
 
-  /* A dark scrollbar with a varnish thumb, in keeping with the stage. */
+  /* A dark scrollbar with a crimson thumb. */
   html {
-    scrollbar-color: var(--color-varnish-deep) var(--color-ebony);
+    scrollbar-color: var(--color-crimson-deep) var(--color-night);
   }
 
   ::selection {
-    background-color: var(--color-varnish);
-    color: var(--color-ebony);
+    background-color: var(--color-crimson-deep);
+    color: var(--color-snow);
   }
 }
 

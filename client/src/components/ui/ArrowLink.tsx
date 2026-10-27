@@ -8,24 +8,23 @@ interface ArrowLinkProps {
 }
 
 /**
- * A quiet "more" link ("All videos →"): small capitals, an underline that warms on hover and an
- * arrow that steps forward. The arrow is decorative, so the link's name is just its text.
+ * A "more" link ("All videos →"): the text, and an arrow in a light circle that steps forward on
+ * hover. The arrow is decorative, so the link's name is just its text.
  */
 export function ArrowLink({ to, children, className }: ArrowLinkProps) {
   return (
     <Link
       to={to}
-      className={[
-        'group inline-flex min-h-11 items-center gap-3 text-sm font-medium tracking-[0.14em] text-(--accent) uppercase',
-        className,
-      ].join(' ')}
+      className={['group inline-flex min-h-11 items-center gap-3 font-semibold', className].join(
+        ' ',
+      )}
     >
-      <span className="underline decoration-current/40 underline-offset-[6px] transition-[text-decoration-color] group-hover:decoration-current">
+      <span className="underline decoration-transparent underline-offset-[6px] transition-[text-decoration-color] group-hover:decoration-current">
         {children}
       </span>
       <span
         aria-hidden="true"
-        className="transition-transform duration-300 group-hover:translate-x-1.5 motion-reduce:transition-none"
+        className="grid size-8 place-items-center rounded-full bg-snow text-night transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none"
       >
         →
       </span>
