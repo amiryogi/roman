@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useForm, useWatch, type Path } from 'react-hook-form';
+import { useSearchParams } from 'react-router';
 import type { z } from 'zod';
 
 import {
@@ -18,6 +19,7 @@ import { applyFieldErrors } from '@/lib/forms';
 import { BOOKING_EVENT_TYPE_LABELS, INQUIRY_TYPE_LABELS } from '@/lib/labels';
 
 import { InputField, SelectField, TextareaField } from './ContactFields';
+import { contactPrefill } from './contactPrefill';
 
 type InquiryParsed = z.output<typeof inquiryCreateInputSchema>;
 
@@ -79,6 +81,9 @@ function todayIso(): string {
  * the server) and a rate limit, so genuine visitors never see a puzzle.
  */
 export function ContactForm() {
+  const [search] = useSearchParams();
+  // Read once: the page remounts the form when the address changes.
+  const [initial] = useState(() => ({ ...EMPTY, ...contactPrefill(search) }));
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const token = useQuery({
@@ -98,7 +103,7 @@ export function ContactForm() {
     formState: { errors, isSubmitting, submitCount },
   } = useForm<InquiryCreateInput, unknown, InquiryParsed>({
     resolver: zodResolver(inquiryCreateInputSchema),
-    defaultValues: EMPTY,
+    defaultValues: initial,
   });
   const inquiryType = useWatch({ control, name: 'inquiryType' });
 
@@ -143,7 +148,7 @@ export function ContactForm() {
             setSentTo(null);
             void token.refetch();
           }}
-          className="mt-6 inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-crimson uppercase underline underline-offset-[6px]"
+          className="mt-6 inline-flex min-h-11 items-center font-semibold text-crimson underline underline-offset-[6px]"
         >
           Send another message
         </button>

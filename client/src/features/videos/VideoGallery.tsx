@@ -75,7 +75,7 @@ function VideoCard({
         type="button"
         onClick={onPlay}
         aria-label={`Play video: ${video.title}`}
-        className="group relative aspect-video w-full overflow-hidden rounded-sm bg-night-raised"
+        className="group relative aspect-video w-full overflow-hidden rounded-xl bg-night-raised"
       >
         <img
           src={videoPosterUrl(video, urls, 800)}
@@ -91,7 +91,7 @@ function VideoCard({
           className="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.05] motion-reduce:transition-none"
         />
         <span className="absolute inset-0 flex items-center justify-center bg-night/20 transition-colors duration-500 group-hover:bg-night/40">
-          <span className="flex size-16 items-center justify-center rounded-full bg-crimson text-night shadow-lg ring-0 ring-crimson/40 transition-[scale,box-shadow] duration-500 group-hover:scale-110 group-hover:ring-8 motion-reduce:transition-none">
+          <span className="flex size-16 items-center justify-center rounded-full bg-crimson-deep text-snow shadow-lg ring-0 ring-crimson/40 transition-[scale,box-shadow] duration-500 group-hover:scale-110 group-hover:ring-8 motion-reduce:transition-none">
             <PlayIcon className="size-7 translate-x-0.5" />
           </span>
         </span>
@@ -143,7 +143,7 @@ function VideoDialog({ video, onClose }: { video: VideoDto; onClose: () => void 
           <CloseIcon />
         </button>
       </div>
-      <div className="aspect-video w-full overflow-hidden rounded-sm bg-night">
+      <div className="aspect-video w-full overflow-hidden rounded-xl bg-night">
         {video.source === 'cloudinary' ? (
           <CloudinaryVideo video={video} onPlay={pauseAudio} />
         ) : (

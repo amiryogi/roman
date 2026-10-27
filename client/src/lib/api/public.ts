@@ -10,6 +10,7 @@ import type {
   InquiryReceiptDto,
   Paginated,
   ProfileDto,
+  SheetMusicDto,
   TrackDto,
   VideoCategory,
   VideoDto,
@@ -76,6 +77,11 @@ export function getGallery(
 /** Published events; upcoming soonest first, past most recent first. */
 export function getEvents(page: number, when: EventTimeframe): Promise<Paginated<EventDto>> {
   return apiRequestPage(publicPaths.events(page, when), (s) => s.eventDtoSchema);
+}
+
+/** Published sheet-music listings, in the owner's order. */
+export function getSheetMusic(page: number): Promise<Paginated<SheetMusicDto>> {
+  return apiRequestPage(publicPaths.sheetMusic(page), (s) => s.sheetMusicDtoSchema);
 }
 
 /** A signed timestamp for the contact form (minimum fill time, plan §15). */

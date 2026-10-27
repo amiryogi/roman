@@ -18,6 +18,7 @@ test-results/
 # Media is uploaded to Cloudinary by the seed script (plan ASM-7).
 *.docx
 /images/
+/romanhero.JPG
 *.mp3
 
 # OS / editors

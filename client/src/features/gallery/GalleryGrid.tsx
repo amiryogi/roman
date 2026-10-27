@@ -27,7 +27,7 @@ export function GalleryGrid({ images }: { images: GalleryImageDto[] }) {
                 onClick={() => {
                   setOpen(index);
                 }}
-                className="block w-full overflow-hidden rounded-sm"
+                className="block w-full overflow-hidden rounded-xl"
               >
                 <ResponsiveImage
                   asset={photo.image}

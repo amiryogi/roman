@@ -2,9 +2,8 @@ export type ButtonVariant = 'solid' | 'outline';
 
 // Pills, as on the reference design. Colours come from the surface (--accent-fill, --on-accent).
 // Solid: a soft light sweeps across on hover (`btn-sheen`). Outline: the fill colour sweeps in from
-// the left (`btn-fill`). Both are defined in styles/index.css.
-const BASE =
-  'relative isolate inline-flex min-h-12 items-center justify-center gap-2 overflow-hidden rounded-full px-7 text-[0.95rem] font-semibold transition-[color,border-color,background-size,filter] duration-300';
+// the left (`btn-fill`). All three are defined in styles/index.css.
+const BASE = 'pill';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   solid: 'bg-(--accent-fill) text-(--on-accent) btn-sheen hover:brightness-110',

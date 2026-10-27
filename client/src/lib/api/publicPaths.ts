@@ -9,6 +9,7 @@ export const TRACKS_PAGE_SIZE = 50;
 export const VIDEOS_PAGE_SIZE = 12;
 export const GALLERY_PAGE_SIZE = 24;
 export const EVENTS_PAGE_SIZE = 10;
+export const SHEET_MUSIC_PAGE_SIZE = 24;
 
 function pageQuery(page: number, limit: number, category?: string): string {
   const search = new URLSearchParams({ page: String(page), limit: String(limit) });
@@ -28,6 +29,7 @@ export const publicPaths = {
     `/gallery?${pageQuery(page, GALLERY_PAGE_SIZE, category)}`,
   events: (page: number, when: EventTimeframe) =>
     `/events?${new URLSearchParams({ page: String(page), limit: String(EVENTS_PAGE_SIZE), when }).toString()}`,
+  sheetMusic: (page: number) => `/sheet-music?${pageQuery(page, SHEET_MUSIC_PAGE_SIZE)}`,
   inquiryFormToken: () => '/inquiries/form-token',
   inquiries: () => '/inquiries',
 };

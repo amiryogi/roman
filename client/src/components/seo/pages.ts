@@ -48,6 +48,13 @@ export const PAGE_SEO = {
       'Upcoming and past performances by Roman Budhathoki, violinist in Kathmandu, Nepal.',
     type: 'website',
   },
+  sheetMusic: {
+    path: '/sheet-music',
+    title: 'Sheet music',
+    description:
+      'Violin sheet music from Roman Budhathoki, violinist and music educator in Kathmandu, Nepal. Request a score.',
+    type: 'website',
+  },
   contact: {
     path: '/contact',
     title: 'Contact & Booking',

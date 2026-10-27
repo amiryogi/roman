@@ -34,6 +34,7 @@ test('every public page opens from the navigation', async ({ page }) => {
     ['Videos', 'Videos'],
     ['Gallery', 'Gallery'],
     ['Performances', 'Performances'],
+    ['Sheet music', 'Sheet music'],
     ['Contact', 'Contact'],
   ] as const) {
     await navigate(page, link);
@@ -53,6 +54,18 @@ test('the home page shows what the owner entered for it', async ({ page }) => {
     'href',
     '/sheet-music',
   );
+});
+
+test('a score is requested through the contact form', async ({ page }) => {
+  const [waltz] = SEEDED.scores;
+  await page.goto('/sheet-music');
+  await expect(page.getByRole('heading', { name: SEEDED.draftScore })).toHaveCount(0);
+  // The hidden title is a separate element, so browsers may put a space before the colon.
+  await page.getByRole('link', { name: new RegExp(`^Request this score ?: ${waltz}$`) }).click();
+
+  await expect(page.getByRole('heading', { level: 1, name: 'Contact' })).toBeVisible();
+  await expect(page.getByLabel(/What is it about/)).toHaveValue('sheet-music');
+  await expect(page.getByLabel(/Message/)).toHaveValue(`I’d like the score for “${waltz}”.`);
 });
 
 test('music keeps playing while the visitor moves between pages', async ({ page, browserName }) => {

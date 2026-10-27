@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { lazy, Suspense } from 'react';
+import { useSearchParams } from 'react-router';
 
 import { PAGE_SEO } from '@/components/seo/pages';
 import { Seo } from '@/components/seo/Seo';
@@ -23,16 +24,16 @@ export function ContactPage() {
   const profile = useQuery({ queryKey: queryKeys.profile, queryFn: getProfile });
   const contact = profile.data?.contact;
   const socials = profile.data?.socials ?? [];
+  // A link with ?type= or ?score= pre-fills the form; a new one starts it afresh.
+  const [search] = useSearchParams();
 
   return (
-    <div className="surface-light">
+    <div className="surface-dark">
       <Seo {...PAGE_SEO.contact} />
       <Container className="grid gap-12 pt-16 pb-24 sm:pt-24 lg:grid-cols-12 lg:gap-16">
         <div className="lg:col-span-5">
-          <p className="label-caps text-(--accent)">Contact & booking</p>
-          <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
-            Contact
-          </h1>
+          <p className="eyebrow">Contact & booking</p>
+          <h1 className="mt-4 page-title">Contact</h1>
           <p className="mt-6 text-lg leading-relaxed text-(--muted)">
             For weddings, concerts, private and corporate events, studio sessions or violin lessons,
             send the details with the form. The more you share about the date, the place and the
@@ -105,7 +106,7 @@ export function ContactPage() {
               </div>
             }
           >
-            <ContactForm />
+            <ContactForm key={search.toString()} />
           </Suspense>
         </div>
       </Container>

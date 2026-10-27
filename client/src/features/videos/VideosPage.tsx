@@ -39,10 +39,8 @@ export function VideosPage() {
       <JsonLd items={items.map((video) => videoJsonLd(video, seoContext()))} />
       <div className="surface-dark">
         <Container className="pt-16 pb-24 sm:pt-24">
-          <p className="label-caps text-crimson">Watch</p>
-          <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
-            Videos
-          </h1>
+          <p className="eyebrow">Watch</p>
+          <h1 className="mt-4 page-title">Videos</h1>
           <div className="mt-10">
             <CategoryFilter
               label="Video categories"
@@ -85,7 +83,7 @@ export function VideosPage() {
                       void videos.fetchNextPage();
                     }}
                     disabled={videos.isFetchingNextPage}
-                    className="mt-12 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent) disabled:opacity-60"
+                    className="pill mt-12 btn-fill disabled:opacity-60"
                   >
                     {videos.isFetchingNextPage ? 'Loading…' : 'Load more'}
                   </button>

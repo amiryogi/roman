@@ -27,8 +27,9 @@ export async function seed(): Promise<void> {
     heroDesktop: {
       asset: imageAsset({
         publicId: 'roman-budhathoki/test/profile/hero',
-        width: 2048,
-        height: 1215,
+        // The shape of the real hero photo (romanhero.JPG, portrait).
+        width: 1541,
+        height: 2048,
       }),
       alt: 'The artist on stage with a violin',
     },

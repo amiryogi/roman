@@ -10,6 +10,8 @@ interface HeroPictureProps {
   mobile?: ImageDto;
   className?: string;
   urls?: MediaUrls;
+  /** Called once the photo has loaded, or failed to: the hero starts its entrance then. */
+  onReady?: () => void;
 }
 
 /**
@@ -22,6 +24,7 @@ export function HeroPicture({
   mobile,
   className,
   urls = getMediaUrls(),
+  onReady,
 }: HeroPictureProps) {
   const main = imageAttributes(urls, desktop.asset, HERO_DESKTOP_CROP);
   const small = imageAttributes(urls, (mobile ?? desktop).asset, HERO_MOBILE_CROP);
@@ -47,7 +50,11 @@ export function HeroPicture({
         fetchPriority="high"
         className={className}
         style={placeholderStyle(desktop.asset)}
-        onLoad={clearPlaceholder}
+        onLoad={(event) => {
+          clearPlaceholder(event);
+          onReady?.();
+        }}
+        onError={onReady}
       />
     </picture>
   );

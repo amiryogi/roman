@@ -14,10 +14,8 @@ export function RouteErrorPage() {
     <main className="flex min-h-dvh items-center surface-dark">
       <div className="mx-auto w-full max-w-3xl px-5 py-24 sm:px-8">
         <title>Something went wrong — Roman Budhathoki</title>
-        <p className="label-caps text-crimson">Error</p>
-        <h1 className="mt-4 font-display text-[3rem] leading-none font-medium">
-          Something went wrong
-        </h1>
+        <p className="eyebrow">Error</p>
+        <h1 className="mt-4 page-title">Something went wrong</h1>
         <p className="mt-6 max-w-xl text-lg text-fog">
           The page couldn’t be displayed. Reloading usually fixes this.
         </p>
@@ -27,14 +25,11 @@ export function RouteErrorPage() {
             onClick={() => {
               window.location.reload();
             }}
-            className="inline-flex min-h-11 items-center rounded-sm bg-crimson px-6 text-sm font-medium tracking-[0.14em] text-night uppercase"
+            className="pill bg-crimson-deep text-snow hover:brightness-110"
           >
             Reload
           </button>
-          <a
-            href="/"
-            className="inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase"
-          >
+          <a href="/" className="pill btn-fill">
             Home
           </a>
         </div>

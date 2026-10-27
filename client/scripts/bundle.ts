@@ -16,6 +16,7 @@ export const PUBLIC_PAGES: Record<string, string | undefined> = {
   '/videos': 'src/features/videos/VideosPage.tsx',
   '/gallery': 'src/features/gallery/GalleryPage.tsx',
   '/events': 'src/features/events/EventsPage.tsx',
+  '/sheet-music': 'src/features/sheetMusic/SheetMusicPage.tsx',
   '/contact': 'src/features/contact/ContactPage.tsx',
 };
 

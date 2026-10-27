@@ -107,26 +107,34 @@ phases, decisions and open items is in [context/sessions.md](context/sessions.md
 
 ## Design and motion (public site)
 
-The look is a concert hall: dark "stage" sections and ivory "paper" sections alternating, varnish-orange accents,
-Cormorant Garamond for display text (28 px and up only) and Inter for everything else. Everything below lives in
-`client/src/styles/index.css`.
+The look follows the owner's reference design (2026-10 revamp, plan §0.4): a near-black stage with faint crimson and
+blue light at the edges, crimson accents, Playfair Display for display text (28 px and up only) and DM Sans for
+everything else, pill buttons. Everything below lives in `client/src/styles/index.css`.
 
-- **Tokens and surfaces:** colours are `@theme` tokens (`ebony`, `ivory`, `varnish`, `varnish-deep`, `ink`, `mist`…).
-  Wrap content in `surface-dark` / `surface-dark-raised` / `surface-light`; they set `--accent`, `--muted`,
-  `--on-accent` and `--focus-ring`, so use those variables instead of fixed colours. `src/styles/tokens.test.ts` fails
-  if a text colour pair drops below WCAG contrast.
-- **Building blocks:** `Section` (tone, Roman-numeral "movement" eyebrow with a drawn hairline, reveal on scroll),
-  `ButtonLink` (`solid` with a light sheen, `outline` that fills like a bow stroke), `ArrowLink` for "more" links,
-  `Wordmark` (`withViolin` in the header and footer), `StringsDivider`, `SocialLinks` (icon buttons or icon plus
-  name; opens in a new tab so site music keeps playing). The footer and Contact page read contact details and
-  socials from the profile (`GET /api/profile`); never hard-code them.
-- **CSS utilities:** `nav-string` (header links: string drawn on hover, plucked when current), `btn-sheen`,
-  `btn-fill`, `timeline-string` (About timelines), `sheen-text` (wordmark highlight), `stage-light` (warm glow on dark
-  sections), `scroll-string` (scroll progress under the header, CSS scroll-driven), `label-caps`, `string-range`.
-  Icons: `icon` plus `icon-youtube` / `icon-facebook` / `icon-instagram` / `icon-link` / `icon-mail` / `icon-phone`
-  (SVG masks in the current text colour, no icon library). Always `aria-hidden`, beside text or an `aria-label`.
-- **Motion vocabulary:** `animate-rise`, `swing-in`, `rock`, `write`, `sheen`, `draw`, `kenburns`, `page`, `pluck`,
-  plus `sway`/`breathe` on the admin sign-in. Rules:
+- **Tokens and surfaces:** colours are `@theme` tokens (`night`, `night-raised`, `snow`, `fog`, `crimson` for accent
+  text and lines, `crimson-deep` behind white text, `glow-blue` for decoration only, `danger`). Wrap content in
+  `surface-dark` / `surface-dark-raised` (`surface-light` is a dark alias kept for old call sites); they set
+  `--accent`, `--accent-fill`, `--muted`, `--on-accent` and `--focus-ring`, so use those variables instead of fixed
+  colours. White on `crimson` fails contrast: fills use `--accent-fill`. `src/styles/tokens.test.ts` fails if a text
+  colour pair drops below WCAG contrast.
+- **Building blocks:** `Section` (tone `dark`/`dark-raised`, crimson `eyebrow`, Playfair h2, optional `intro`,
+  reveal on scroll), `ButtonLink` (`solid` pill with a light sheen, `outline` pill that fills in; `buttonClass()` for a
+  plain `<a>`), `ArrowLink`, `Wordmark` (the logo image), `SocialLinks` (icon buttons or icon plus name; opens in a new
+  tab so site music keeps playing). Page headers are `<p className="eyebrow">` + `<h1 className="page-title">`. The
+  footer and Contact page read contact details and socials from the profile (`GET /api/profile`); never hard-code them.
+- **CSS utilities:** `eyebrow`, `page-title`, `pill`, `btn-sheen`, `btn-fill`, `header-glass` (transparent over the
+  hero, solid once scrolled; CSS scroll-driven), `scroll-string`, `nav-string`, `stage-light` (corner glows),
+  `hero-shade`, `glass-card`, `service-stage`, `showcase-frame`, `eq-bar`, `note-twinkle`, `timeline-string`,
+  `label-caps`. Icons: `icon` plus `icon-youtube` / `icon-facebook` / `icon-instagram` / `icon-link` / `icon-mail` /
+  `icon-phone` (SVG masks in the current text colour, no icon library). Always `aria-hidden`, beside text or an
+  `aria-label`.
+- **Home hero** (`features/home/HomeHero.tsx`): the photo fills the screen under the header, cropped per breakpoint
+  (`components/media/hero.ts`, shared with the build's preload). Entrance: once the photo loads (`data-hero` goes from
+  `wait` to `play`; at most 2.5 s), `.hero-photo` zooms out from 1.15× to its full frame while `.hero-rise` elements
+  fade up and each headline word (`.hero-word`) rises from behind a mask. Keep the spaces between words as plain text
+  directly in the `<h1>`, or they drop out of its accessible name.
+- **Motion vocabulary:** `animate-rise`, `draw`, `write`, `page`, `pluck`, `eq`, `twinkle`, the hero's `hero-settle` /
+  `hero-rise` / `hero-word` / `hero-rule`, plus `sway`/`breathe` on the admin sign-in. Rules:
   - Every animation is `motion-safe:` or inside `@media (prefers-reduced-motion: no-preference)`; the E2E axe scans
     run with reduced motion, so content must be complete without it.
   - Animate `transform`, `opacity`, `rotate`, `scale`, `clip-path` or `background-position`, never layout
@@ -135,8 +143,9 @@ Cormorant Garamond for display text (28 px and up only) and Inter for everything
     animate `rotate`/`scale`, not `transform`. Put a load animation and a hover animation on nested elements; on one
     element, leaving hover replays the load animation.
   - No fade on the first page load (it would delay the largest paint): `PublicLayout` fades pages in only on
-    navigation. The hero photo's settle (`kenburns`) ends at its natural size, and its bottom fade stays clear of the
-    baked-in wordmark (owner decision §0.4).
+    navigation. The hero photo itself never fades; it only scales.
+  - A visually hidden span (`sr-only`) inside a flex pill gets a space before it in Chromium's accessible name
+    ("Request this score : Title"); match such names by pattern in E2E tests.
 - **Budget:** class strings are shipped inside the JavaScript. For anything longer than a few classes that repeats,
   add a utility to `index.css` rather than a long string in a public component (CSS isn't in the 160 KiB JS budget).
 

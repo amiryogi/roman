@@ -10,6 +10,7 @@ const PAGES = [
   '/videos',
   '/gallery',
   '/events',
+  '/sheet-music',
   '/contact',
   '/no-such-page',
 ];

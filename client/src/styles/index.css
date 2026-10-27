@@ -40,7 +40,6 @@
   --animate-write: write 1.1s cubic-bezier(0.65, 0, 0.35, 1) both;
   --animate-sheen: sheen 1.2s ease-out;
   --animate-draw: draw 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-kenburns: kenburns 18s ease-out both;
   --animate-page: page-in 450ms cubic-bezier(0.22, 1, 0.36, 1) both;
 
   /* The violin mark is lifted into place (it rests tilted by `rotate-12`). */
@@ -103,16 +102,6 @@
     }
     to {
       transform: scaleX(1);
-    }
-  }
-
-  /* The hero photograph settles slowly from a slight zoom to its resting size. */
-  @keyframes kenburns {
-    from {
-      transform: scale(1.06);
-    }
-    to {
-      transform: scale(1);
     }
   }
 
@@ -670,6 +659,78 @@
     linear-gradient(to right, rgb(5 5 6 / 0.7) 0%, rgb(5 5 6 / 0.2) 55%, transparent 80%);
 }
 
+/*
+ * Hero entrance (HomeHero.tsx), after the reference design: the photo starts zoomed in and slowly
+ * settles to its full frame while the text rises in, the headline word by word from behind a mask
+ * (`hero-word`). Delays are set inline. Everything holds its first frame while the photo loads
+ * (`data-hero="wait"`), so photo and text start together. Without motion, nothing moves or hides.
+ */
+.hero-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  /* Room for descenders (g, y) and tall capitals inside the mask. */
+  padding-block: 0.06em 0.14em;
+  margin-block: -0.06em -0.14em;
+}
+.hero-word > span {
+  display: inline-block;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero-photo {
+    animation: hero-settle 3.6s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+  }
+  .hero-rise {
+    animation: hero-rise 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-word > span {
+    animation: hero-word 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-rule {
+    transform-origin: left;
+    animation: hero-rule 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  [data-hero='wait'] :is(.hero-photo, .hero-rise, .hero-word > span, .hero-rule) {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes hero-settle {
+  from {
+    transform: scale(1.15);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes hero-word {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes hero-rule {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 /* A frosted card over a glow, e.g. the details beside a "What I do" card. */
 @utility glass-card {
   border: 1px solid rgb(245 245 247 / 0.1);
@@ -750,6 +811,39 @@
     opacity: 1;
     transform: scale(1.06);
   }
+}
+
+/* A page's h1 (About, Music…), under its `eyebrow`. */
+@utility page-title {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1.02;
+  font-weight: 600;
+
+  @media (width >= 40rem) {
+    font-size: 4.5rem;
+  }
+}
+
+/*
+ * Pill-shaped button or link, as on the reference design. Add `btn-fill` (outlined) or a fill
+ * colour with `btn-sheen`; `buttonClass()` in components/ui/buttonClass.ts does this for links.
+ */
+@utility pill {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  padding-inline: 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition-property: color, border-color, background-size, filter;
+  transition-duration: 300ms;
 }
 
 /* Small letter-spaced capitals, e.g. section labels "I. — Biography". */

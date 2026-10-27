@@ -13,7 +13,7 @@ export function EventList({
   headingLevel?: 2 | 3;
 }) {
   return (
-    <ol className="divide-y divide-current/15 border-y border-current/15">
+    <ol className="divide-y divide-current/15 border-b border-current/15">
       {events.map((event) => (
         <li key={event.id}>
           <EventItem event={event} headingLevel={headingLevel} />
@@ -31,7 +31,7 @@ function EventItem({ event, headingLevel }: { event: EventDto; headingLevel: 2 |
     .join(', ');
   const status = event.eventStatus === 'scheduled' ? undefined : STATUS_LABELS[event.eventStatus];
   const link =
-    'inline-flex min-h-11 items-center text-sm font-medium tracking-[0.14em] text-(--accent) uppercase underline decoration-current/40 underline-offset-[6px] hover:decoration-current';
+    'inline-flex min-h-11 items-center font-semibold text-(--accent) underline decoration-current/40 underline-offset-[6px] hover:decoration-current';
 
   return (
     // Anchors (/events#slug) give each event a shareable address (plan §8.4, ADR-9).
@@ -50,7 +50,7 @@ function EventItem({ event, headingLevel }: { event: EventDto; headingLevel: 2 |
       </time>
       <div className="min-w-0">
         {status && (
-          <p className="mb-2 inline-flex rounded-sm border border-current px-2 py-0.5 text-xs font-medium tracking-wide uppercase">
+          <p className="mb-2 inline-flex rounded-full border border-current px-3 py-0.5 text-xs font-medium tracking-wide uppercase">
             {status}
           </p>
         )}

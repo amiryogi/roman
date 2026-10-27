@@ -37,7 +37,7 @@ describe('seedContent', () => {
 
     const first = await seedContent(options);
     expect(first).toEqual({
-      uploaded: 9,
+      uploaded: 8,
       reused: 0,
       profile: 'created',
       galleryCreated: 5,
@@ -50,7 +50,8 @@ describe('seedContent', () => {
     expect(profile.philosophy).toBeUndefined();
     expect(profile.contact.showPhone).toBe(false);
     expect(profile.contact.phone).toBeUndefined();
-    expect(profile.heroDesktop?.asset.publicId).not.toBe(profile.heroMobile?.asset.publicId);
+    expect(profile.heroDesktop?.asset.publicId).toContain('hero-desktop');
+    expect(profile.heroMobile).toBeUndefined();
 
     const gallery = await GalleryImageModel.find().lean();
     expect(gallery).toHaveLength(5);

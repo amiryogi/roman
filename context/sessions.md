@@ -259,3 +259,32 @@ still to come from the owner).
   - Budget: / 157.4, /about 156.2, /music 158.5, /videos 158.1, /gallery 153.5, /events 156.2,
     /contact 151.4 KiB. E2E (Chromium) 22 passed; Playwright's Chromium had to be reinstalled
     (`npx playwright install chromium`) after the R3 lockfile regeneration.
+- R5 done (other pages and Sheet music):
+  - New `/sheet-music` page (`features/sheetMusic/SheetMusicPage.tsx`): score cards (preview shown
+    whole on white, or a crimson note when there is none; level, artist, description), "Request
+    this score" → `/contact?score=Title`, optional store link. Wired through `publicPaths`,
+    `getSheetMusic`, `validation.ts`, `PAGE_SEO.sheetMusic`, `FIRST_REQUESTS`, the sitemap's last
+    modified date, `PUBLIC_PAGES`, the router, the nav ("Sheet music" after Performances, also in
+    the footer) and the e2e a11y list.
+  - Contact pre-fill (`contactPrefill.ts`): `?type=` picks a known enquiry type, `?score=` picks
+    "Sheet music" and writes the request. The page remounts the form when the address changes.
+  - Every page header uses `eyebrow` + new `page-title` utility; new `pill` utility (buttons and
+    "Load more", also behind `buttonClass()`). About: dark surfaces, open timelines (no box),
+    rounded portrait; the stray `number` prop is gone. Error page, Play album, events links,
+    video cards and play buttons, gallery and album images restyled. Admin untouched.
+  - Budget: / 157.5, /about 156.5, /music 158.7, /videos 158.2, /gallery 153.4, /events 156.4,
+    /sheet-music 154.1, /contact 151.4 KiB. E2E (Chromium) 24 passed.
+  - Gotcha: a `sr-only` span inside a flex pill gets a space before it in Chromium's accessible
+    name ("Request this score : Title"); the e2e test matches by pattern.
+- R6 (hero image and records, 2026-10-27):
+  - Owner chose `romanhero.JPG` (repo root, gitignored; the same stage photo as `roman4.JPG`) as the
+    live hero. `seed:content` now uses it for `heroDesktop` with no mobile image (alt "Roman
+    Budhathoki playing an electric violin on stage in front of warm amber lights"). The E2E seed's
+    hero has its shape (1541×2048).
+  - Hero entrance rebuilt after measuring the reference: it waits for the photo (`data-hero`
+    `wait` → `play`, at most 2.5 s), then the photo zooms out 1.15× → 1 over 3.6 s while the
+    tagline, intro and button fade up 24 px and each headline word rises from behind a mask
+    (`.hero-word`). `HeroPicture` got `onReady`. `kenburns` removed.
+  - Plan §0.4 and CLAUDE.md "Design and motion" rewritten for the new look.
+  - Live hero still to be uploaded in the admin (Profile → Home page hero image): no production
+    credentials are kept locally.

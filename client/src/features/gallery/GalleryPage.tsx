@@ -33,10 +33,8 @@ export function GalleryPage() {
     <div className="surface-light">
       <Seo {...PAGE_SEO.gallery} />
       <Container className="pt-16 pb-24 sm:pt-24">
-        <p className="label-caps text-(--accent)">Photographs</p>
-        <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
-          Gallery
-        </h1>
+        <p className="eyebrow">Photographs</p>
+        <h1 className="mt-4 page-title">Gallery</h1>
         <div className="mt-10">
           <CategoryFilter
             label="Photo categories"
@@ -79,7 +77,7 @@ export function GalleryPage() {
                     void gallery.fetchNextPage();
                   }}
                   disabled={gallery.isFetchingNextPage}
-                  className="mt-12 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent) disabled:opacity-60"
+                  className="pill mt-12 btn-fill disabled:opacity-60"
                 >
                   {gallery.isFetchingNextPage ? 'Loading…' : 'Load more photos'}
                 </button>

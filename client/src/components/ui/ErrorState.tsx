@@ -16,11 +16,7 @@ export function ErrorState({
     <div role="alert" className="flex max-w-xl flex-col items-start gap-4 py-16">
       <p className="font-display text-[2rem] leading-tight font-medium">{title}</p>
       <p className="text-(--muted)">{getErrorMessage(error)}</p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent)"
-      >
+      <button type="button" onClick={onRetry} className="pill btn-fill">
         Try again
       </button>
     </div>

@@ -12,6 +12,7 @@ import {
   inquiryReceiptDtoSchema,
   paginationMetaSchema,
   profileDtoSchema,
+  sheetMusicDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
   type ApiErrorBody,
@@ -33,6 +34,7 @@ export const schemas = {
   inquiryFormTokenDtoSchema,
   inquiryReceiptDtoSchema,
   profileDtoSchema,
+  sheetMusicDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
 };

@@ -38,12 +38,10 @@ export function AboutPage() {
     <>
       <Seo {...PAGE_SEO.about} image={profile.data && shareImage(profile.data, seoContext())} />
       {profile.data && <JsonLd items={[personJsonLd(profile.data, seoContext())]} />}
-      <header className="surface-light">
+      <header className="surface-dark">
         <Container className="pt-16 pb-4 sm:pt-24">
-          <p className="label-caps text-(--accent)">{SITE_NAME}</p>
-          <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
-            About
-          </h1>
+          <p className="eyebrow">{SITE_NAME}</p>
+          <h1 className="mt-4 page-title">About</h1>
           {profile.data && (
             <p className="mt-6 max-w-2xl text-lg text-(--muted)">{profile.data.tagline}</p>
           )}
@@ -51,7 +49,7 @@ export function AboutPage() {
       </header>
 
       {profile.isPending ? (
-        <div role="status" aria-label="Loading" className="surface-light">
+        <div role="status" aria-label="Loading" className="surface-dark-raised">
           <Container className="space-y-4 py-16">
             <Skeleton className="h-6 w-full max-w-2xl" />
             <Skeleton className="h-6 w-full max-w-xl" />
@@ -59,7 +57,7 @@ export function AboutPage() {
           </Container>
         </div>
       ) : profile.isError ? (
-        <div className="surface-light">
+        <div className="surface-dark-raised">
           <Container>
             <ErrorState
               error={profile.error}
@@ -76,16 +74,16 @@ export function AboutPage() {
   );
 }
 
-/** Paper and stage alternate down the page (plan §7.1), starting on paper under the header. */
+/** The two dark depths alternate down the page, starting raised under the header. */
 function toneAt(index: number): SectionTone {
-  return index % 2 === 0 ? 'light' : 'dark';
+  return index % 2 === 0 ? 'dark-raised' : 'dark';
 }
 
 function AboutSections({ profile }: { profile: ProfileDto }) {
   const sections = visibleAboutSections(profile);
 
   const render = (key: AboutSectionKey, index: number) => {
-    const common = { tone: toneAt(index), number: index + 1 };
+    const common = { tone: toneAt(index) };
     switch (key) {
       case 'biography':
         return (
@@ -176,7 +174,7 @@ function Biography({ profile }: { profile: ProfileDto }) {
             alt={profile.portrait.alt}
             aspect={4 / 5}
             sizes="(min-width: 1280px) 30rem, (min-width: 1024px) 40vw, 100vw"
-            className="h-auto w-full rounded-sm lg:sticky lg:top-28"
+            className="h-auto w-full rounded-2xl lg:sticky lg:top-28"
           />
         </div>
       )}
@@ -186,7 +184,7 @@ function Biography({ profile }: { profile: ProfileDto }) {
 
 function Journey({ profile }: { profile: ProfileDto }) {
   return (
-    <ol className="divide-y divide-current/15 border-y border-current/15">
+    <ol className="divide-y divide-current/10">
       {musicalJourney(profile).map((entry, i) => (
         <li key={i} className="timeline-string grid gap-2 py-8 md:grid-cols-12 md:gap-8">
           <p className="text-sm text-(--muted) tabular-nums md:col-span-3">{entry.period}</p>
@@ -218,7 +216,7 @@ function Journey({ profile }: { profile: ProfileDto }) {
 
 function Teaching({ profile }: { profile: ProfileDto }) {
   return (
-    <ol className="divide-y divide-current/15 border-y border-current/15">
+    <ol className="divide-y divide-current/10">
       {teachingExperience(profile).map((item, i) => (
         <li key={i} className="timeline-string grid gap-2 py-8 md:grid-cols-12 md:gap-8">
           <p className="text-sm text-(--muted) tabular-nums md:col-span-3">{item.period}</p>

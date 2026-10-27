@@ -6,6 +6,7 @@ export const NAV_ITEMS = [
   { to: '/videos', label: 'Videos' },
   { to: '/gallery', label: 'Gallery' },
   { to: '/events', label: 'Performances' },
+  { to: '/sheet-music', label: 'Sheet music' },
   { to: '/contact', label: 'Contact' },
 ] as const;
 

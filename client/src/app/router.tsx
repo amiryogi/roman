@@ -41,6 +41,12 @@ const publicRoutes: RouteObject = {
       lazy: async () => ({ Component: (await import('@/features/events/EventsPage')).EventsPage }),
     },
     {
+      path: 'sheet-music',
+      lazy: async () => ({
+        Component: (await import('@/features/sheetMusic/SheetMusicPage')).SheetMusicPage,
+      }),
+    },
+    {
       path: 'contact',
       lazy: async () => ({
         Component: (await import('@/features/contact/ContactPage')).ContactPage,

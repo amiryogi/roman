@@ -15,7 +15,7 @@ interface TrackArtworkProps {
  */
 export function TrackArtwork({ track, size, className = '' }: TrackArtworkProps) {
   const cover = track.cover ?? track.album?.cover;
-  const box = `shrink-0 overflow-hidden rounded-sm ${className}`;
+  const box = `shrink-0 overflow-hidden rounded-lg ${className}`;
 
   if (!cover) {
     return (

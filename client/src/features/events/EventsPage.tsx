@@ -51,10 +51,8 @@ export function EventsPage() {
       )}
       <div className="surface-dark">
         <Container className="pt-16 pb-24 sm:pt-24">
-          <p className="label-caps text-crimson">Concerts and events</p>
-          <h1 className="mt-4 font-display text-[3rem] leading-none font-medium sm:text-[4.5rem]">
-            Performances
-          </h1>
+          <p className="eyebrow">Concerts and events</p>
+          <h1 className="mt-4 page-title">Performances</h1>
 
           <nav aria-label="Performances" className="mt-10">
             <ul className="flex gap-6 border-b border-current/15">
@@ -109,7 +107,7 @@ export function EventsPage() {
                       void events.fetchNextPage();
                     }}
                     disabled={events.isFetchingNextPage}
-                    className="mt-10 inline-flex min-h-11 items-center rounded-sm border border-current px-6 text-sm font-medium tracking-[0.14em] uppercase hover:bg-(--accent-fill) hover:text-(--on-accent) disabled:opacity-60"
+                    className="pill mt-10 btn-fill disabled:opacity-60"
                   >
                     {events.isFetchingNextPage ? 'Loading…' : 'Load more'}
                   </button>

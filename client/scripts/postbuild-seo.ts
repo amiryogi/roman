@@ -22,6 +22,7 @@ import {
   eventDtoSchema,
   galleryImageDtoSchema,
   profileDtoSchema,
+  sheetMusicDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
   type ProfileDto,
@@ -119,19 +120,21 @@ interface SiteData {
   albums: z.output<typeof albumDtoSchema>[];
   videos: z.output<typeof videoDtoSchema>[];
   galleryUpdatedAt: string | undefined;
+  sheetMusicUpdatedAt: string | undefined;
   /** The gallery's first photo: its largest image (LCP), preloaded on the Gallery page. */
   firstPhoto: z.output<typeof galleryImageDtoSchema> | undefined;
 }
 
 async function loadSiteData(): Promise<SiteData> {
   const list = <S extends z.ZodType>(path: string, item: S) => get(path, z.array(item));
-  const [profile, upcomingEvents, tracks, albums, videos, gallery] = await Promise.all([
+  const [profile, upcomingEvents, tracks, albums, videos, gallery, scores] = await Promise.all([
     get('/profile', profileDtoSchema),
     list('/events?when=upcoming&limit=50', eventDtoSchema),
     list('/tracks?limit=50', trackDtoSchema),
     list('/albums?limit=50', albumDtoSchema),
     list('/videos?limit=50', videoDtoSchema),
     list('/gallery?limit=50', galleryImageDtoSchema),
+    list('/sheet-music?limit=50', sheetMusicDtoSchema),
   ]);
   return {
     profile,
@@ -140,6 +143,7 @@ async function loadSiteData(): Promise<SiteData> {
     albums: albums.filter((album) => (album.trackCount ?? 0) > 0),
     videos,
     galleryUpdatedAt: latest(gallery.map((image) => image.updatedAt)),
+    sheetMusicUpdatedAt: latest(scores.map((score) => score.updatedAt)),
     firstPhoto: gallery[0],
   };
 }
@@ -196,6 +200,7 @@ function contentOptions(page: PageKey, data: SiteData, ctx: SeoContext): Partial
             ],
           }
         : {};
+    case 'sheetMusic':
     case 'contact':
       return {};
   }
@@ -216,6 +221,8 @@ function lastModified(page: PageKey, data: SiteData | undefined): string | undef
       return data.galleryUpdatedAt;
     case 'events':
       return latest(data.upcomingEvents.map((event) => event.updatedAt));
+    case 'sheetMusic':
+      return data.sheetMusicUpdatedAt;
   }
 }
 
@@ -239,6 +246,7 @@ const FIRST_REQUESTS: Record<PageKey, string[]> = {
   videos: [publicPaths.videos(1)],
   gallery: [publicPaths.gallery(1)],
   events: [publicPaths.events(1, 'upcoming')],
+  sheetMusic: [publicPaths.sheetMusic(1)],
   contact: [publicPaths.profile()],
 };
 

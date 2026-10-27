@@ -24,6 +24,8 @@ import { PROFILE_SEED } from './profileSeed.js';
 
 /** Source files in the repository root (read-only; plan §0.2). */
 export const SOURCE_FILES = {
+  /** The home page hero since the 2026-10 revamp (owner's choice, 2026-10-27). */
+  stageHero: 'romanhero.JPG',
   heroImage: 'images/roman violin.jpg',
   bwPortrait: 'images/roman2.PNG',
   streetPortrait: 'images/roman3.jpg',
@@ -68,7 +70,7 @@ const GALLERY_SEED: { file: SourceFile; category: GalleryCategory; alt: string }
 ];
 
 const HERO_ALT =
-  'Roman Budhathoki playing an electric violin in a field of tall grass and yellow wildflowers';
+  'Roman Budhathoki playing an electric violin on stage in front of warm amber lights';
 const PORTRAIT_ALT =
   'Roman Budhathoki sitting against an ivy-covered wall, holding a violin upright beside him';
 
@@ -136,17 +138,16 @@ export async function seedContent({ sourceDir, media, logger }: SeedOptions): Pr
 
   try {
     // Profile: created once from the CV. Separate assets per slot, so replacing one image in the
-    // admin panel can never delete an image that another slot still uses.
+    // admin panel can never delete an image that another slot still uses. The hero has no mobile
+    // image: the site crops the stage photo for phones (client/src/components/media/hero.ts).
     if (await ProfileModel.exists({})) {
       logger.info('Profile already exists; left unchanged.');
     } else {
-      const heroDesktop = await asset('profile', 'heroImage', 'hero-desktop');
-      const heroMobile = await asset('profile', 'heroImage', 'hero-mobile');
+      const heroDesktop = await asset('profile', 'stageHero', 'hero-desktop');
       const portrait = await asset('profile', 'streetPortrait', 'portrait');
       await ProfileModel.create({
         ...PROFILE_SEED,
         heroDesktop: { asset: heroDesktop, alt: HERO_ALT },
-        heroMobile: { asset: heroMobile, alt: HERO_ALT },
         portrait: { asset: portrait, alt: PORTRAIT_ALT },
       });
       summary.profile = 'created';
