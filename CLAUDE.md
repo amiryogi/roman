@@ -124,7 +124,8 @@ everything else, pill buttons. Everything below lives in `client/src/styles/inde
   footer and Contact page read contact details and socials from the profile (`GET /api/profile`); never hard-code them.
 - **CSS utilities:** `eyebrow`, `page-title`, `pill`, `btn-sheen`, `btn-fill`, `header-glass` (transparent over the
   hero, solid once scrolled; CSS scroll-driven), `scroll-string`, `nav-string`, `stage-light` (corner glows),
-  `hero-shade`, `glass-card`, `service-stage`, `showcase-frame`, `eq-bar`, `note-twinkle`, `timeline-string`,
+  `hero-shade`, `glass-card`, `service-stage`, `neon-frame` (+ `neon-soft`, `neon-panel`, `neon-card`: the
+  crimson-to-blue edge and glow around videos), `eq-bar`, `note-twinkle`, `timeline-string`,
   `label-caps`. Icons: `icon` plus `icon-youtube` / `icon-facebook` / `icon-instagram` / `icon-link` / `icon-mail` /
   `icon-phone` (SVG masks in the current text colour, no icon library). Always `aria-hidden`, beside text or an
   `aria-label`.

@@ -8,28 +8,32 @@ import { matchSongsToVideos, seedShowcaseVideos, type TitleLookup } from './show
 
 useTestDb();
 
-// What YouTube reports for each video, deliberately not in page order.
+// The titles YouTube reported on 2026-10-27 (Unko Sweater in Nepali only, Haalkhabar spelt so).
 const TITLES: Record<string, string> = {
-  JqZ7Owwt2Cw: 'MAKHAMALI - The Hulaki (Official Video)',
-  tVs5gi5vw6w: 'Halkhabar | Yabesh Thapa',
-  wrYPBpgUchg: 'UNKO SWEATER | Kafle Movie Song',
+  JqZ7Owwt2Cw:
+    'Kafle [काफ्ले] Movie Song [ऊनको स्वीटर] Jhuma Limbu | Sujan Chapagain | In Cinemas Baisakh 26/May 09',
+  tVs5gi5vw6w: 'Makhamali -The Hulaki | Official Music Video',
+  wrYPBpgUchg: 'Yabesh Thapa - Haalkhabar | OFFICIAL MUSIC VIDEO',
 };
 const lookup: TitleLookup = (id) => Promise.resolve(TITLES[id] ?? 'Unknown');
 
 describe('showcase videos', () => {
-  it('matches each song to the video YouTube names after it', async () => {
+  it('matches each song to the video YouTube names after it, in any script or spelling', async () => {
     const songs = await matchSongsToVideos(lookup);
     expect(songs.map((song) => [song.title, song.youtubeId])).toEqual([
-      ['Unko Sweater', 'wrYPBpgUchg'],
-      ['Makhamali', 'JqZ7Owwt2Cw'],
-      ['Halkhabar', 'tVs5gi5vw6w'],
+      ['Unko Sweater', 'JqZ7Owwt2Cw'],
+      ['Makhamali', 'tVs5gi5vw6w'],
+      ['Halkhabar', 'wrYPBpgUchg'],
     ]);
   });
 
-  it('refuses when a song matches no video', async () => {
+  it('refuses when a song matches no video, or several', async () => {
     await expect(matchSongsToVideos(() => Promise.resolve('Something else'))).rejects.toThrow(
       /Unko Sweater/,
     );
+    await expect(
+      matchSongsToVideos(() => Promise.resolve('Makhamali and Haalkhabar, ऊनको स्वीटर')),
+    ).rejects.toThrow(/Could not tell/);
   });
 
   it('adds published showcase videos once and keeps owner edits', async () => {
@@ -37,7 +41,7 @@ describe('showcase videos', () => {
     const first = await seedShowcaseVideos({ media, logger: silentLogger, lookup });
     expect(first.created).toEqual(['Unko Sweater', 'Makhamali', 'Halkhabar']);
 
-    const unko = await VideoModel.findOne({ youtubeId: 'wrYPBpgUchg' }).lean().orFail();
+    const unko = await VideoModel.findOne({ youtubeId: 'JqZ7Owwt2Cw' }).lean().orFail();
     expect(unko).toMatchObject({
       title: 'Unko Sweater',
       description: 'From the film Kafle, sung by Jhuma Limbu',

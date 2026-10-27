@@ -81,67 +81,70 @@ export function InlineVideo({ video, sizes }: InlineVideoProps) {
   const aspect = videoAspect(video);
 
   return (
-    <div
-      ref={box}
-      style={{ aspectRatio: String(aspect) }}
-      className="group relative w-full overflow-hidden rounded-xl bg-night-raised"
-    >
-      {showPlayer ? (
-        <>
-          {video.source === 'youtube' ? (
-            <YouTubePlayer key={hasSound ? 'sound' : 'muted'} video={video} muted={!hasSound} />
-          ) : (
-            <UploadedPlayer video={video} muted={!hasSound} />
-          )}
-          <div className="absolute right-3 bottom-3 flex gap-2">
-            <button
-              type="button"
-              aria-label={`Pause: ${video.title}`}
-              onClick={stop}
-              className={control}
-            >
-              <PauseIcon className="size-4" />
-            </button>
-            <button
-              type="button"
-              aria-label={`${hasSound ? 'Turn sound off' : 'Turn sound on'}: ${video.title}`}
-              onClick={toggleSound}
-              className={control}
-            >
-              <VolumeIcon muted={!hasSound} className="size-4" />
-            </button>
-          </div>
-        </>
-      ) : (
-        <button
-          type="button"
-          aria-label={`Play video: ${video.title}`}
-          onClick={play}
-          className="absolute inset-0 size-full"
-        >
-          <img
-            src={videoPosterUrl(video, getMediaUrls(), 800)}
-            srcSet={[480, 800, 1200]
-              .map((width) => `${videoPosterUrl(video, getMediaUrls(), width)} ${String(width)}w`)
-              .join(', ')}
-            sizes={sizes}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] motion-reduce:transition-none"
-          />
-          <span className="absolute inset-0 flex items-center justify-center bg-night/20 transition-colors duration-500 group-hover:bg-night/40">
-            <span className="flex size-16 items-center justify-center rounded-full bg-crimson-deep text-snow shadow-lg transition-transform duration-500 group-hover:scale-110 motion-reduce:transition-none">
-              <PlayIcon className="size-7 translate-x-0.5" />
+    // The neon frame brightens on hover and while this video has sound.
+    <div className="neon-frame neon-soft" data-active={hasSound ? '' : undefined}>
+      <div
+        ref={box}
+        style={{ aspectRatio: String(aspect) }}
+        className="group relative w-full overflow-hidden rounded-[calc(1rem-1px)] bg-night-raised"
+      >
+        {showPlayer ? (
+          <>
+            {video.source === 'youtube' ? (
+              <YouTubePlayer key={hasSound ? 'sound' : 'muted'} video={video} muted={!hasSound} />
+            ) : (
+              <UploadedPlayer video={video} muted={!hasSound} />
+            )}
+            <div className="absolute right-3 bottom-3 flex gap-2">
+              <button
+                type="button"
+                aria-label={`Pause: ${video.title}`}
+                onClick={stop}
+                className={control}
+              >
+                <PauseIcon className="size-4" />
+              </button>
+              <button
+                type="button"
+                aria-label={`${hasSound ? 'Turn sound off' : 'Turn sound on'}: ${video.title}`}
+                onClick={toggleSound}
+                className={control}
+              >
+                <VolumeIcon muted={!hasSound} className="size-4" />
+              </button>
+            </div>
+          </>
+        ) : (
+          <button
+            type="button"
+            aria-label={`Play video: ${video.title}`}
+            onClick={play}
+            className="absolute inset-0 size-full"
+          >
+            <img
+              src={videoPosterUrl(video, getMediaUrls(), 800)}
+              srcSet={[480, 800, 1200]
+                .map((width) => `${videoPosterUrl(video, getMediaUrls(), width)} ${String(width)}w`)
+                .join(', ')}
+              sizes={sizes}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="size-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] motion-reduce:transition-none"
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-night/20 transition-colors duration-500 group-hover:bg-night/40">
+              <span className="flex size-16 items-center justify-center rounded-full bg-crimson-deep text-snow shadow-lg transition-transform duration-500 group-hover:scale-110 motion-reduce:transition-none">
+                <PlayIcon className="size-7 translate-x-0.5" />
+              </span>
             </span>
-          </span>
-          {video.duration !== undefined && (
-            <span className="absolute right-3 bottom-3 rounded-full bg-night/80 px-2.5 py-0.5 text-xs text-snow tabular-nums">
-              {formatDuration(video.duration)}
-            </span>
-          )}
-        </button>
-      )}
+            {video.duration !== undefined && (
+              <span className="absolute right-3 bottom-3 rounded-full bg-night/80 px-2.5 py-0.5 text-xs text-snow tabular-nums">
+                {formatDuration(video.duration)}
+              </span>
+            )}
+          </button>
+        )}
+      </div>
     </div>
   );
 }

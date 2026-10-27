@@ -10,9 +10,15 @@ import type { MediaService } from '../../services/media/MediaService.js';
  * reference page (2026-10-27), with their credit lines exactly as written there.
  */
 export const SHOWCASE_SONGS = [
-  { title: 'Unko Sweater', description: 'From the film Kafle, sung by Jhuma Limbu' },
-  { title: 'Makhamali', description: 'The Hulaki' },
-  { title: 'Halkhabar', description: 'Yabesh Thapa' },
+  {
+    title: 'Unko Sweater',
+    description: 'From the film Kafle, sung by Jhuma Limbu',
+    // YouTube titles it in Nepali only: "Kafle [काफ्ले] Movie Song [ऊनको स्वीटर] …".
+    aliases: ['Unko Sweater', 'ऊनको स्वीटर'],
+  },
+  { title: 'Makhamali', description: 'The Hulaki', aliases: ['Makhamali'] },
+  // YouTube spells it "Haalkhabar".
+  { title: 'Halkhabar', description: 'Yabesh Thapa', aliases: ['Halkhabar', 'Haalkhabar'] },
 ] as const;
 
 /** The YouTube videos that reference page embeds for them, in page order. */
@@ -34,8 +40,20 @@ export const youtubeTitle: TitleLookup = async (youtubeId) => {
   throw new Error(`YouTube returned no title for ${youtubeId}`);
 };
 
+/** Letters (any script, with their marks) and digits only, lower case: "Unko Sweater" → "unkosweater". */
 function normalise(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return value
+    .normalize('NFC')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{M}\p{N}]/gu, '');
+}
+
+function names(videoTitle: string, aliases: readonly string[]): boolean {
+  const title = normalise(videoTitle);
+  return aliases.some((alias) => {
+    const name = normalise(alias);
+    return name !== '' && title.includes(name);
+  });
 }
 
 /**
@@ -48,16 +66,14 @@ export async function matchSongsToVideos(
   const titles = await Promise.all(
     SHOWCASE_YOUTUBE_IDS.map(async (youtubeId) => ({ youtubeId, title: await lookup(youtubeId) })),
   );
-  return SHOWCASE_SONGS.map((song) => {
-    const matches = titles.filter((video) =>
-      normalise(video.title).includes(normalise(song.title)),
-    );
+  return SHOWCASE_SONGS.map(({ title, description, aliases }) => {
+    const matches = titles.filter((video) => names(video.title, aliases));
     const [match] = matches;
     if (!match || matches.length > 1) {
       const found = titles.map((video) => `${video.youtubeId}: ${video.title}`).join('; ');
-      throw new Error(`Could not tell which video is "${song.title}" (YouTube titles: ${found})`);
+      throw new Error(`Could not tell which video is "${title}" (YouTube titles: ${found})`);
     }
-    return { ...song, youtubeId: match.youtubeId };
+    return { title, description, youtubeId: match.youtubeId };
   });
 }
 

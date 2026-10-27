@@ -74,75 +74,79 @@ export function Showcase({ videos }: { videos: readonly VideoDto[] }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div ref={panel} className="overflow-hidden showcase-frame">
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-6">
-          <p className="flex items-center gap-3 label-caps text-crimson">
-            {mode !== 'poster' && (
-              <span aria-hidden="true" className="flex h-4 items-end gap-[3px]">
-                <span className="eq-bar" />
-                <span className="eq-bar [animation-delay:0.2s]" />
-                <span className="eq-bar [animation-delay:0.4s]" />
-                <span className="eq-bar [animation-delay:0.1s]" />
-              </span>
-            )}
-            {status} · {pad(index + 1)} / {pad(videos.length)}
-          </p>
-          {video.source === 'youtube' && (
-            <a
-              href={`https://www.youtube.com/watch?v=${encodeURIComponent(video.youtubeId)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-snow/15 px-4 text-sm text-fog transition-colors hover:border-crimson hover:text-snow"
-            >
-              <span aria-hidden="true" className="icon icon-youtube" />
-              Watch on YouTube<span className="sr-only"> (opens in a new tab)</span>
-            </a>
-          )}
-        </div>
-        {/* The video's own shape, no taller than most of the screen (vertical clips). */}
-        <div
-          style={{ aspectRatio: String(aspect), maxWidth: `calc(78svh * ${String(aspect)})` }}
-          className="mx-auto w-[calc(100%-1rem)] overflow-hidden rounded-xl bg-night sm:w-[calc(100%-1.5rem)]"
-        >
-          {mode === 'poster' ? (
-            <button
-              type="button"
-              aria-label={`Play video: ${video.title}`}
-              onClick={() => {
-                play(index);
-              }}
-              className="group relative size-full"
-            >
-              <img
-                src={videoPosterUrl(video, getMediaUrls(), 1280)}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                width={1280}
-                height={Math.round(1280 / aspect)}
-                className="size-full object-cover transition-transform duration-700 group-hover:scale-[1.03] motion-reduce:transition-none"
-              />
-              <span className="absolute inset-0 flex items-center justify-center bg-night/25">
-                <span className="flex size-18 items-center justify-center rounded-full bg-crimson-deep text-snow shadow-lg transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none">
-                  <PlayIcon className="size-8 translate-x-0.5" />
+      <div ref={panel} className="neon-frame">
+        <div className="overflow-hidden neon-panel p-2.5 sm:p-3.5">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-2.5 pt-1.5 pb-3.5 sm:px-3">
+            <p className="flex items-center gap-3 label-caps text-crimson">
+              {mode !== 'poster' && (
+                <span aria-hidden="true" className="flex h-4 items-end gap-[3px]">
+                  <span className="eq-bar" />
+                  <span className="eq-bar [animation-delay:0.2s]" />
+                  <span className="eq-bar [animation-delay:0.4s]" />
+                  <span className="eq-bar [animation-delay:0.1s]" />
                 </span>
-              </span>
-            </button>
-          ) : (
-            <ShowcasePlayer
-              key={`${video.id}-${String(withSound)}`}
-              video={video}
-              muted={!withSound}
-              onSound={() => {
-                claimSound(SOUND_ID);
-                pauseAudio();
-              }}
-            />
-          )}
-        </div>
-        <div className="flex flex-col gap-1 px-5 py-5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 sm:px-6">
-          <h3 className="font-display text-[1.75rem] leading-tight font-semibold">{video.title}</h3>
-          {video.description && <p className="text-fog sm:text-right">{video.description}</p>}
+              )}
+              {status} · {pad(index + 1)} / {pad(videos.length)}
+            </p>
+            {video.source === 'youtube' && (
+              <a
+                href={`https://www.youtube.com/watch?v=${encodeURIComponent(video.youtubeId)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center gap-2 rounded-full border border-snow/15 px-4 text-sm text-fog transition-colors hover:border-crimson hover:text-snow"
+              >
+                <span aria-hidden="true" className="icon icon-youtube" />
+                Watch on YouTube<span className="sr-only"> (opens in a new tab)</span>
+              </a>
+            )}
+          </div>
+          {/* The video's own shape, no taller than most of the screen (vertical clips). */}
+          <div
+            style={{ aspectRatio: String(aspect), maxWidth: `calc(78svh * ${String(aspect)})` }}
+            className="mx-auto w-full overflow-hidden rounded-lg bg-black ring-1 ring-snow/10"
+          >
+            {mode === 'poster' ? (
+              <button
+                type="button"
+                aria-label={`Play video: ${video.title}`}
+                onClick={() => {
+                  play(index);
+                }}
+                className="group relative size-full"
+              >
+                <img
+                  src={videoPosterUrl(video, getMediaUrls(), 1280)}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  width={1280}
+                  height={Math.round(1280 / aspect)}
+                  className="size-full object-cover transition-transform duration-700 group-hover:scale-[1.03] motion-reduce:transition-none"
+                />
+                <span className="absolute inset-0 flex items-center justify-center bg-night/25">
+                  <span className="flex size-18 items-center justify-center rounded-full bg-crimson-deep text-snow shadow-lg transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none">
+                    <PlayIcon className="size-8 translate-x-0.5" />
+                  </span>
+                </span>
+              </button>
+            ) : (
+              <ShowcasePlayer
+                key={`${video.id}-${String(withSound)}`}
+                video={video}
+                muted={!withSound}
+                onSound={() => {
+                  claimSound(SOUND_ID);
+                  pauseAudio();
+                }}
+              />
+            )}
+          </div>
+          <div className="flex flex-col gap-1 px-2.5 pt-4 pb-1.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6 sm:px-3">
+            <h3 className="font-display text-[1.75rem] leading-tight font-semibold">
+              {video.title}
+            </h3>
+            {video.description && <p className="text-fog sm:text-right">{video.description}</p>}
+          </div>
         </div>
       </div>
 
@@ -156,7 +160,7 @@ export function Showcase({ videos }: { videos: readonly VideoDto[] }) {
                 onClick={() => {
                   play(position);
                 }}
-                className="group flex w-full items-center gap-4 rounded-xl border border-snow/10 bg-night-raised p-2.5 text-left transition-colors hover:border-crimson/60 aria-[current=true]:border-crimson/70"
+                className="group flex w-full items-center gap-4 neon-card p-2.5 text-left"
               >
                 <span className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-night">
                   <img
