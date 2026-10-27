@@ -4,9 +4,13 @@ import type { VideoDto } from '@roman/shared';
 
 import { useAudioPlayer } from '@/features/audio/AudioPlayerContext';
 import { PlayIcon } from '@/features/audio/icons';
-import { videoPosterUrl } from '@/features/videos/videoPoster';
+import { videoAspect, videoPosterUrl } from '@/features/videos/videoPoster';
+import { claimSound, savingData, useSoundOwner } from '@/features/videos/videoSound';
 import { REDUCED_MOTION_QUERY } from '@/hooks/useMediaQuery';
 import { getMediaUrls } from '@/lib/cloudinary';
+
+/** This player's name in the one-video-with-sound rule (`videoSound.ts`). */
+const SOUND_ID = 'showcase';
 
 /**
  * - `poster`: an image and a play button; nothing from YouTube has loaded.
@@ -17,18 +21,6 @@ type Mode = 'poster' | 'muted' | 'sound';
 
 function pad(value: number): string {
   return String(value).padStart(2, '0');
-}
-
-/** The browser's data-saver setting (Network Information API, where it exists). */
-function savingData(): boolean {
-  if (!('connection' in navigator)) return false;
-  const { connection } = navigator;
-  return (
-    typeof connection === 'object' &&
-    connection !== null &&
-    'saveData' in connection &&
-    connection.saveData === true
-  );
 }
 
 /**
@@ -42,6 +34,9 @@ export function Showcase({ videos }: { videos: readonly VideoDto[] }) {
   const panel = useRef<HTMLDivElement>(null);
   const { state, pause: pauseAudio } = useAudioPlayer();
   const musicPlaying = state.status === 'playing' || state.status === 'loading';
+  const soundOwner = useSoundOwner();
+  // Sound stays on only while no other video took it and the site's music is quiet.
+  const withSound = mode === 'sound' && soundOwner === SOUND_ID && !musicPlaying;
 
   useEffect(() => {
     const node = panel.current;
@@ -69,8 +64,11 @@ export function Showcase({ videos }: { videos: readonly VideoDto[] }) {
   function play(next: number) {
     setIndex(next);
     setMode('sound');
+    claimSound(SOUND_ID);
     pauseAudio();
   }
+
+  const aspect = videoAspect(video);
 
   const status = mode === 'poster' ? 'Song' : 'Now playing';
 
@@ -101,7 +99,11 @@ export function Showcase({ videos }: { videos: readonly VideoDto[] }) {
             </a>
           )}
         </div>
-        <div className="mx-2 aspect-video overflow-hidden rounded-xl bg-night sm:mx-3">
+        {/* The video's own shape, no taller than most of the screen (vertical clips). */}
+        <div
+          style={{ aspectRatio: String(aspect), maxWidth: `calc(78svh * ${String(aspect)})` }}
+          className="mx-auto w-[calc(100%-1rem)] overflow-hidden rounded-xl bg-night sm:w-[calc(100%-1.5rem)]"
+        >
           {mode === 'poster' ? (
             <button
               type="button"
@@ -117,7 +119,7 @@ export function Showcase({ videos }: { videos: readonly VideoDto[] }) {
                 loading="lazy"
                 decoding="async"
                 width={1280}
-                height={720}
+                height={Math.round(1280 / aspect)}
                 className="size-full object-cover transition-transform duration-700 group-hover:scale-[1.03] motion-reduce:transition-none"
               />
               <span className="absolute inset-0 flex items-center justify-center bg-night/25">
@@ -128,10 +130,13 @@ export function Showcase({ videos }: { videos: readonly VideoDto[] }) {
             </button>
           ) : (
             <ShowcasePlayer
-              key={`${video.id}-${mode}`}
+              key={`${video.id}-${String(withSound)}`}
               video={video}
-              muted={mode === 'muted'}
-              onSound={pauseAudio}
+              muted={!withSound}
+              onSound={() => {
+                claimSound(SOUND_ID);
+                pauseAudio();
+              }}
             />
           )}
         </div>

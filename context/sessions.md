@@ -288,3 +288,19 @@ still to come from the owner).
   - Plan §0.4 and CLAUDE.md "Design and motion" rewritten for the new look.
   - Live hero still to be uploaded in the admin (Profile → Home page hero image): no production
     credentials are kept locally.
+- Videos play in place (2026-10-27, owner request after the reference):
+  - `VideoGallery` lays cards out in justified rows: each keeps its video's shape (`videoAspect`:
+    an upload's own width/height, YouTube 16:9) and grows in proportion, so wide videos cover more
+    than vertical clips. The player dialog is gone.
+  - `InlineVideo`: plays muted on a loop while 60 % in view (not with reduced motion or Save-Data;
+    unloaded off screen), "Turn sound on" gives it sound, pauses the site music and mutes any other
+    video (`videoSound.ts`, shared with the home Showcase), "Pause" stops it until played again.
+  - Showcase panel takes the video's shape too (max 78svh tall).
+  - Backend: `npm run seed:videos` (server `seed:videos[:prod]`) adds the three YouTube songs from
+    the reference ("Unko Sweater" — From the film Kafle, sung by Jhuma Limbu; "Makhamali" — The
+    Hulaki; "Halkhabar" — Yabesh Thapa) as published Studio videos under "Songs I've played on".
+    IDs JqZ7Owwt2Cw, tVs5gi5vw6w, wrYPBpgUchg; each song is matched to its ID by the title
+    YouTube's oEmbed reports, and the script refuses if that is ambiguous. Idempotent by YouTube ID.
+  - The reference's "Recent videos" (Hey Saila, violin solos part 7, Jingle Bell Rock) are
+    Instagram/TikTok clips, not YouTube: to be uploaded as video files in the admin.
+  - Not yet run (the tool's shell checks were failing): typecheck, lint, tests, build, e2e.

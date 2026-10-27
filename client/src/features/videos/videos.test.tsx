@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { StrictMode } from 'react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -66,7 +66,8 @@ afterEach(() => {
 });
 
 describe('videos', () => {
-  it('loads nothing from YouTube or the video files until a video is clicked', async () => {
+  it('shows posters, and loads nothing from YouTube or the files until a video plays', async () => {
+    // jsdom has no IntersectionObserver, so nothing is ever "in view": no autoplay.
     renderSite('/videos');
     await screen.findByRole('button', { name: 'Play video: Concert excerpt' });
 
@@ -76,32 +77,75 @@ describe('videos', () => {
     expect(screen.getByText('1:35')).toBeInTheDocument();
   });
 
-  it('opens YouTube in a privacy-friendly embed, and removes it on close', async () => {
+  it('plays YouTube in place with sound in a privacy-friendly embed, until paused', async () => {
     renderSite('/videos');
     await userEvent.click(
       await screen.findByRole('button', { name: 'Play video: Concert excerpt' }),
     );
 
-    const dialog = screen.getByRole('dialog', { name: 'Concert excerpt' });
-    const frame = within(dialog).getByTitle('YouTube video: Concert excerpt');
+    const frame = screen.getByTitle('YouTube video: Concert excerpt');
     expect(frame.getAttribute('src')).toBe(
-      'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0',
+      'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=1&mute=0&controls=1&playsinline=1&rel=0',
     );
+    expect(
+      screen.getByRole('button', { name: 'Turn sound off: Concert excerpt' }),
+    ).toBeInTheDocument();
 
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Close video' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Pause: Concert excerpt' }));
     expect(document.querySelector('iframe')).toBeNull();
   });
 
-  it('plays uploaded videos from Cloudinary, smaller on phones', async () => {
+  it('plays uploaded videos from Cloudinary in place, smaller on phones', async () => {
     renderSite('/videos');
     await userEvent.click(await screen.findByRole('button', { name: 'Play video: Studio take' }));
 
     const video = document.querySelector('video');
-    expect(video).toHaveAttribute('preload', 'none');
+    expect(video).toHaveAttribute('autoplay');
+    expect(video?.muted).toBe(false);
     const sources = [...(video?.querySelectorAll('source') ?? [])];
     expect(sources[0]).toHaveAttribute('media', '(max-width: 767px)');
     expect(sources[0]?.getAttribute('src')).toContain('/c_limit,w_720,q_auto,vc_auto/');
     expect(sources[1]?.getAttribute('src')).toContain('/c_limit,w_1280,q_auto,vc_auto/');
+  });
+
+  it('gives only one video sound at a time', async () => {
+    renderSite('/videos');
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Play video: Concert excerpt' }),
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Play video: Studio take' }));
+
+    // The first one lost its sound; off screen (always, in jsdom) a muted video is unloaded.
+    expect(screen.queryByTitle('YouTube video: Concert excerpt')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Play video: Concert excerpt' })).toBeInTheDocument();
+    expect(document.querySelector('video')?.muted).toBe(false);
+  });
+
+  it('sizes each card to its video, so vertical clips stay tall', async () => {
+    vi.mocked(getVideos).mockResolvedValue(
+      page([
+        youtube,
+        uploadedVideoFixture({
+          id: 'video-reel',
+          title: 'Vertical reel',
+          media: {
+            publicId: 'root/videos/media/reel',
+            resourceType: 'video',
+            version: 1,
+            format: 'mp4',
+            bytes: 1000,
+            width: 1080,
+            height: 1920,
+          },
+        }),
+      ]),
+    );
+    renderSite('/videos');
+    const reel = await screen.findByRole('article', { name: 'Vertical reel' });
+    const wide = screen.getByRole('article', { name: 'Concert excerpt' });
+
+    expect(reel.closest('li')?.style.flexGrow).toBe(String(1080 / 1920));
+    expect(wide.closest('li')?.style.flexGrow).toBe(String(16 / 9));
   });
 
   it('filters by category through the address', async () => {

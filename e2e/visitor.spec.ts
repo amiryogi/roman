@@ -98,23 +98,32 @@ test('music keeps playing while the visitor moves between pages', async ({ page,
   await expect.poll(() => secondsPlayed(page), { timeout: 10_000 }).toBeGreaterThan(before);
 });
 
-test('a video opens in a player dialog, without loading YouTube before the click', async ({
+test('videos play in place: muted in view, with sound on request, stopped when paused', async ({
   page,
 }) => {
-  const youtube: string[] = [];
-  page.on('request', (request) => {
-    if (request.url().includes('youtube-nocookie.com')) youtube.push(request.url());
-  });
   await page.goto('/videos');
   const [title] = SEEDED.videos;
-  await expect(page.getByRole('heading', { name: title })).toBeVisible();
-  expect(youtube).toEqual([]);
+  const frame = page.locator(`iframe[title="YouTube video: ${title}"]`);
 
-  await page.getByRole('button', { name: `Play video: ${title}` }).click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog.locator('iframe[src*="youtube-nocookie.com"]')).toBeAttached();
-  await dialog.getByRole('button', { name: 'Close video' }).click();
-  await expect(dialog).toBeHidden();
+  // In view, it starts by itself without sound.
+  await expect(frame).toHaveAttribute('src', /youtube-nocookie\.com\/embed\/.*mute=1/);
+  await page.getByRole('button', { name: `Turn sound on: ${title}` }).click();
+  await expect(frame).toHaveAttribute('src', /mute=0/);
+
+  await page.getByRole('button', { name: `Pause: ${title}` }).click();
+  await expect(frame).toHaveCount(0);
+  await expect(page.getByRole('button', { name: `Play video: ${title}` })).toBeVisible();
+});
+
+test.describe('with reduced motion', () => {
+  test.use({ reducedMotion: 'reduce' });
+
+  test('videos wait for a click', async ({ page }) => {
+    await page.goto('/videos');
+    const [title] = SEEDED.videos;
+    await expect(page.getByRole('button', { name: `Play video: ${title}` })).toBeVisible();
+    await expect(page.locator('iframe')).toHaveCount(0);
+  });
 });
 
 test('the gallery filters by category and opens a keyboard-driven viewer', async ({ page }) => {

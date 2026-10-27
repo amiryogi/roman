@@ -17,6 +17,8 @@
     "test": "vitest run",
     "seed:content": "tsx --env-file-if-exists=.env src/scripts/seed-content.ts",
     "seed:content:prod": "node dist/scripts/seed-content.js",
+    "seed:videos": "tsx --env-file-if-exists=.env src/scripts/seed-videos.ts",
+    "seed:videos:prod": "node dist/scripts/seed-videos.js",
     "cleanup:media": "tsx --env-file-if-exists=.env src/scripts/cleanup-orphan-media.ts",
     "cleanup:media:prod": "node dist/scripts/cleanup-orphan-media.js",
     "test:cloudinary": "tsx --env-file-if-exists=.env src/scripts/test-cloudinary.ts",

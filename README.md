@@ -41,6 +41,7 @@ npm run dev
 | `npm run check`                   | The full gate: no-js + lockfile + client-secrets + typecheck + lint + format + tests         |
 | `npm run seed:admin -- --email …` | Creates the single admin (password from `ADMIN_SEED_PASSWORD` or a prompt)                   |
 | `npm run seed:content`            | Uploads the source photos and MP3 to Cloudinary and creates the initial (draft) content      |
+| `npm run seed:videos`             | Adds the YouTube songs from the reference page under "Songs I've played on" (idempotent)     |
 | `npm run cleanup:media`           | Lists Cloudinary assets no content uses (`-- --apply` deletes them)                          |
 | `npm run test:cloudinary`         | Opt-in smoke test against the real Cloudinary account (development folder only)              |
 | `npm run lighthouse`              | Lighthouse budgets (`lighthouse-budgets.json`) against a running preview with content        |
