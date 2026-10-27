@@ -160,6 +160,67 @@ describe('admin profile', () => {
     expect(media.destroyed).toContain(created.portrait?.asset.publicId);
   });
 
+  it('saves the home page content and keeps it when a save leaves it out', async () => {
+    const content = {
+      heroHeadline: 'A test headline.',
+      heroIntro: 'A test introduction.',
+      stats: [{ value: '10 years', label: 'of testing' }],
+      services: [
+        {
+          title: 'Performer',
+          kicker: 'On stage',
+          summary: 'Plays at test events.',
+          details: [{ label: 'Where', value: 'Test halls' }],
+          cta: { label: 'Send a request', inquiryType: 'booking' as const },
+        },
+      ],
+    };
+    const saved = await put(fullProfile(content));
+    expect(saved.status).toBe(200);
+    expect(adminProfileResponse.parse(saved.body).data).toMatchObject(content);
+
+    // An admin page loaded before these fields existed sends none of them: nothing is lost.
+    await put(fullProfile());
+    const kept = adminProfileResponse.parse((await get()).body).data;
+    expect(kept).toMatchObject(content);
+
+    // The public profile carries them too (the home page reads its summary).
+    const pub = profileDtoSchema.parse(
+      apiSuccessSchema(profileDtoSchema).parse((await request(app).get('/api/profile')).body).data,
+    );
+    expect(pub.stats).toEqual(content.stats);
+  });
+
+  it('clears the hero text with null or an empty string, and lists with []', async () => {
+    await put(
+      fullProfile({
+        heroHeadline: 'Headline',
+        heroIntro: 'Intro',
+        stats: [{ value: '1', label: 'x' }],
+      }),
+    );
+    await put(fullProfile({ heroHeadline: '', heroIntro: null, stats: [] }));
+    const profile = adminProfileResponse.parse((await get()).body).data;
+
+    expect(profile.heroHeadline).toBeUndefined();
+    expect(profile.heroIntro).toBeUndefined();
+    expect(profile.stats).toEqual([]);
+  });
+
+  it('limits the stats row to four and checks call-to-action enquiry types', async () => {
+    const stat = { value: '1', label: 'stat' };
+    const tooMany = await put(fullProfile({ stats: [stat, stat, stat, stat, stat] }));
+    expect(tooMany.status).toBe(422);
+
+    const badCta = await put({
+      ...fullProfile(),
+      services: [
+        { title: 'T', summary: 'S', details: [], cta: { label: 'Go', inquiryType: 'nope' } },
+      ],
+    });
+    expect(badCta.status).toBe(422);
+  });
+
   it('validates the whole profile', async () => {
     const insecure = await put(
       fullProfile({ socials: [{ platform: 'instagram', url: 'http://instagram.com/x' }] }),

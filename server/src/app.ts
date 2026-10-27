@@ -23,6 +23,10 @@ import {
   type InquiryConfig,
 } from './modules/inquiries/routes.js';
 import { createAdminProfileRouter, createProfileRouter } from './modules/profile/routes.js';
+import {
+  createAdminSheetMusicRouter,
+  createPublicSheetMusicRouter,
+} from './modules/sheetMusic/routes.js';
 import { createStatsRouter } from './modules/stats/routes.js';
 import { createAdminTracksRouter, createPublicTracksRouter } from './modules/tracks/routes.js';
 import { createUploadsRouter } from './modules/uploads/routes.js';
@@ -81,6 +85,7 @@ export function createApp(options: AppOptions): Express {
   app.use('/api/videos', publicCache, createPublicVideosRouter());
   app.use('/api/gallery', publicCache, createPublicGalleryRouter());
   app.use('/api/events', publicCache, createPublicEventsRouter());
+  app.use('/api/sheet-music', publicCache, createPublicSheetMusicRouter());
   // Visitor submissions and the per-visit form token must never be cached.
   app.use('/api/inquiries', noStore, createInquiriesRouter(options.inquiries, options.logger));
 
@@ -94,6 +99,7 @@ export function createApp(options: AppOptions): Express {
   admin.use('/videos', createAdminVideosRouter(mediaDeps));
   admin.use('/gallery', createAdminGalleryRouter(mediaDeps));
   admin.use('/events', createAdminEventsRouter(mediaDeps));
+  admin.use('/sheet-music', createAdminSheetMusicRouter(mediaDeps));
   admin.use('/profile', createAdminProfileRouter(mediaDeps));
   admin.use('/inquiries', createAdminInquiriesRouter());
   admin.use('/stats', createStatsRouter());

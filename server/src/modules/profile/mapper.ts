@@ -3,6 +3,24 @@ import type { ProfileAdminDto, ProfileDto, ProfileSummaryDto } from '@roman/shar
 import { toImageDto, type WithId } from '../../lib/mongo.js';
 import type { ProfileDoc } from './model.js';
 
+type HomeContent = Pick<ProfileDto, 'heroHeadline' | 'heroIntro' | 'stats' | 'services'>;
+
+/** Home page content. Profiles saved before these fields existed have none of them. */
+function toHomeContent(doc: WithId<ProfileDoc>): HomeContent {
+  return {
+    heroHeadline: doc.heroHeadline,
+    heroIntro: doc.heroIntro,
+    stats: (doc.stats ?? []).map((stat) => ({ value: stat.value, label: stat.label })),
+    services: (doc.services ?? []).map((service) => ({
+      title: service.title,
+      kicker: service.kicker,
+      summary: service.summary,
+      details: service.details.map((detail) => ({ label: detail.label, value: detail.value })),
+      cta: service.cta && { label: service.cta.label, inquiryType: service.cta.inquiryType },
+    })),
+  };
+}
+
 function toProfileBase(doc: WithId<ProfileDoc>): Omit<ProfileDto, 'contact'> {
   return {
     displayName: doc.displayName,
@@ -41,6 +59,7 @@ function toProfileBase(doc: WithId<ProfileDoc>): Omit<ProfileDto, 'contact'> {
     heroMobile: toImageDto(doc.heroMobile),
     ogImage: toImageDto(doc.ogImage),
     seo: { metaTitle: doc.seo?.metaTitle, metaDescription: doc.seo?.metaDescription },
+    ...toHomeContent(doc),
     updatedAt: doc.updatedAt.toISOString(),
   };
 }
@@ -79,5 +98,6 @@ export function toProfileSummaryDto(doc: WithId<ProfileDoc>): ProfileSummaryDto 
     heroMobile: toImageDto(doc.heroMobile),
     ogImage: toImageDto(doc.ogImage),
     seo: { metaTitle: doc.seo?.metaTitle, metaDescription: doc.seo?.metaDescription },
+    ...toHomeContent(doc),
   };
 }

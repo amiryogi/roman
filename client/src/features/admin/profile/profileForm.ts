@@ -25,6 +25,8 @@ export const PROFILE_FIELDS: readonly Path<ProfileInput>[] = [
   'contact.location',
   'seo.metaTitle',
   'seo.metaDescription',
+  'heroHeadline',
+  'heroIntro',
   ...IMAGE_SLOTS.flatMap((slot) => [`${slot}.mediaRef` as const, `${slot}.alt` as const]),
   'biography',
   'education',
@@ -33,6 +35,8 @@ export const PROFILE_FIELDS: readonly Path<ProfileInput>[] = [
   'skills',
   'affiliations',
   'socials',
+  'stats',
+  'services',
 ];
 
 /** "Keep the current image, maybe with new alt text", or no image. */
@@ -94,6 +98,16 @@ export function toFormValues(profile: ProfileAdminDto): ProfileInput {
     heroDesktop: slotValue(profile.heroDesktop),
     heroMobile: slotValue(profile.heroMobile),
     ogImage: slotValue(profile.ogImage),
+    heroHeadline: profile.heroHeadline ?? '',
+    heroIntro: profile.heroIntro ?? '',
+    stats: profile.stats,
+    services: profile.services.map((service) => ({
+      title: service.title,
+      kicker: service.kicker ?? '',
+      summary: service.summary,
+      details: service.details,
+      cta: service.cta,
+    })),
   };
 }
 
@@ -116,4 +130,8 @@ export const EMPTY_PROFILE: ProfileInput = {
   heroDesktop: null,
   heroMobile: null,
   ogImage: null,
+  heroHeadline: '',
+  heroIntro: '',
+  stats: [],
+  services: [],
 };

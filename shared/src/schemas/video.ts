@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { paginationQuerySchema } from '../api.js';
-import { clearableIsoDate, clearableText, text } from '../common.js';
+import { clearableIsoDate, clearableText, queryBooleanSchema, text } from '../common.js';
 import { publicationStatusSchema, videoCategorySchema, videoSourceSchema } from '../enums.js';
 import { imageDtoSchema, imageInputSchema, mediaAssetSchema, mediaRefSchema } from '../media.js';
 import { slugSchema } from '../slug.js';
@@ -33,6 +33,8 @@ const videoCommonInputSchema = publishingFieldsSchema.extend({
   category: videoCategorySchema,
   recordedAt: clearableIsoDate,
   venue: clearableText(200),
+  /** Listed under "Songs I've played on" on the home page. */
+  showcase: z.boolean().optional(),
 });
 
 export const videoCreateInputSchema = z.discriminatedUnion('source', [
@@ -72,6 +74,7 @@ const videoCommonDtoFields = {
   duration: z.number().nonnegative().optional(),
   status: publicationStatusSchema,
   featured: z.boolean(),
+  showcase: z.boolean(),
   sortOrder: z.number(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
@@ -97,4 +100,5 @@ export const videosPublicQuerySchema = paginationQuerySchema(12).extend({
 
 export const videoAdminListQuerySchema = adminListQuerySchema(20).extend({
   category: videoCategorySchema.optional(),
+  showcase: queryBooleanSchema,
 });

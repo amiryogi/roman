@@ -76,6 +76,19 @@ describe('video editor', () => {
     expect(payload).not.toHaveProperty('mediaRef');
   });
 
+  it('lists a video under “Songs I’ve played on”', async () => {
+    renderEditor('/admin/videos/new');
+
+    await userEvent.type(await screen.findByLabelText('Title'), 'Film song');
+    await userEvent.type(screen.getByLabelText('YouTube link'), 'dQw4w9WgXcQ');
+    await userEvent.click(screen.getByLabelText('List under “Songs I’ve played on”'));
+    await userEvent.click(screen.getByRole('button', { name: 'Save video' }));
+
+    await screen.findByRole('heading', { name: 'Video list' });
+    const [payload] = vi.mocked(createVideo).mock.calls[0] ?? [];
+    expect(payload).toMatchObject({ title: 'Film song', showcase: true });
+  });
+
   it('rejects a link that is not YouTube', async () => {
     renderEditor('/admin/videos/new');
 

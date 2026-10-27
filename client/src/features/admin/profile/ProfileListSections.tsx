@@ -1,12 +1,22 @@
-import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
+import { Controller, useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 
-import { EXPERIENCE_CATEGORIES, SOCIAL_PLATFORMS, type ProfileInput } from '@roman/shared';
+import {
+  EXPERIENCE_CATEGORIES,
+  INQUIRY_TYPES,
+  SOCIAL_PLATFORMS,
+  type ProfileInput,
+} from '@roman/shared';
 
+import { adminSecondaryButton, adminSmallButton } from '@/features/admin/components/adminStyles';
 import { SelectField, TextAreaField } from '@/features/admin/components/Fields';
 import { FormField } from '@/features/admin/components/FormField';
 import { LinesField } from '@/features/admin/components/LinesField';
 import { RepeatableList } from '@/features/admin/components/RepeatableList';
-import { EXPERIENCE_CATEGORY_LABELS, SOCIAL_PLATFORM_LABELS } from '@/lib/labels';
+import {
+  EXPERIENCE_CATEGORY_LABELS,
+  INQUIRY_TYPE_LABELS,
+  SOCIAL_PLATFORM_LABELS,
+} from '@/lib/labels';
 
 import type { ProfileParsed } from './profileForm';
 
@@ -19,6 +29,214 @@ function useProfileForm() {
 /** A list-level error, e.g. too many items. */
 function listError(error: { message?: string; root?: { message?: string } } | undefined) {
   return error?.message ?? error?.root?.message;
+}
+
+export function StatsSection() {
+  const { control, register, formState } = useProfileForm();
+  const { fields, append, remove, move } = useFieldArray({ control, name: 'stats' });
+  const errors = formState.errors.stats;
+
+  return (
+    <RepeatableList
+      id="stats"
+      legend="Stats"
+      hint="Up to four figures in a row under the home page photo, e.g. “15+ years” / “as a professional violinist”. Hidden while empty."
+      keys={fields.map((field) => field.id)}
+      max={4}
+      itemLabel={(index) => `Stat ${String(index + 1)}`}
+      addLabel="Add stat"
+      emptyMessage="No stats yet."
+      error={listError(errors)}
+      onAdd={() => {
+        append({ value: '', label: '' });
+      }}
+      onRemove={remove}
+      onMove={move}
+      renderItem={(index) => (
+        <div className="grid gap-4 sm:grid-cols-[12rem_1fr]">
+          <FormField
+            label="Figure"
+            hint="Up to 20 characters."
+            error={errors?.[index]?.value?.message}
+            {...register(`stats.${index}.value`)}
+          />
+          <FormField
+            label="What it counts"
+            hint="Up to 60 characters."
+            error={errors?.[index]?.label?.message}
+            {...register(`stats.${index}.label`)}
+          />
+        </div>
+      )}
+    />
+  );
+}
+
+export function ServicesSection() {
+  const { control, register, formState } = useProfileForm();
+  const { fields, append, remove, move } = useFieldArray({ control, name: 'services' });
+  const errors = formState.errors.services;
+
+  return (
+    <RepeatableList
+      id="services"
+      legend="What I do"
+      hint="Cards on the home page, one at a time (up to six), e.g. Violinist, Performer, Educator. Hidden while empty."
+      keys={fields.map((field) => field.id)}
+      max={6}
+      itemLabel={(index) => `Card ${String(index + 1)}`}
+      addLabel="Add card"
+      emptyMessage="No cards yet."
+      error={listError(errors)}
+      onAdd={() => {
+        append({ title: '', kicker: '', summary: '', details: [] });
+      }}
+      onRemove={remove}
+      onMove={move}
+      renderItem={(index) => (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              label="Title"
+              hint="For example “Performer”."
+              error={errors?.[index]?.title?.message}
+              {...register(`services.${index}.title`)}
+            />
+            <FormField
+              label="Small heading (optional)"
+              hint="For example “On stage”."
+              error={errors?.[index]?.kicker?.message}
+              {...register(`services.${index}.kicker`)}
+            />
+          </div>
+          <TextAreaField
+            label="Summary"
+            hint="One or two sentences, up to 300 characters."
+            rows={3}
+            error={errors?.[index]?.summary?.message}
+            {...register(`services.${index}.summary`)}
+          />
+          <ServiceDetails index={index} />
+          <ServiceButton index={index} />
+        </>
+      )}
+    />
+  );
+}
+
+/** The card's short facts, e.g. Where: “Weddings, concerts, events”. */
+function ServiceDetails({ index }: { index: number }) {
+  const { control, register, formState } = useProfileForm();
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: `services.${index}.details`,
+  });
+  const errors = formState.errors.services?.[index]?.details;
+
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-sm font-medium text-stone-800">
+        Details (optional, up to four)
+        <span className="block font-normal text-stone-600">
+          Short facts, e.g. “Where” – “Weddings, concerts, events”.
+        </span>
+      </p>
+      {fields.map((field, row) => (
+        <div
+          key={field.id}
+          className="grid gap-3 sm:grid-cols-[10rem_1fr_auto] sm:items-end"
+          aria-label={`Detail ${String(row + 1)}`}
+          role="group"
+        >
+          <FormField
+            label={`Detail ${String(row + 1)} name`}
+            error={errors?.[row]?.label?.message}
+            {...register(`services.${index}.details.${row}.label`)}
+          />
+          <FormField
+            label={`Detail ${String(row + 1)} text`}
+            error={errors?.[row]?.value?.message}
+            {...register(`services.${index}.details.${row}.value`)}
+          />
+          <button
+            type="button"
+            onClick={() => {
+              remove(row);
+            }}
+            className={adminSmallButton}
+          >
+            Remove<span className="sr-only"> detail {row + 1}</span>
+          </button>
+        </div>
+      ))}
+      {fields.length < 4 && (
+        <button
+          type="button"
+          onClick={() => {
+            append({ label: '', value: '' });
+          }}
+          className={`${adminSecondaryButton} self-start`}
+        >
+          Add detail
+        </button>
+      )}
+    </div>
+  );
+}
+
+/** An optional button that opens the contact form with an enquiry type already chosen. */
+function ServiceButton({ index }: { index: number }) {
+  const { control, register, setValue, unregister, formState } = useProfileForm();
+  const cta = useWatch({ control, name: `services.${index}.cta` });
+  const errors = formState.errors.services?.[index]?.cta;
+
+  if (!cta) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setValue(
+            `services.${index}.cta`,
+            { label: 'Send a request', inquiryType: 'booking' },
+            { shouldDirty: true },
+          );
+        }}
+        className={`${adminSecondaryButton} self-start`}
+      >
+        Add a button to the contact form
+      </button>
+    );
+  }
+  return (
+    <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+      <FormField
+        label="Button text"
+        error={errors?.label?.message}
+        {...register(`services.${index}.cta.label`)}
+      />
+      <SelectField
+        label="Enquiry type it chooses"
+        error={errors?.inquiryType?.message}
+        {...register(`services.${index}.cta.inquiryType`)}
+      >
+        {INQUIRY_TYPES.map((type) => (
+          <option key={type} value={type}>
+            {INQUIRY_TYPE_LABELS[type]}
+          </option>
+        ))}
+      </SelectField>
+      <button
+        type="button"
+        onClick={() => {
+          unregister(`services.${index}.cta`);
+          setValue(`services.${index}.cta`, undefined, { shouldDirty: true });
+        }}
+        className={adminSmallButton}
+      >
+        Remove button
+      </button>
+    </div>
+  );
 }
 
 export function BiographySection() {

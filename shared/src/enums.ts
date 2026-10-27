@@ -14,6 +14,7 @@ import {
   INQUIRY_STATUSES,
   SOCIAL_PLATFORMS,
   EXPERIENCE_CATEGORIES,
+  SHEET_MUSIC_LEVELS,
 } from './constants.js';
 
 export const publicationStatusSchema = z.enum(PUBLICATION_STATUSES);
@@ -54,3 +55,6 @@ export type SocialPlatform = z.infer<typeof socialPlatformSchema>;
 
 export const experienceCategorySchema = z.enum(EXPERIENCE_CATEGORIES);
 export type ExperienceCategory = z.infer<typeof experienceCategorySchema>;
+
+export const sheetMusicLevelSchema = z.enum(SHEET_MUSIC_LEVELS);
+export type SheetMusicLevel = z.infer<typeof sheetMusicLevelSchema>;

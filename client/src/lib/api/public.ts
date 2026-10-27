@@ -35,6 +35,7 @@ export const queryKeys = {
   videos: (category?: VideoCategory) => ['videos', category ?? 'all'] as const,
   gallery: (category?: GalleryCategory) => ['gallery', category ?? 'all'] as const,
   events: (when: EventTimeframe) => ['events', when] as const,
+  sheetMusic: ['sheet-music'] as const,
 };
 
 export function getHome(): Promise<HomeDto> {

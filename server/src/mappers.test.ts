@@ -9,6 +9,7 @@ import {
   profileAdminDtoSchema,
   profileDtoSchema,
   profileSummaryDtoSchema,
+  sheetMusicDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
 } from '@roman/shared';
@@ -21,8 +22,10 @@ import {
   createGalleryImage,
   createInquiry,
   createProfile,
+  createSheetMusic,
   createTrack,
   createVideo,
+  imageAsset,
   objectId,
 } from '../test/factories.js';
 import { useTestDb } from '../test/db.js';
@@ -39,6 +42,8 @@ import { toInquiryDto } from './modules/inquiries/mapper.js';
 import { InquiryModel, type InquiryDoc } from './modules/inquiries/model.js';
 import { toProfileAdminDto, toProfileDto, toProfileSummaryDto } from './modules/profile/mapper.js';
 import { ProfileModel, type ProfileDoc } from './modules/profile/model.js';
+import { toSheetMusicDto } from './modules/sheetMusic/mapper.js';
+import { SheetMusicModel, type SheetMusicDoc } from './modules/sheetMusic/model.js';
 import { toTrackDto } from './modules/tracks/mapper.js';
 import { TrackModel, type TrackDoc } from './modules/tracks/model.js';
 import { toVideoDto } from './modules/videos/mapper.js';
@@ -104,6 +109,39 @@ describe('mappers produce valid DTOs', () => {
       const doc = await VideoModel.findById(created._id).lean<WithId<VideoDoc>>().orFail();
       expect(videoDtoSchema.parse(toVideoDto(doc)).source).toBe(created.source);
     }
+  });
+
+  it('sheet music', async () => {
+    const created = await createSheetMusic({
+      level: 'beginner',
+      preview: { asset: imageAsset(), alt: 'The first lines of the score' },
+    });
+    const doc = await SheetMusicModel.findById(created._id).lean<WithId<SheetMusicDoc>>().orFail();
+
+    expect(sheetMusicDtoSchema.parse(toSheetMusicDto(doc))).toMatchObject({
+      level: 'beginner',
+      status: 'draft',
+    });
+  });
+
+  it('records saved before the 2026-10 revamp map with empty home content', async () => {
+    // Fields removed straight in the collections, like production data that predates them.
+    const profile = await createProfile();
+    await ProfileModel.collection.updateOne(
+      { _id: profile._id },
+      { $unset: { stats: '', services: '' } },
+    );
+    const video = await createVideo();
+    await VideoModel.collection.updateOne({ _id: video._id }, { $unset: { showcase: '' } });
+
+    const profileDoc = await ProfileModel.findById(profile._id).lean<WithId<ProfileDoc>>().orFail();
+    const videoDoc = await VideoModel.findById(video._id).lean<WithId<VideoDoc>>().orFail();
+
+    expect(profileSummaryDtoSchema.parse(toProfileSummaryDto(profileDoc))).toMatchObject({
+      stats: [],
+      services: [],
+    });
+    expect(videoDtoSchema.parse(toVideoDto(videoDoc)).showcase).toBe(false);
   });
 
   it('video: the schema rejects a source without its media', async () => {

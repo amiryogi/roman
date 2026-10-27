@@ -2,6 +2,7 @@ import { AlbumModel } from '../../modules/albums/model.js';
 import { EventModel } from '../../modules/events/model.js';
 import { GalleryImageModel } from '../../modules/gallery/model.js';
 import { ProfileModel } from '../../modules/profile/model.js';
+import { SheetMusicModel } from '../../modules/sheetMusic/model.js';
 import { TrackModel } from '../../modules/tracks/model.js';
 import { VideoModel } from '../../modules/videos/model.js';
 import type { ProviderResource } from './MediaService.js';
@@ -51,6 +52,11 @@ const MEDIA_FIELDS: MediaFields[] = [
     model: 'Event',
     distinct: (path) => EventModel.distinct(path).exec(),
     paths: ['image.asset.publicId'],
+  },
+  {
+    model: 'SheetMusic',
+    distinct: (path) => SheetMusicModel.distinct(path).exec(),
+    paths: ['preview.asset.publicId'],
   },
 ];
 

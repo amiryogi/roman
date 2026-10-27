@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { emailSchema, httpsUrlSchema, optionalText, text } from '../common.js';
-import { experienceCategorySchema, socialPlatformSchema } from '../enums.js';
+import { clearableText, emailSchema, httpsUrlSchema, optionalText, text } from '../common.js';
+import { experienceCategorySchema, inquiryTypeSchema, socialPlatformSchema } from '../enums.js';
 import { imageDtoSchema, imageInputSchema } from '../media.js';
 
 // Nested items: the same schema validates admin input and API output.
@@ -44,6 +44,23 @@ export const socialLinkSchema = z.strictObject({
   label: optionalText(60),
 });
 
+/** A figure in the home page's stats row, e.g. { value: "15+ years", label: "as a violinist" }. */
+export const statItemSchema = z.strictObject({
+  value: text(20),
+  label: text(60),
+});
+
+/** A "What I do" card on the home page, e.g. Performer with Where / For details. */
+export const serviceItemSchema = z.strictObject({
+  title: text(40),
+  kicker: optionalText(40),
+  summary: text(300),
+  details: z.array(z.strictObject({ label: text(30), value: text(80) })).max(4),
+  /** Links to the contact form with this enquiry type chosen. */
+  cta: z.strictObject({ label: text(30), inquiryType: inquiryTypeSchema }).optional(),
+});
+export type ServiceItem = z.infer<typeof serviceItemSchema>;
+
 export const PHONE_PATTERN = /^[+()\d\s-]{6,30}$/;
 
 export const profileSeoSchema = z.strictObject({
@@ -85,6 +102,12 @@ export const profileInputSchema = z.strictObject({
   heroDesktop: imageInputSchema.nullable().optional(),
   heroMobile: imageInputSchema.nullable().optional(),
   ogImage: imageInputSchema.nullable().optional(),
+  // Home page content (2026-10 revamp). Absent keeps the current value, so an admin page loaded
+  // before these fields existed can't wipe them; '' or null clears the text fields.
+  heroHeadline: clearableText(80),
+  heroIntro: clearableText(300),
+  stats: z.array(statItemSchema).max(4).optional(),
+  services: z.array(serviceItemSchema).max(6).optional(),
 });
 export type ProfileInput = z.input<typeof profileInputSchema>;
 export type ProfileInputParsed = z.output<typeof profileInputSchema>;
@@ -105,6 +128,12 @@ export const profileDtoSchema = z.strictObject({
     location: z.string().optional(),
   }),
   ...profileImagesDto,
+  /** The home hero's h1; the site falls back to `displayName`. */
+  heroHeadline: z.string().optional(),
+  /** The home hero's paragraph; the site falls back to `shortBio`. */
+  heroIntro: z.string().optional(),
+  stats: z.array(statItemSchema),
+  services: z.array(serviceItemSchema),
   updatedAt: z.iso.datetime(),
 });
 export type ProfileDto = z.infer<typeof profileDtoSchema>;
@@ -130,5 +159,9 @@ export const profileSummaryDtoSchema = profileDtoSchema.pick({
   heroMobile: true,
   ogImage: true,
   seo: true,
+  heroHeadline: true,
+  heroIntro: true,
+  stats: true,
+  services: true,
 });
 export type ProfileSummaryDto = z.infer<typeof profileSummaryDtoSchema>;

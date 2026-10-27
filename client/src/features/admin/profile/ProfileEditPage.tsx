@@ -33,7 +33,9 @@ import {
   BiographySection,
   EducationSection,
   ExperienceSection,
+  ServicesSection,
   SocialsSection,
+  StatsSection,
 } from './ProfileListSections';
 import {
   EMPTY_PROFILE,
@@ -46,6 +48,9 @@ import {
 
 const SECTIONS = [
   { id: 'identity', label: 'Identity' },
+  { id: 'home', label: 'Home page' },
+  { id: 'stats', label: 'Stats' },
+  { id: 'services', label: 'What I do' },
   { id: 'biography', label: 'Biography' },
   { id: 'education', label: 'Education' },
   { id: 'experience', label: 'Experience' },
@@ -64,12 +69,12 @@ const IMAGE_TEXT: Record<ImageSlot, { label: string; hint: string }> = {
     hint: 'Shown on the home page next to the introduction and at the top of the About page.',
   },
   heroDesktop: {
-    label: 'Home page hero (wide screens)',
-    hint: 'The large image at the top of the home page. Use a landscape photo.',
+    label: 'Home page hero',
+    hint: 'The full-screen photo at the top of the home page. It is cropped to fit each screen, so keep the subject near the top centre and avoid text in the image.',
   },
   heroMobile: {
-    label: 'Home page hero (phones, optional)',
-    hint: 'A portrait-orientation crop for small screens. Without it, the wide image is used.',
+    label: 'Home page hero for phones (optional)',
+    hint: 'Only if phones need a different photo. Without it, the hero above is cropped for phones.',
   },
   ogImage: {
     label: 'Link preview image (optional)',
@@ -202,6 +207,31 @@ function ProfileForm({ profile }: { profile: ProfileAdminDto | undefined }) {
               {...register('shortBio')}
             />
           </fieldset>
+
+          <fieldset id="home" className="flex scroll-mt-6 flex-col gap-4">
+            <legend className="mb-2 text-lg font-semibold">Home page</legend>
+            <p className="-mt-2 text-sm text-stone-600">
+              The words over the photo at the top of the home page. Both are optional: without a
+              headline the name is shown, and without an introduction the short introduction above
+              is used.
+            </p>
+            <FormField
+              label="Headline (optional)"
+              hint="A short line, up to 80 characters."
+              error={errors.heroHeadline?.message}
+              {...register('heroHeadline')}
+            />
+            <TextAreaField
+              label="Introduction (optional)"
+              hint="One or two sentences, up to 300 characters."
+              rows={3}
+              error={errors.heroIntro?.message}
+              {...register('heroIntro')}
+            />
+          </fieldset>
+
+          <StatsSection />
+          <ServicesSection />
 
           <BiographySection />
           <EducationSection />

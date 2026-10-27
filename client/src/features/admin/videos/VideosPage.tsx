@@ -48,6 +48,7 @@ const config: ContentListConfig<VideoDto> = {
             <p className="text-xs text-stone-600">
               {video.source === 'youtube' ? 'YouTube' : 'Uploaded'} ·{' '}
               {VIDEO_CATEGORY_LABELS[video.category]}
+              {video.showcase && ' · Songs I’ve played on'}
             </p>
           </div>
         </div>

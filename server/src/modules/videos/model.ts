@@ -31,6 +31,8 @@ export interface VideoDoc extends PublishingFields, Timestamps {
   category: VideoCategory;
   recordedAt?: Date;
   venue?: string;
+  /** "Songs I've played on" (home page). Missing on videos saved before it existed. */
+  showcase?: boolean;
 }
 
 const videoSchema = new Schema<VideoDoc>(
@@ -46,6 +48,7 @@ const videoSchema = new Schema<VideoDoc>(
     category: { type: String, enum: [...VIDEO_CATEGORIES], required: true },
     recordedAt: Date,
     venue: { type: String, maxlength: 200 },
+    showcase: { type: Boolean, default: false },
     ...publishingPaths,
   },
   { timestamps: true },
@@ -65,5 +68,6 @@ videoSchema.pre('validate', function () {
 videoSchema.index({ status: 1, sortOrder: 1 });
 videoSchema.index({ status: 1, category: 1, sortOrder: 1 });
 videoSchema.index({ status: 1, featured: 1, sortOrder: 1 });
+videoSchema.index({ status: 1, showcase: 1, sortOrder: 1 });
 
 export const VideoModel = model<VideoDoc>('Video', videoSchema);

@@ -76,6 +76,75 @@ describe('profile editor', () => {
     });
   });
 
+  it('edits the home page: headline, a stat and a “What I do” card with a detail and button', async () => {
+    renderEditor();
+
+    await userEvent.type(await screen.findByLabelText('Headline (optional)'), 'A test headline.');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add stat' }));
+    const stat = screen.getByRole('listitem', { name: 'Stat 1' });
+    await userEvent.type(within(stat).getByLabelText('Figure'), '10 years');
+    await userEvent.type(within(stat).getByLabelText('What it counts'), 'of testing');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    const card = screen.getByRole('listitem', { name: 'Card 1' });
+    await userEvent.type(within(card).getByLabelText('Title'), 'Performer');
+    await userEvent.type(within(card).getByLabelText('Summary'), 'Plays at test events.');
+    await userEvent.click(within(card).getByRole('button', { name: 'Add detail' }));
+    await userEvent.type(within(card).getByLabelText('Detail 1 name'), 'Where');
+    await userEvent.type(within(card).getByLabelText('Detail 1 text'), 'Test halls');
+    await userEvent.click(
+      within(card).getByRole('button', { name: 'Add a button to the contact form' }),
+    );
+    await userEvent.selectOptions(
+      within(card).getByLabelText('Enquiry type it chooses'),
+      'Violin lessons',
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Save profile' }));
+
+    expect(await screen.findByText('No unsaved changes.')).toBeInTheDocument();
+    expect(savedPayload()).toMatchObject({
+      heroHeadline: 'A test headline.',
+      // Left empty: sent as null, which clears it.
+      heroIntro: null,
+      stats: [{ value: '10 years', label: 'of testing' }],
+      services: [
+        {
+          title: 'Performer',
+          summary: 'Plays at test events.',
+          details: [{ label: 'Where', value: 'Test halls' }],
+          cta: { label: 'Send a request', inquiryType: 'lessons' },
+        },
+      ],
+    });
+  });
+
+  it('removes a card’s button again', async () => {
+    vi.mocked(getAdminProfile).mockResolvedValue(
+      adminProfileFixture({
+        services: [
+          {
+            title: 'Educator',
+            summary: 'Teaches.',
+            details: [],
+            cta: { label: 'Ask', inquiryType: 'lessons' },
+          },
+        ],
+      }),
+    );
+    renderEditor();
+
+    const card = await screen.findByRole('listitem', { name: 'Card 1' });
+    await userEvent.click(within(card).getByRole('button', { name: 'Remove button' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Save profile' }));
+
+    expect(await screen.findByText('No unsaved changes.')).toBeInTheDocument();
+    const [service] = savedPayload()?.services ?? [];
+    expect(service?.title).toBe('Educator');
+    expect(service?.cta).toBeUndefined();
+  });
+
   it('adds, reorders and removes biography paragraphs, and edits skills one per line', async () => {
     renderEditor();
 

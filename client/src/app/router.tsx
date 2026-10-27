@@ -143,6 +143,21 @@ const adminRoutes: RouteObject = {
           }),
         },
         {
+          path: 'sheet-music',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/sheetMusic/SheetMusicAdminPage'))
+              .SheetMusicAdminPage,
+          }),
+        },
+        {
+          // "new" or an id
+          path: 'sheet-music/:id',
+          lazy: async () => ({
+            Component: (await import('@/features/admin/sheetMusic/SheetMusicEditPage'))
+              .SheetMusicEditPage,
+          }),
+        },
+        {
           path: 'profile',
           lazy: async () => ({
             Component: (await import('@/features/admin/profile/ProfileEditPage')).ProfileEditPage,

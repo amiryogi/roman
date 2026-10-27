@@ -211,5 +211,47 @@ describe('videos', () => {
       );
       expect(home.data.featuredVideos.map((v) => v.title)).toEqual(['Featured']);
     });
+
+    it('feeds published showcase videos to "Songs I\'ve played on"', async () => {
+      await createProfile();
+      await createVideo({ title: 'Song', status: 'published', showcase: true });
+      await createVideo({ title: 'Unreleased song', status: 'draft', showcase: true });
+      await createVideo({ title: 'Ordinary', status: 'published' });
+
+      const home = apiSuccessSchema(homeDtoSchema).parse(
+        (await request(app).get('/api/home')).body,
+      );
+      expect(home.data.showcaseVideos.map((v) => v.title)).toEqual(['Song']);
+    });
+  });
+
+  it('saves the showcase flag and filters the admin list by it', async () => {
+    const created = videoResponse.parse(
+      (
+        await post({
+          source: 'youtube',
+          youtube: 'dQw4w9WgXcQ',
+          title: 'Film song',
+          category: 'studio',
+          showcase: true,
+        })
+      ).body,
+    ).data;
+    await createVideo({ title: 'Not a song' });
+    expect(created.showcase).toBe(true);
+
+    const list = (query: string) =>
+      request(app).get(`/api/admin/videos${query}`).set('Authorization', `Bearer ${token}`);
+    const songs = videoListResponse.parse((await list('?showcase=true')).body).data;
+    const others = videoListResponse.parse((await list('?showcase=false')).body).data;
+
+    expect(songs.map((v) => v.title)).toEqual(['Film song']);
+    expect(others.map((v) => v.title)).toEqual(['Not a song']);
+
+    const cleared = await request(app)
+      .patch(`/api/admin/videos/${created.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ showcase: false });
+    expect(videoResponse.parse(cleared.body).data.showcase).toBe(false);
   });
 });

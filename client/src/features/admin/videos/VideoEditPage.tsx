@@ -44,6 +44,7 @@ const FIELDS: readonly Path<VideoCreateInput>[] = [
   'venue',
   'status',
   'featured',
+  'showcase',
 ];
 
 const emptyToUndefined = (value: unknown) => (value === '' ? undefined : value);
@@ -59,6 +60,7 @@ function toFormValues(video: VideoDto): VideoCreateInput {
     venue: video.venue ?? '',
     status: video.status,
     featured: video.featured,
+    showcase: video.showcase,
   };
   return video.source === 'cloudinary'
     ? {
@@ -80,6 +82,7 @@ const NEW_VIDEO: DefaultValues<VideoCreateInput> = {
   venue: '',
   status: 'draft',
   featured: false,
+  showcase: false,
 };
 
 export function VideoEditPage() {
@@ -296,6 +299,11 @@ function VideoForm({ video }: { video: VideoDto | undefined }) {
             <option value="published">Published</option>
           </SelectField>
           <CheckboxField label="Feature on the home page" {...register('featured')} />
+          <CheckboxField
+            label="List under “Songs I’ve played on”"
+            hint="For songs and soundtracks Roman recorded violin on. The home page shows up to three; the description is used as the credit, e.g. “From the film …, sung by …”."
+            {...register('showcase')}
+          />
         </fieldset>
 
         <div className="flex gap-3">

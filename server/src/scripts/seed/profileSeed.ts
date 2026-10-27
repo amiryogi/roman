@@ -16,12 +16,17 @@ const CV_PROFILE =
 
 const PRESENT = 'Present';
 
-// Images are uploaded and attached by the seed script.
+// Images are uploaded and attached by the seed script. Home page content (hero headline, stats,
+// "What I do") isn't in the CV: the owner enters it in the admin panel.
 const profileTextSchema = profileInputSchema.omit({
   portrait: true,
   heroDesktop: true,
   heroMobile: true,
   ogImage: true,
+  heroHeadline: true,
+  heroIntro: true,
+  stats: true,
+  services: true,
 });
 
 export const PROFILE_SEED = profileTextSchema.parse({

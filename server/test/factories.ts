@@ -7,6 +7,7 @@ import { EventModel, type EventDoc } from '../src/modules/events/model.js';
 import { GalleryImageModel, type GalleryImageDoc } from '../src/modules/gallery/model.js';
 import { InquiryModel, type InquiryDoc } from '../src/modules/inquiries/model.js';
 import { ProfileModel, type ProfileDoc } from '../src/modules/profile/model.js';
+import { SheetMusicModel, type SheetMusicDoc } from '../src/modules/sheetMusic/model.js';
 import { TrackModel, type TrackDoc } from '../src/modules/tracks/model.js';
 import { VideoModel, type VideoDoc } from '../src/modules/videos/model.js';
 
@@ -107,6 +108,15 @@ export function createVideo(overrides: Partial<VideoDoc> = {}) {
     source: 'youtube',
     youtubeId: 'dQw4w9WgXcQ',
     category: 'performance',
+    ...overrides,
+  });
+}
+
+export function createSheetMusic(overrides: Partial<SheetMusicDoc> = {}) {
+  const n = next();
+  return SheetMusicModel.create({
+    title: `Score ${String(n)}`,
+    slug: `score-${String(n)}`,
     ...overrides,
   });
 }

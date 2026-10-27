@@ -11,6 +11,7 @@ export const HOME_LIMITS = {
   featuredVideos: 3,
   featuredImages: 8,
   upcomingEvents: 3,
+  showcaseVideos: 3,
 } as const;
 
 /** `GET /api/home`: everything the home page needs in one request. */
@@ -20,5 +21,9 @@ export const homeDtoSchema = z.strictObject({
   featuredVideos: z.array(videoDtoSchema),
   featuredImages: z.array(galleryImageDtoSchema),
   upcomingEvents: z.array(eventDtoSchema),
+  /** "Songs I've played on": published videos marked as showcase. */
+  showcaseVideos: z.array(videoDtoSchema),
+  /** Published sheet-music listings; the home page shows its teaser when there are any. */
+  sheetMusicCount: z.number().int().min(0),
 });
 export type HomeDto = z.infer<typeof homeDtoSchema>;

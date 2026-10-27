@@ -4,6 +4,7 @@ import type {
   GalleryCategory,
   InquiryStatus,
   InquiryType,
+  SheetMusicLevel,
   SocialPlatform,
   VideoCategory,
 } from '@roman/shared';
@@ -19,6 +20,12 @@ export const VIDEO_CATEGORY_LABELS: Record<VideoCategory, string> = {
   other: 'Other',
 };
 
+export const SHEET_MUSIC_LEVEL_LABELS: Record<SheetMusicLevel, string> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced',
+};
+
 export const GALLERY_CATEGORY_LABELS: Record<GalleryCategory, string> = {
   performance: 'Performance',
   portrait: 'Portraits',
@@ -30,6 +37,7 @@ export const INQUIRY_TYPE_LABELS: Record<InquiryType, string> = {
   booking: 'Booking a performance',
   lessons: 'Violin lessons',
   collaboration: 'Collaboration or recording',
+  'sheet-music': 'Sheet music',
   general: 'General question',
 };
 

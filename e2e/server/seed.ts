@@ -4,6 +4,7 @@ import {
   createEvent,
   createGalleryImage,
   createProfile,
+  createSheetMusic,
   createTrack,
   createVideo,
   imageAsset,
@@ -31,6 +32,17 @@ export async function seed(): Promise<void> {
       }),
       alt: 'The artist on stage with a violin',
     },
+    heroHeadline: SEEDED.heroHeadline,
+    stats: [SEEDED.stat],
+    services: [
+      {
+        title: SEEDED.service,
+        kicker: 'On stage',
+        summary: 'Plays at test events.',
+        details: [{ label: 'Where', value: 'Test halls' }],
+        cta: { label: 'Send a request', inquiryType: 'booking' },
+      },
+    ],
   });
 
   const [first, second, third] = SEEDED.tracks;
@@ -53,6 +65,25 @@ export async function seed(): Promise<void> {
     category: 'studio',
     status: 'published',
   });
+  await createVideo({
+    title: SEEDED.showcaseVideo,
+    slug: 'film-song',
+    description: 'From a test film',
+    category: 'studio',
+    status: 'published',
+    showcase: true,
+  });
+
+  const [waltz, reel] = SEEDED.scores;
+  await createSheetMusic({
+    title: waltz,
+    slug: 'test-waltz',
+    artist: 'A Composer',
+    level: 'beginner',
+    status: 'published',
+  });
+  await createSheetMusic({ title: reel, slug: 'test-reel', status: 'published' });
+  await createSheetMusic({ title: SEEDED.draftScore, slug: 'unfinished-score', status: 'draft' });
 
   await createGalleryImage({
     alt: SEEDED.photos.performance,

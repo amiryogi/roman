@@ -5,6 +5,7 @@ import {
   galleryImageDtoSchema,
   inquiryDtoSchema,
   profileAdminDtoSchema,
+  sheetMusicDtoSchema,
   trackDtoSchema,
   videoDtoSchema,
   type AdminStatsDto,
@@ -25,6 +26,9 @@ import {
   type ProfileAdminDto,
   type ProfileInput,
   type PublicationStatus,
+  type SheetMusicCreateInput,
+  type SheetMusicDto,
+  type SheetMusicUpdateInput,
   type TrackCreateInput,
   type TrackDto,
   type TrackUpdateInput,
@@ -62,6 +66,9 @@ export const adminKeys = {
   events: ['admin', 'events'] as const,
   eventList: (params: AdminListParams) => ['admin', 'events', 'list', params] as const,
   event: (id: string) => ['admin', 'events', id] as const,
+  sheetMusic: ['admin', 'sheet-music'] as const,
+  sheetMusicList: (params: AdminListParams) => ['admin', 'sheet-music', 'list', params] as const,
+  score: (id: string) => ['admin', 'sheet-music', id] as const,
   stats: ['admin', 'stats'] as const,
   profile: ['admin', 'profile'] as const,
   inquiries: ['admin', 'inquiries'] as const,
@@ -171,6 +178,44 @@ export function deleteVideo(id: string): Promise<void> {
 
 export function reorderVideos(ids: string[]): Promise<void> {
   return apiRequestNoContent('/admin/videos/order', { ...auth, method: 'PATCH', body: { ids } });
+}
+
+// --- Sheet music ----------------------------------------------------------------------------
+
+export function listSheetMusic(params: AdminListParams): Promise<Paginated<SheetMusicDto>> {
+  return apiRequestPage(`/admin/sheet-music?${listQuery(params)}`, sheetMusicDtoSchema, auth);
+}
+
+export function getSheetMusic(id: string): Promise<SheetMusicDto> {
+  return apiRequest(`/admin/sheet-music/${id}`, sheetMusicDtoSchema, auth);
+}
+
+export function createSheetMusic(input: SheetMusicCreateInput): Promise<SheetMusicDto> {
+  return apiRequest('/admin/sheet-music', sheetMusicDtoSchema, {
+    ...auth,
+    method: 'POST',
+    body: input,
+  });
+}
+
+export function updateSheetMusic(id: string, input: SheetMusicUpdateInput): Promise<SheetMusicDto> {
+  return apiRequest(`/admin/sheet-music/${id}`, sheetMusicDtoSchema, {
+    ...auth,
+    method: 'PATCH',
+    body: input,
+  });
+}
+
+export function deleteSheetMusic(id: string): Promise<void> {
+  return apiRequestNoContent(`/admin/sheet-music/${id}`, { ...auth, method: 'DELETE' });
+}
+
+export function reorderSheetMusic(ids: string[]): Promise<void> {
+  return apiRequestNoContent('/admin/sheet-music/order', {
+    ...auth,
+    method: 'PATCH',
+    body: { ids },
+  });
 }
 
 // --- Gallery --------------------------------------------------------------------------------

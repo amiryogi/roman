@@ -55,6 +55,11 @@ export async function replaceProfile(
   doc.contact = input.contact;
   doc.socials = input.socials;
   doc.seo = input.seo;
+  // Home page content: absent keeps the current value (see profileInputSchema); null clears.
+  if (input.heroHeadline !== undefined) doc.heroHeadline = input.heroHeadline ?? undefined;
+  if (input.heroIntro !== undefined) doc.heroIntro = input.heroIntro ?? undefined;
+  if (input.stats !== undefined) doc.stats = input.stats;
+  if (input.services !== undefined) doc.services = input.services;
 
   await doc.save();
   await destroyAll(media, obsolete, logger);

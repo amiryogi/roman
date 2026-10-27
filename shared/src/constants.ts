@@ -14,6 +14,7 @@ export const UPLOAD_KINDS = [
   'video',
   'video-poster',
   'event',
+  'sheet-music',
 ] as const;
 
 export const VIDEO_SOURCES = ['cloudinary', 'youtube'] as const;
@@ -39,7 +40,13 @@ export const EVENT_STATUSES = ['scheduled', 'postponed', 'cancelled'] as const;
 
 export const EVENT_TIMEFRAMES = ['upcoming', 'past'] as const;
 
-export const INQUIRY_TYPES = ['booking', 'lessons', 'collaboration', 'general'] as const;
+export const INQUIRY_TYPES = [
+  'booking',
+  'lessons',
+  'collaboration',
+  'sheet-music',
+  'general',
+] as const;
 
 export const BOOKING_EVENT_TYPES = [
   'wedding',
@@ -62,6 +69,8 @@ export const SOCIAL_PLATFORMS = [
 ] as const;
 
 export const EXPERIENCE_CATEGORIES = ['teaching', 'performance', 'other'] as const;
+
+export const SHEET_MUSIC_LEVELS = ['beginner', 'intermediate', 'advanced'] as const;
 
 /**
  * Cloudinary delivery type for every asset. "private" means the untransformed original (which

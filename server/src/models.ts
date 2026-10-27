@@ -5,6 +5,7 @@ import { EventModel } from './modules/events/model.js';
 import { GalleryImageModel } from './modules/gallery/model.js';
 import { InquiryModel } from './modules/inquiries/model.js';
 import { ProfileModel } from './modules/profile/model.js';
+import { SheetMusicModel } from './modules/sheetMusic/model.js';
 import { TrackModel } from './modules/tracks/model.js';
 import { VideoModel } from './modules/videos/model.js';
 
@@ -19,6 +20,7 @@ export const ALL_MODELS = [
   GalleryImageModel,
   EventModel,
   InquiryModel,
+  SheetMusicModel,
 ] as const;
 
 /** Creates missing indexes and drops ones no longer declared. Run on deploy (autoIndex is off in production). */

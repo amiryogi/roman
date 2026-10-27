@@ -1,4 +1,4 @@
-import type { QueryFilter } from 'mongoose';
+import mongoose, { type QueryFilter } from 'mongoose';
 import type { z } from 'zod';
 
 import type {
@@ -70,12 +70,24 @@ export async function listFeaturedVideos(limit: number): Promise<VideoDto[]> {
   return docs.map(toVideoDto);
 }
 
+/** "Songs I've played on" on the home page. */
+export async function listShowcaseVideos(limit: number): Promise<VideoDto[]> {
+  const docs = await VideoModel.find({ status: 'published', showcase: true })
+    .sort({ sortOrder: 1 })
+    .limit(limit)
+    .lean<WithId<VideoDoc>[]>();
+  return docs.map(toVideoDto);
+}
+
 // --- Admin ----------------------------------------------------------------------------------
 
 export function listAdminVideos(query: AdminQuery): Promise<Page<VideoDto>> {
   const filter: QueryFilter<VideoDoc> = { ...titleSearch(query.q) };
   if (query.status) filter.status = query.status;
   if (query.category) filter.category = query.category;
+  if (query.showcase === true) filter.showcase = true;
+  // Videos saved before the flag existed have no field at all: "not a showcase" is "not true".
+  if (query.showcase === false) filter.showcase = mongoose.trusted({ $ne: true });
   return page(filter, query);
 }
 
@@ -117,6 +129,7 @@ export async function createVideo(input: VideoCreate, { media, logger }: MediaDe
     venue: input.venue ?? undefined,
     status: input.status,
     featured: input.featured,
+    showcase: input.showcase,
   });
   return getAdminVideo(created._id.toHexString());
 }
@@ -144,6 +157,7 @@ export async function updateVideo(
   if (input.venue !== undefined) doc.venue = input.venue ?? undefined;
   if (input.status !== undefined) doc.status = input.status;
   if (input.featured !== undefined) doc.featured = input.featured;
+  if (input.showcase !== undefined) doc.showcase = input.showcase;
 
   const source = input.source ?? doc.source;
   if (source === 'cloudinary') {

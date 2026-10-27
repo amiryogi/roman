@@ -73,12 +73,17 @@ describe('public profile and home', () => {
       const home = homeResponse.parse(res.body).data;
       expect(home.profile).toMatchObject({ displayName: 'Test Artist', tagline: 'Violinist' });
       expect(Object.keys(home.profile).sort()).toEqual(
-        ['displayName', 'portrait', 'seo', 'shortBio', 'tagline'].sort(),
+        ['displayName', 'portrait', 'seo', 'services', 'shortBio', 'stats', 'tagline'].sort(),
       );
+      // Home page content stays empty until the owner enters it.
+      expect(home.profile.stats).toEqual([]);
+      expect(home.profile.services).toEqual([]);
       expect(home.featuredTracks).toEqual([]);
       expect(home.featuredVideos).toEqual([]);
       expect(home.featuredImages).toEqual([]);
       expect(home.upcomingEvents).toEqual([]);
+      expect(home.showcaseVideos).toEqual([]);
+      expect(home.sheetMusicCount).toBe(0);
       expect(res.headers['cache-control']).toMatch(/^public/);
     });
 

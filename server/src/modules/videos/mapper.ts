@@ -22,6 +22,7 @@ export function toVideoDto(doc: WithId<VideoDoc>): VideoDto {
     venue: doc.venue,
     duration: doc.duration,
     ...toPublishingDto(doc),
+    showcase: doc.showcase ?? false,
     ...toTimestampsDto(doc),
   };
 

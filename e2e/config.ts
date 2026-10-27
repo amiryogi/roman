@@ -29,4 +29,11 @@ export const SEEDED = {
   upcomingEvent: 'Autumn Recital',
   pastEvent: 'Spring Gala',
   draftEvent: 'Secret Rehearsal',
+  // Home page content (2026-10 revamp).
+  heroHeadline: 'Music for every occasion.',
+  stat: { value: '10 years', label: 'of test performances' },
+  service: 'Test Performer',
+  showcaseVideo: 'Film Song',
+  scores: ['Test Waltz', 'Test Reel'],
+  draftScore: 'Unfinished Score',
 } as const;

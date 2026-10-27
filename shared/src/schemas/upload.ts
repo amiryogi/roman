@@ -31,6 +31,7 @@ export const UPLOAD_KIND_RULES: Record<UploadKind, UploadKindRule> = {
   video: { mediaKind: 'video', resourceType: 'video', folder: 'videos/media' },
   'video-poster': { mediaKind: 'image', resourceType: 'image', folder: 'videos/posters' },
   event: { mediaKind: 'image', resourceType: 'image', folder: 'events' },
+  'sheet-music': { mediaKind: 'image', resourceType: 'image', folder: 'scores' },
 };
 
 /** Lower-case extension of a file name, without the dot ("" if there is none). */

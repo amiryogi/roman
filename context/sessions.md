@@ -192,3 +192,31 @@ no-deploy`, for minutes); one direct request woke it and Vercel answered 20 s la
   rewrite at build time; its origin is in the CSP's `connect-src`.
 - `npm audit` (CI) failed on `shell-quote` via `concurrently`; upgraded to `concurrently` 10.0.6 (commit `dc6834d`).
 - Open: keeping the API warm is still the owner's choice (paid instance or an uptime ping on the Render URL).
+
+## Revamp to the reference design (started 2026-10-27)
+
+Plan: `C:/Users/User/.claude/plans/create-a-comprehensive-implementation-vivid-curry.md` (phases R1-R6).
+Decisions: whole public site gets the reference look (near-black, crimson, Playfair Display + DM Sans,
+full-bleed stage photo `roman4.JPG` as hero, superseding the §0.4 hero decision); new sections Stats,
+"What I do", "Songs I've played on", Sheet music; copy and numbers admin-entered only; neon logo (file
+still to come from the owner).
+
+- R1 done (contracts and backend):
+  - Profile `heroHeadline`, `heroIntro`, `stats[]` and `services[]`. Absent in a PUT keeps the stored
+    value, so an older admin page can't wipe them; null or '' clears.
+  - Video `showcase` flag (admin filter; legacy videos without the field count as false).
+  - `HomeDto.showcaseVideos` and `sheetMusicCount`.
+  - New sheet-music module: `/api/sheet-music`, `/api/admin/sheet-music`, Cloudinary folder `scores`,
+    upload kind `sheet-music`, media reference `preview`.
+  - Enquiry type `sheet-music`.
+  - E2E seed has neutral home content and scores.
+  - No public UI yet.
+- R2 done (admin editors):
+  - Profile editor has new "Home page" (headline, intro), "Stats" and "What I do" sections. Cards have
+    details and an optional contact-form button with an enquiry type. The hero image hints now describe
+    the full-bleed crop.
+  - Video editor has the "List under Songs I've played on" toggle, also shown in the list.
+  - New Sheet music admin: list (`ContentListPage`) and edit page, at `/admin/sheet-music`.
+  - Neon logo saved from the reference page as `client/public/images/logo-roman.png` (1506×462,
+    40 KB), at the owner's request; it goes into the header in R3.
+  - Public pages are now 157.4-159.5 KiB (labels ship with them). R3 makes Home lazy to free room.

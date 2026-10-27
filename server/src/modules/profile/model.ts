@@ -2,8 +2,10 @@ import { model, Schema } from 'mongoose';
 
 import {
   EXPERIENCE_CATEGORIES,
+  INQUIRY_TYPES,
   SOCIAL_PLATFORMS,
   type ExperienceCategory,
+  type InquiryType,
   type SocialPlatform,
 } from '@roman/shared';
 
@@ -39,6 +41,17 @@ export interface ProfileDoc extends Timestamps {
   ogImage?: ImageDoc;
   /** Absent when empty: Mongoose drops empty subdocuments on save. */
   seo?: { metaTitle?: string; metaDescription?: string };
+  // Home page content (2026-10 revamp). Optional: profiles saved before it don't have them.
+  heroHeadline?: string;
+  heroIntro?: string;
+  stats?: { value: string; label: string }[];
+  services?: {
+    title: string;
+    kicker?: string;
+    summary: string;
+    details: { label: string; value: string }[];
+    cta?: { label: string; inquiryType: InquiryType };
+  }[];
 }
 
 // Field limits mirror the shared Zod schemas, which validate input before it gets here.
@@ -114,6 +127,40 @@ const profileSchema = new Schema<ProfileDoc>(
       type: new Schema({ metaTitle: String, metaDescription: String }, opts),
       default: () => ({}),
     },
+    heroHeadline: { type: String, maxlength: 80 },
+    heroIntro: { type: String, maxlength: 300 },
+    stats: [
+      new Schema(
+        { value: { type: String, required: true }, label: { type: String, required: true } },
+        opts,
+      ),
+    ],
+    services: [
+      new Schema(
+        {
+          title: { type: String, required: true },
+          kicker: String,
+          summary: { type: String, required: true },
+          details: [
+            new Schema(
+              {
+                label: { type: String, required: true },
+                value: { type: String, required: true },
+              },
+              opts,
+            ),
+          ],
+          cta: new Schema(
+            {
+              label: { type: String, required: true },
+              inquiryType: { type: String, enum: [...INQUIRY_TYPES], required: true },
+            },
+            opts,
+          ),
+        },
+        opts,
+      ),
+    ],
   },
   { timestamps: true },
 );
